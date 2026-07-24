@@ -1,0 +1,4 @@
+  * Maintenance Mode Bundle installed.
+  * Configure config/packages/nowo_maintenance_mode.yaml
+  * Panel routes imported via config/routes/nowo_maintenance_mode.yaml (default prefix /_maintenance)
+  * Generate a password hash: php -r 'echo password_hash("secret", PASSWORD_BCRYPT), PHP_EOL;'

@@ -1,0 +1,31 @@
+maintenance.page.title: Onderhoud
+maintenance.page.heading: We zijn zo terug
+maintenance.page.message: De site is tijdelijk niet beschikbaar wegens onderhoud.
+panel.title: Onderhoudspaneel
+panel.status: Status
+panel.status.enabled: ACTIEF
+panel.status.disabled: uitgeschakeld
+panel.message: Bericht
+panel.activated: Geactiveerd
+panel.deactivated: Gedeactiveerd
+panel.scheduled_enable: Geplande activatie
+panel.scheduled_disable: Geplande deactivatie
+panel.updated_by: Bijgewerkt door
+panel.enable: Onderhoud inschakelen
+panel.disable: Onderhoud uitschakelen
+panel.schedule: Planning
+panel.save_schedule: Planning opslaan
+panel.history: Geschiedenis
+panel.nav.panel: Paneel
+panel.nav.history: Geschiedenis
+panel.logout: Uitloggen
+panel.login.heading: Onderhoudspaneel
+panel.login.intro: Voer het onderhoudswachtwoord in om de site te beheren.
+panel.login.password: Wachtwoord
+panel.login.submit: Inloggen
+panel.login.error: Ongeldig wachtwoord.
+panel.history.when: Wanneer
+panel.history.action: Actie
+panel.history.actor: Actor
+panel.history.message: Bericht
+panel.history.empty: Nog geen geschiedenis.

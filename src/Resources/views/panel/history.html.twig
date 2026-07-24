@@ -1,0 +1,35 @@
+{% extends layout %}
+
+{% block title %}{{ 'panel.history'|trans({}, 'NowoMaintenanceModeBundle') }}{% endblock %}
+
+{% block body %}
+    <nav>
+        <a href="{{ path_prefix }}">{{ 'panel.nav.panel'|trans({}, 'NowoMaintenanceModeBundle') }}</a>
+        <a href="{{ path_prefix }}/history">{{ 'panel.nav.history'|trans({}, 'NowoMaintenanceModeBundle') }}</a>
+    </nav>
+    <h1>{{ 'panel.history'|trans({}, 'NowoMaintenanceModeBundle') }}</h1>
+    <div class="card">
+        <table>
+            <thead>
+            <tr>
+                <th>{{ 'panel.history.when'|trans({}, 'NowoMaintenanceModeBundle') }}</th>
+                <th>{{ 'panel.history.action'|trans({}, 'NowoMaintenanceModeBundle') }}</th>
+                <th>{{ 'panel.history.actor'|trans({}, 'NowoMaintenanceModeBundle') }}</th>
+                <th>{{ 'panel.history.message'|trans({}, 'NowoMaintenanceModeBundle') }}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for entry in entries %}
+                <tr>
+                    <td>{{ entry.occurredAt|date('Y-m-d H:i:s') }}</td>
+                    <td>{{ entry.action }}</td>
+                    <td>{{ entry.actor ?? '—' }}</td>
+                    <td>{{ entry.message ?? '—' }}</td>
+                </tr>
+            {% else %}
+                <tr><td colspan="4">{{ 'panel.history.empty'|trans({}, 'NowoMaintenanceModeBundle') }}</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

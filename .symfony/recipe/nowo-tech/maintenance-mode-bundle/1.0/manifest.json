@@ -1,0 +1,8 @@
+{
+    "bundles": {
+        "Nowo\\MaintenanceModeBundle\\NowoMaintenanceModeBundle": ["all"]
+    },
+    "copy-from-recipe": {
+        "config/": "%CONFIG_DIR%/"
+    }
+}

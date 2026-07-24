@@ -1,0 +1,19 @@
+{% extends layout %}
+
+{% block title %}{{ 'panel.login.heading'|trans({}, 'NowoMaintenanceModeBundle') }}{% endblock %}
+
+{% block body %}
+    <h1>{{ 'panel.login.heading'|trans({}, 'NowoMaintenanceModeBundle') }}</h1>
+    <p>{{ 'panel.login.intro'|trans({}, 'NowoMaintenanceModeBundle') }}</p>
+    {% if error %}
+        <p class="error">{{ 'panel.login.error'|trans({}, 'NowoMaintenanceModeBundle') }}</p>
+    {% endif %}
+    <div class="card">
+        <form method="post" action="{{ path_prefix }}/login">
+            <input type="hidden" name="_token" value="{{ csrf_token('nowo_maintenance_login') }}">
+            <label for="password">{{ 'panel.login.password'|trans({}, 'NowoMaintenanceModeBundle') }}</label>
+            <input type="password" id="password" name="password" required autocomplete="current-password">
+            <button type="submit">{{ 'panel.login.submit'|trans({}, 'NowoMaintenanceModeBundle') }}</button>
+        </form>
+    </div>
+{% endblock %}

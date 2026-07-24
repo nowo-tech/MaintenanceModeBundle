@@ -1,0 +1,31 @@
+maintenance.page.title: Wartung
+maintenance.page.heading: Wir sind gleich zurück
+maintenance.page.message: Die Website ist vorübergehend wegen Wartung nicht verfügbar.
+panel.title: Wartungs-Panel
+panel.status: Status
+panel.status.enabled: AKTIV
+panel.status.disabled: inaktiv
+panel.message: Nachricht
+panel.activated: Aktiviert
+panel.deactivated: Deaktiviert
+panel.scheduled_enable: Geplante Aktivierung
+panel.scheduled_disable: Geplante Deaktivierung
+panel.updated_by: Aktualisiert von
+panel.enable: Wartung aktivieren
+panel.disable: Wartung deaktivieren
+panel.schedule: Zeitplan
+panel.save_schedule: Zeitplan speichern
+panel.history: Verlauf
+panel.nav.panel: Panel
+panel.nav.history: Verlauf
+panel.logout: Abmelden
+panel.login.heading: Wartungs-Panel
+panel.login.intro: Geben Sie das Wartungskennwort ein, um die Website zu verwalten.
+panel.login.password: Kennwort
+panel.login.submit: Anmelden
+panel.login.error: Ungültiges Kennwort.
+panel.history.when: Wann
+panel.history.action: Aktion
+panel.history.actor: Akteur
+panel.history.message: Nachricht
+panel.history.empty: Noch kein Verlauf.

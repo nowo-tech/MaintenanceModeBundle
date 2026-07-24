@@ -1,0 +1,62 @@
+{% extends layout %}
+
+{% block title %}{{ 'panel.title'|trans({}, 'NowoMaintenanceModeBundle') }}{% endblock %}
+
+{% block body %}
+    <nav>
+        <a href="{{ path_prefix }}">{{ 'panel.nav.panel'|trans({}, 'NowoMaintenanceModeBundle') }}</a>
+        <a href="{{ path_prefix }}/history">{{ 'panel.nav.history'|trans({}, 'NowoMaintenanceModeBundle') }}</a>
+    </nav>
+    <h1>{{ 'panel.title'|trans({}, 'NowoMaintenanceModeBundle') }}</h1>
+    <p>
+        {{ 'panel.status'|trans({}, 'NowoMaintenanceModeBundle') }}:
+        {% if state.enabled or state.effectivelyEnabled %}
+            <span class="status on">{{ 'panel.status.enabled'|trans({}, 'NowoMaintenanceModeBundle') }}</span>
+        {% else %}
+            <span class="status off">{{ 'panel.status.disabled'|trans({}, 'NowoMaintenanceModeBundle') }}</span>
+        {% endif %}
+    </p>
+
+    <div class="card">
+        <p><strong>{{ 'panel.message'|trans({}, 'NowoMaintenanceModeBundle') }}:</strong> {{ state.message ?? '—' }}</p>
+        <p><strong>{{ 'panel.activated'|trans({}, 'NowoMaintenanceModeBundle') }}:</strong> {{ state.activatedAt ? state.activatedAt|date('Y-m-d H:i:s') : '—' }}</p>
+        <p><strong>{{ 'panel.deactivated'|trans({}, 'NowoMaintenanceModeBundle') }}:</strong> {{ state.deactivatedAt ? state.deactivatedAt|date('Y-m-d H:i:s') : '—' }}</p>
+        <p><strong>{{ 'panel.scheduled_enable'|trans({}, 'NowoMaintenanceModeBundle') }}:</strong> {{ state.scheduledEnableAt ? state.scheduledEnableAt|date('Y-m-d H:i:s') : '—' }}</p>
+        <p><strong>{{ 'panel.scheduled_disable'|trans({}, 'NowoMaintenanceModeBundle') }}:</strong> {{ state.scheduledDisableAt ? state.scheduledDisableAt|date('Y-m-d H:i:s') : '—' }}</p>
+        <p><strong>{{ 'panel.updated_by'|trans({}, 'NowoMaintenanceModeBundle') }}:</strong> {{ state.updatedBy ?? '—' }}</p>
+    </div>
+
+    <div class="card">
+        <form method="post" action="{{ path_prefix }}/enable">
+            <input type="hidden" name="_token" value="{{ csrf_token('nowo_maintenance_enable') }}">
+            <label for="message">{{ 'panel.message'|trans({}, 'NowoMaintenanceModeBundle') }}</label>
+            <textarea id="message" name="message" rows="3">{{ state.message }}</textarea>
+            <button type="submit">{{ 'panel.enable'|trans({}, 'NowoMaintenanceModeBundle') }}</button>
+        </form>
+        <form method="post" action="{{ path_prefix }}/disable" style="margin-top:1rem">
+            <input type="hidden" name="_token" value="{{ csrf_token('nowo_maintenance_disable') }}">
+            <button type="submit" class="danger">{{ 'panel.disable'|trans({}, 'NowoMaintenanceModeBundle') }}</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>{{ 'panel.schedule'|trans({}, 'NowoMaintenanceModeBundle') }}</h2>
+        <form method="post" action="{{ path_prefix }}/schedule">
+            <input type="hidden" name="_token" value="{{ csrf_token('nowo_maintenance_schedule') }}">
+            <label for="scheduled_enable_at">{{ 'panel.scheduled_enable'|trans({}, 'NowoMaintenanceModeBundle') }}</label>
+            <input type="datetime-local" id="scheduled_enable_at" name="scheduled_enable_at"
+                   value="{{ state.scheduledEnableAt ? state.scheduledEnableAt|date('Y-m-d\\TH:i') : '' }}">
+            <label for="scheduled_disable_at">{{ 'panel.scheduled_disable'|trans({}, 'NowoMaintenanceModeBundle') }}</label>
+            <input type="datetime-local" id="scheduled_disable_at" name="scheduled_disable_at"
+                   value="{{ state.scheduledDisableAt ? state.scheduledDisableAt|date('Y-m-d\\TH:i') : '' }}">
+            <label for="schedule_message">{{ 'panel.message'|trans({}, 'NowoMaintenanceModeBundle') }}</label>
+            <textarea id="schedule_message" name="message" rows="2">{{ state.message }}</textarea>
+            <button type="submit" class="secondary">{{ 'panel.save_schedule'|trans({}, 'NowoMaintenanceModeBundle') }}</button>
+        </form>
+    </div>
+
+    <form method="post" action="{{ path_prefix }}/logout" style="margin-top:1.5rem">
+        <input type="hidden" name="_token" value="{{ csrf_token('nowo_maintenance_logout') }}">
+        <button type="submit" class="secondary">{{ 'panel.logout'|trans({}, 'NowoMaintenanceModeBundle') }}</button>
+    </form>
+{% endblock %}

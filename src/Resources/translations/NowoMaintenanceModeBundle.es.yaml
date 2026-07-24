@@ -1,0 +1,31 @@
+maintenance.page.title: Mantenimiento
+maintenance.page.heading: Volvemos enseguida
+maintenance.page.message: El sitio no está disponible temporalmente por mantenimiento.
+panel.title: Panel de mantenimiento
+panel.status: Estado
+panel.status.enabled: ACTIVADO
+panel.status.disabled: desactivado
+panel.message: Mensaje
+panel.activated: Activado
+panel.deactivated: Desactivado
+panel.scheduled_enable: Activación programada
+panel.scheduled_disable: Desactivación programada
+panel.updated_by: Actualizado por
+panel.enable: Activar mantenimiento
+panel.disable: Desactivar mantenimiento
+panel.schedule: Programación
+panel.save_schedule: Guardar programación
+panel.history: Historial
+panel.nav.panel: Panel
+panel.nav.history: Historial
+panel.logout: Cerrar sesión
+panel.login.heading: Panel de mantenimiento
+panel.login.intro: Introduce la contraseña de mantenimiento para gestionar el sitio.
+panel.login.password: Contraseña
+panel.login.submit: Entrar
+panel.login.error: Contraseña incorrecta.
+panel.history.when: Cuándo
+panel.history.action: Acción
+panel.history.actor: Actor
+panel.history.message: Mensaje
+panel.history.empty: Aún no hay historial.

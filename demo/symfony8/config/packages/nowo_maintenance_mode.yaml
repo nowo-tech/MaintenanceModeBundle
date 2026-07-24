@@ -1,0 +1,16 @@
+nowo_maintenance_mode:
+    enabled: true
+    default_message: 'Demo maintenance — back soon.'
+    panel:
+        enabled: true
+        path_prefix: '/_maintenance'
+    security:
+        password_protection: true
+        # Demo only — password: maintenance (do not ship plaintext secrets in real apps)
+        password_hash: '$2b$12$Mtv7gY6ONrFvGkRIVyCEBekiDNzH/06FSpI1YFc7AFIeHUi9e9yPu'
+    exclusions:
+        paths:
+            - /health
+        path_prefixes: []
+        routes: []
+        patterns: []

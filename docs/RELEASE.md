@@ -1,0 +1,14 @@
+# Release
+
+## Checklist
+
+1. `make release-check` (Cursor trailer check, composer-sync, cs-fix, cs-check, rector-dry, phpstan, validate-translations, test-coverage, demos).
+2. Update [CHANGELOG.md](CHANGELOG.md) with user-facing notes (Keep a Changelog + SemVer).
+3. Update [UPGRADING.md](UPGRADING.md) when there are migration steps or requirement changes.
+4. Commit on the default branch (`main`), then tag `vX.Y.Z`.
+5. Push the branch and the tag to `git@github.com:nowo-tech/MaintenanceModeBundle.git` — `.github/workflows/release.yml` creates the GitHub Release from the tag + changelog entry.
+6. Confirm [Packagist](https://packagist.org/packages/nowo-tech/maintenance-mode-bundle) picks up the tag (submit the GitHub repo once if the package is new).
+
+## Versioning
+
+Follow semantic versioning. Breaking changes to config keys, route names, or public interfaces require a major bump and an [UPGRADING.md](UPGRADING.md) section.

@@ -1,0 +1,15 @@
+# Default package config (Symfony Flex recipe also ships a copy).
+nowo_maintenance_mode:
+    enabled: true
+    default_message: 'The site is temporarily unavailable for maintenance.'
+    panel:
+        enabled: true
+        path_prefix: '/_maintenance'
+    # security:
+    #     password_protection: true
+    #     password_hash: '%env(MAINTENANCE_PASSWORD_HASH)%'
+    # exclusions:
+    #     paths: ['/health']
+    #     path_prefixes: ['/api/health']
+    #     routes: []
+    #     patterns: ['/_profiler*']

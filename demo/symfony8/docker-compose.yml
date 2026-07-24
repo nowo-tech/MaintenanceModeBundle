@@ -1,0 +1,36 @@
+name: maintenance-mode-bundle-demo-symfony-8
+services:
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: maintenance-mode-demo-symfony8-php
+    working_dir: /app
+    ports:
+      - "${PORT:-8055}:80"
+    volumes:
+      - .:/app
+      - ../..:/var/maintenance-mode-bundle
+      - ./docker/frankenphp/Caddyfile.dev:/etc/frankenphp/Caddyfile.dev
+      - ./docker/php-dev.ini:/usr/local/etc/php/conf.d/99-dev.ini:ro
+      - composer-cache:/root/.composer/cache
+    environment:
+      - COMPOSER_ALLOW_SUPERUSER=1
+      - APP_ENV=dev
+      - APP_DEBUG=1
+      - APP_SECRET=${APP_SECRET:-demo-secret}
+      - FRANKENPHP_MODE=${FRANKENPHP_MODE:-worker}
+      - DEFAULT_URI=http://localhost:${PORT:-8055}
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    networks:
+      - maintenance-mode-demo-network
+
+volumes:
+  composer-cache:
+    driver: local
+
+networks:
+  maintenance-mode-demo-network:
+    driver: bridge

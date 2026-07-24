@@ -1,0 +1,7 @@
+# Default Flex recipe config.
+nowo_maintenance_mode:
+    enabled: true
+    default_message: 'The site is temporarily unavailable for maintenance.'
+    panel:
+        enabled: true
+        path_prefix: '/_maintenance'

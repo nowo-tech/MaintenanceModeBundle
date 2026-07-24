@@ -1,0 +1,4 @@
+nowo_maintenance_mode_panel:
+    resource: '../../Controller/MaintenancePanelController.php'
+    type: attribute
+    prefix: '%nowo.maintenance_mode.panel.path_prefix%'

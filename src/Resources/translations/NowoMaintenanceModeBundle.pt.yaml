@@ -1,0 +1,31 @@
+maintenance.page.title: Manutenção
+maintenance.page.heading: Voltamos em breve
+maintenance.page.message: O site está temporariamente indisponível para manutenção.
+panel.title: Painel de manutenção
+panel.status: Estado
+panel.status.enabled: ATIVO
+panel.status.disabled: desativado
+panel.message: Mensagem
+panel.activated: Ativado
+panel.deactivated: Desativado
+panel.scheduled_enable: Ativação agendada
+panel.scheduled_disable: Desativação agendada
+panel.updated_by: Atualizado por
+panel.enable: Ativar manutenção
+panel.disable: Desativar manutenção
+panel.schedule: Agendamento
+panel.save_schedule: Guardar agendamento
+panel.history: Histórico
+panel.nav.panel: Painel
+panel.nav.history: Histórico
+panel.logout: Terminar sessão
+panel.login.heading: Painel de manutenção
+panel.login.intro: Introduza a palavra-passe de manutenção para gerir o site.
+panel.login.password: Palavra-passe
+panel.login.submit: Entrar
+panel.login.error: Palavra-passe inválida.
+panel.history.when: Quando
+panel.history.action: Ação
+panel.history.actor: Autor
+panel.history.message: Mensagem
+panel.history.empty: Ainda sem histórico.

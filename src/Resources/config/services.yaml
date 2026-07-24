@@ -1,0 +1,33 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    Nowo\MaintenanceModeBundle\:
+        resource: '../../*'
+        exclude:
+            - '../../DependencyInjection/'
+            - '../../Model/'
+            - '../../Resources/'
+            - '../../NowoMaintenanceModeBundle.php'
+
+    Nowo\MaintenanceModeBundle\Storage\FilesystemMaintenanceStateStorage:
+        arguments:
+            $filePath: '%nowo.maintenance_mode.storage.state_file%'
+
+    Nowo\MaintenanceModeBundle\Storage\FilesystemMaintenanceHistoryStorage:
+        arguments:
+            $filePath: '%nowo.maintenance_mode.storage.history_file%'
+
+    Nowo\MaintenanceModeBundle\Exclusion\MaintenanceExclusionMatcher: ~
+
+    Nowo\MaintenanceModeBundle\Security\PasswordMaintenanceAccessGate: ~
+
+    Nowo\MaintenanceModeBundle\Service\MaintenanceManager: ~
+
+    Nowo\MaintenanceModeBundle\EventSubscriber\MaintenanceRequestSubscriber: ~
+
+    Nowo\MaintenanceModeBundle\Controller\MaintenancePanelController:
+        public: true
+        tags: ['controller.service_arguments']
