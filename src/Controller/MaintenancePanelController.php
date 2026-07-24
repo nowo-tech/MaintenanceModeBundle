@@ -10,6 +10,7 @@ use Nowo\MaintenanceModeBundle\Service\MaintenanceManager;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\FlashBagAwareSessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
@@ -20,11 +21,12 @@ use Twig\Environment;
  */
 final class MaintenancePanelController
 {
-    public const CSRF_ENABLE   = 'nowo_maintenance_enable';
-    public const CSRF_DISABLE  = 'nowo_maintenance_disable';
-    public const CSRF_SCHEDULE = 'nowo_maintenance_schedule';
-    public const CSRF_LOGIN    = 'nowo_maintenance_login';
-    public const CSRF_LOGOUT   = 'nowo_maintenance_logout';
+    public const CSRF_ENABLE         = 'nowo_maintenance_enable';
+    public const CSRF_DISABLE        = 'nowo_maintenance_disable';
+    public const CSRF_SCHEDULE       = 'nowo_maintenance_schedule';
+    public const CSRF_CLEAR_SCHEDULE = 'nowo_maintenance_clear_schedule';
+    public const CSRF_LOGIN          = 'nowo_maintenance_login';
+    public const CSRF_LOGOUT         = 'nowo_maintenance_logout';
 
     /**
      * @param array{page: string, panel_layout: string, panel_index: string, panel_login: string, panel_history: string} $templates
@@ -46,10 +48,20 @@ final class MaintenancePanelController
             return $response;
         }
 
+        $flashes = [];
+        if ($request->hasSession()) {
+            $session = $request->getSession();
+            if ($session instanceof FlashBagAwareSessionInterface) {
+                $flashes = $session->getFlashBag()->all();
+            }
+        }
+
         return new Response($this->twig->render($this->templates['panel_index'], [
-            'state'       => $this->manager->getState(),
-            'path_prefix' => $this->pathPrefix,
-            'layout'      => $this->templates['panel_layout'],
+            'state'             => $this->manager->getState(),
+            'path_prefix'       => $this->pathPrefix,
+            'layout'            => $this->templates['panel_layout'],
+            'flashes'           => $flashes,
+            'password_required' => $this->accessGate->isPasswordRequired(),
         ]));
     }
 
@@ -65,6 +77,7 @@ final class MaintenancePanelController
 
         $message = $request->request->getString('message');
         $this->manager->enable($message !== '' ? $message : null, 'panel');
+        $this->flash($request, 'success', 'panel.flash.enabled');
 
         return new RedirectResponse($this->pathPrefix);
     }
@@ -80,6 +93,7 @@ final class MaintenancePanelController
         }
 
         $this->manager->disable('panel');
+        $this->flash($request, 'success', 'panel.flash.disabled');
 
         return new RedirectResponse($this->pathPrefix);
     }
@@ -94,22 +108,34 @@ final class MaintenancePanelController
             return new Response('Invalid CSRF token.', Response::HTTP_FORBIDDEN);
         }
 
-        $state     = $this->manager->getState();
-        $enableAt  = $request->request->getString('scheduled_enable_at');
-        $disableAt = $request->request->getString('scheduled_disable_at');
-        $message   = $request->request->getString('message');
+        $enableRaw  = $request->request->getString('scheduled_enable_at');
+        $disableRaw = $request->request->getString('scheduled_disable_at');
+        $message    = $request->request->getString('message');
 
-        if ($enableAt !== '') {
-            $state = $state->withScheduledEnableAt(new DateTimeImmutable($enableAt));
+        $this->manager->schedule(
+            enableAt: $enableRaw !== '' ? new DateTimeImmutable($enableRaw) : null,
+            disableAt: $disableRaw !== '' ? new DateTimeImmutable($disableRaw) : null,
+            message: $message !== '' ? $message : null,
+            updatedBy: 'panel',
+            clearMissing: true,
+        );
+        $this->flash($request, 'success', 'panel.flash.schedule_saved');
+
+        return new RedirectResponse($this->pathPrefix);
+    }
+
+    #[Route(path: '/clear-schedule', name: 'nowo_maintenance_mode_panel_clear_schedule', methods: ['POST'])]
+    public function clearSchedule(Request $request): Response
+    {
+        if (($response = $this->denyUnlessGranted($request)) instanceof Response) {
+            return $response;
         }
-        if ($disableAt !== '') {
-            $state = $state->withScheduledDisableAt(new DateTimeImmutable($disableAt));
-        }
-        if ($message !== '') {
-            $state = $state->withMessage($message);
+        if (!$this->isCsrfValid($request, self::CSRF_CLEAR_SCHEDULE)) {
+            return new Response('Invalid CSRF token.', Response::HTTP_FORBIDDEN);
         }
 
-        $this->manager->update($state, 'panel', 'schedule');
+        $this->manager->clearSchedule('panel');
+        $this->flash($request, 'success', 'panel.flash.schedule_cleared');
 
         return new RedirectResponse($this->pathPrefix);
     }
@@ -183,5 +209,17 @@ final class MaintenancePanelController
         $token = $request->request->getString('_token');
 
         return $this->csrfTokenManager->isTokenValid(new CsrfToken($tokenId, $token));
+    }
+
+    private function flash(Request $request, string $type, string $message): void
+    {
+        if (!$request->hasSession()) {
+            return;
+        }
+
+        $session = $request->getSession();
+        if ($session instanceof FlashBagAwareSessionInterface) {
+            $session->getFlashBag()->add($type, $message);
+        }
     }
 }

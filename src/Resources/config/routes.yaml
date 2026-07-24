@@ -2,3 +2,8 @@ nowo_maintenance_mode_panel:
     resource: '../../Controller/MaintenancePanelController.php'
     type: attribute
     prefix: '%nowo.maintenance_mode.panel.path_prefix%'
+
+nowo_maintenance_mode_preview:
+    path: '%nowo.maintenance_mode.preview.path%'
+    controller: Nowo\MaintenanceModeBundle\Controller\MaintenancePreviewController
+    methods: [GET]

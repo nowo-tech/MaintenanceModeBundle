@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Nowo\MaintenanceModeBundle\Exclusion;
 
+use Symfony\Component\HttpFoundation\IpUtils;
 use Symfony\Component\HttpFoundation\Request;
 
 use function fnmatch;
@@ -13,7 +14,7 @@ use function preg_match;
 use function str_starts_with;
 
 /**
- * Matches requests against configured path / route / pattern exclusions.
+ * Matches requests against configured path / route / pattern / IP exclusions.
  */
 final class MaintenanceExclusionMatcher
 {
@@ -22,12 +23,14 @@ final class MaintenanceExclusionMatcher
      * @param list<string> $pathPrefixes Path prefixes (e.g. /_maintenance)
      * @param list<string> $routes Route names
      * @param list<string> $patterns Glob or #regex# patterns against the path
+     * @param list<string> $ips Client IPs or CIDR ranges (see trusted_proxies)
      */
     public function __construct(
         private readonly array $paths = [],
         private readonly array $pathPrefixes = [],
         private readonly array $routes = [],
         private readonly array $patterns = [],
+        private readonly array $ips = [],
     ) {
     }
 
@@ -64,6 +67,13 @@ final class MaintenanceExclusionMatcher
             }
 
             if (fnmatch($pattern, $path)) {
+                return true;
+            }
+        }
+
+        if ($this->ips !== []) {
+            $clientIp = $request->getClientIp();
+            if (is_string($clientIp) && $clientIp !== '' && IpUtils::checkIp($clientIp, $this->ips)) {
                 return true;
             }
         }

@@ -1,0 +1,71 @@
+{# Example: Foundation Sites 6.9 — soft garden / sage
+   Config: templates.page: '@NowoMaintenanceModeBundle/maintenance/examples/foundation_garden.html.twig'
+#}
+<!DOCTYPE html>
+<html lang="{{ app.request.locale|default('en')|slice(0, 2) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
+    <title>{{ 'maintenance.examples.foundation_garden.title'|trans({}, 'NowoMaintenanceModeBundle') }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Spectral:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.9.0/dist/css/foundation.min.css" crossorigin="anonymous">
+    <style>
+        body {
+            min-height: 100vh;
+            margin: 0;
+            font-family: Outfit, system-ui, sans-serif;
+            background:
+                linear-gradient(135deg, rgba(214, 232, 210, 0.9), rgba(236, 244, 228, 0.95)),
+                repeating-linear-gradient(90deg, rgba(90, 120, 80, 0.03) 0 1px, transparent 1px 28px);
+            color: #2f3d2e;
+        }
+        .mm-wrap {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+        .mm-card {
+            max-width: 34rem;
+            margin: 0 auto;
+            padding: 2.25rem 2rem;
+            border-radius: 1.25rem;
+            background: rgba(252, 255, 250, 0.92);
+            box-shadow: 0 18px 40px rgba(50, 80, 40, 0.1);
+            text-align: center;
+        }
+        .mm-card h1 {
+            font-family: Spectral, Georgia, serif;
+            font-size: clamp(1.9rem, 4vw, 2.6rem);
+            margin-bottom: 0.85rem;
+        }
+        .mm-eyebrow {
+            display: inline-block;
+            margin-bottom: 1rem;
+            padding: 0.35rem 0.9rem;
+            border-radius: 999px;
+            background: #e4f0dc;
+            color: #4d6b45;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .mm-message { color: #52634f; font-size: 1.08rem; line-height: 1.65; margin-bottom: 1rem; }
+        .mm-reassure { color: #667a62; margin-bottom: 0.75rem; }
+        .mm-thanks { color: #3f6a38; font-weight: 700; margin: 0; }
+    </style>
+</head>
+<body>
+<div class="mm-wrap">
+    <div class="mm-card">
+        <p class="mm-eyebrow">{{ 'maintenance.examples.foundation_garden.eyebrow'|trans({}, 'NowoMaintenanceModeBundle') }}</p>
+        <h1>{{ 'maintenance.examples.foundation_garden.heading'|trans({}, 'NowoMaintenanceModeBundle') }}</h1>
+        <p class="mm-message">{{ message|default('maintenance.examples.foundation_garden.message'|trans({}, 'NowoMaintenanceModeBundle')) }}</p>
+        <p class="mm-reassure">{{ 'maintenance.examples.foundation_garden.reassure'|trans({}, 'NowoMaintenanceModeBundle') }}</p>
+        <p class="mm-thanks">{{ 'maintenance.examples.foundation_garden.thanks'|trans({}, 'NowoMaintenanceModeBundle') }}</p>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,70 @@
+{# Idea 5 — Countdown to return (uses state.scheduledDisableAt when available)
+   Config: templates.page: '@NowoMaintenanceModeBundle/maintenance/examples/idea_countdown.html.twig'
+#}
+<!DOCTYPE html>
+<html lang="{{ app.request.locale|default('en')|slice(0, 2) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
+    <title>{{ 'maintenance.examples.idea_countdown.title'|trans({}, 'NowoMaintenanceModeBundle') }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Manrope:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+        @theme {
+            --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+            --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+        }
+    </style>
+</head>
+<body class="min-h-screen font-sans text-slate-900 bg-[linear-gradient(135deg,#0f172a,#1e293b_45%,#0ea5e9)]">
+{% set until = state is defined and state.scheduledDisableAt ? state.scheduledDisableAt : null %}
+<main class="min-h-screen grid place-items-center px-4 py-10 text-white">
+    <section class="w-full max-w-lg rounded-3xl border border-white/15 bg-white/10 backdrop-blur-xl px-8 py-10 text-center shadow-2xl">
+        <p class="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-sky-200">
+            {{ 'maintenance.examples.idea_countdown.eyebrow'|trans({}, 'NowoMaintenanceModeBundle') }}
+        </p>
+        <h1 class="mb-4 font-[family-name:var(--font-display)] text-3xl font-bold tracking-tight sm:text-4xl">
+            {{ 'maintenance.examples.idea_countdown.heading'|trans({}, 'NowoMaintenanceModeBundle') }}
+        </h1>
+        <p class="mb-6 text-slate-200 leading-relaxed">
+            {{ message|default('maintenance.examples.idea_countdown.message'|trans({}, 'NowoMaintenanceModeBundle')) }}
+        </p>
+        <div class="mb-2 text-sm uppercase tracking-wider text-sky-200/90">
+            {{ 'maintenance.examples.idea_countdown.remaining'|trans({}, 'NowoMaintenanceModeBundle') }}
+        </div>
+        <div id="mm-countdown"
+             class="mb-6 font-[family-name:var(--font-display)] text-4xl font-bold tabular-nums tracking-tight sm:text-5xl"
+             data-until="{{ until ? until|date('c') : '' }}"
+             data-fallback="{{ 'maintenance.examples.idea_countdown.unknown_eta'|trans({}, 'NowoMaintenanceModeBundle') }}">
+            {{ until ? '…' : 'maintenance.examples.idea_countdown.unknown_eta'|trans({}, 'NowoMaintenanceModeBundle') }}
+        </div>
+        <p class="text-slate-300">{{ 'maintenance.examples.idea_countdown.reassure'|trans({}, 'NowoMaintenanceModeBundle') }}</p>
+        <p class="mt-4 font-semibold text-sky-100">{{ 'maintenance.examples.idea_countdown.thanks'|trans({}, 'NowoMaintenanceModeBundle') }}</p>
+    </section>
+</main>
+<script>
+(function () {
+    var el = document.getElementById('mm-countdown');
+    if (!el) return;
+    var until = el.getAttribute('data-until');
+    var fallback = el.getAttribute('data-fallback') || '';
+    if (!until) { el.textContent = fallback; return; }
+    var target = Date.parse(until);
+    function pad(n) { return String(n).padStart(2, '0'); }
+    function tick() {
+        var diff = Math.max(0, Math.floor((target - Date.now()) / 1000));
+        if (diff <= 0) { el.textContent = '00:00:00'; return; }
+        var h = Math.floor(diff / 3600);
+        var m = Math.floor((diff % 3600) / 60);
+        var s = diff % 60;
+        el.textContent = pad(h) + ':' + pad(m) + ':' + pad(s);
+        requestAnimationFrame(function () { setTimeout(tick, 250); });
+    }
+    tick();
+})();
+</script>
+</body>
+</html>

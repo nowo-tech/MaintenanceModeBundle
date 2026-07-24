@@ -1,0 +1,73 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Bypass maintenance (exclusions){% endblock %}
+
+{% block body %}
+    <h1>Bypass the 503 page</h1>
+    <p>
+        The public maintenance page must <strong>not</strong> link to panel login.
+        Operators keep working through <strong>exclusions</strong> (or the auto-excluded
+        panel prefix <code>/_maintenance</code>).
+    </p>
+
+    <div class="card">
+        <h2>Demo exclusions (stay 200 while site is in maintenance)</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Type</th>
+                <th>Config</th>
+                <th>Try</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>Exact path</td>
+                <td><code>exclusions.paths: [/health]</code></td>
+                <td><a href="/health">/health</a></td>
+            </tr>
+            <tr>
+                <td>Route name</td>
+                <td><code>exclusions.routes: [app_status]</code></td>
+                <td><a href="/status">/status</a> (<code>app_status</code>)</td>
+            </tr>
+            <tr>
+                <td>Path prefix</td>
+                <td><code>exclusions.path_prefixes: [/api/ops, /examples]</code></td>
+                <td><a href="/api/ops/ping">/api/ops/ping</a> · <a href="/examples">/examples</a></td>
+            </tr>
+            <tr>
+                <td>Glob pattern</td>
+                <td><code>exclusions.patterns: ['/internal-*']</code></td>
+                <td><a href="/internal-check">/internal-check</a></td>
+            </tr>
+            <tr>
+                <td>Regex pattern</td>
+                <td><code>exclusions.patterns: ['#^/ops/#']</code></td>
+                <td><a href="/ops/ready">/ops/ready</a></td>
+            </tr>
+            <tr>
+                <td>Panel prefix (built-in)</td>
+                <td><code>panel.path_prefix: /_maintenance</code> (always skipped)</td>
+                <td><a href="/_maintenance">/_maintenance</a></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>Panel login (YAML toggle)</h2>
+        <p>
+            Login is optional. Control it with
+            <code>security.password_protection</code>:
+        </p>
+        <ul>
+            <li><code>true</code> (+ <code>password_hash</code>) — login required before enable/disable.</li>
+            <li><code>false</code> — no login UI; panel opens directly (use only on VPN / trusted networks).</li>
+        </ul>
+        <p>Demo password when protection is on: <code>maintenance</code>.</p>
+        <p><a href="/_maintenance">Open panel</a></p>
+    </div>
+
+    <p><a href="{{ path('homepage') }}">← Demo home</a> · <a href="{{ path('maintenance_examples') }}">Page examples</a></p>
+{% endblock %}

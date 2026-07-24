@@ -5,11 +5,33 @@
 {% block body %}
     <h1>Maintenance Mode Bundle</h1>
     <p>FrankenPHP demo for <code>nowo-tech/maintenance-mode-bundle</code>.</p>
+
     <div class="card">
+        <h2>While maintenance is on</h2>
+        <p>
+            The public 503 page must <strong>not</strong> send visitors to panel login.
+            Use <strong>exclusions</strong> (or the auto-excluded <code>/_maintenance</code> prefix)
+            to manage the site. Login itself is optional via YAML
+            (<code>security.password_protection</code>).
+        </p>
         <ul>
-            <li><a href="/_maintenance">Admin panel</a> (password: <code>maintenance</code>)</li>
-            <li><a href="/health">/health</a> (excluded from 503)</li>
+            <li><a href="/_maintenance_preview">Current maintenance page preview</a> (dev — like <code>/_error/503</code>)</li>
+            <li><a href="/_error/503">Symfony error page preview</a> (<code>/_error/503</code>)</li>
+            <li><a href="/examples/bypass">Bypass guide + exclusion examples</a></li>
+            <li><a href="/_maintenance">Admin panel</a> (login on when <code>password_protection: true</code>; password: <code>maintenance</code>)</li>
+            <li><a href="/examples">Calm 503 page examples</a> (Bootstrap · Foundation · Tailwind · ideas)</li>
         </ul>
-        <p>Enable maintenance from the panel, then reload this page — you should get HTTP 503.</p>
+    </div>
+
+    <div class="card">
+        <h2>Quick exclusion smoke links</h2>
+        <ul>
+            <li>Path — <a href="/health"><code>/health</code></a></li>
+            <li>Route name — <a href="/status"><code>/status</code></a> (<code>app_status</code>)</li>
+            <li>Prefix — <a href="/api/ops/ping"><code>/api/ops/ping</code></a></li>
+            <li>Glob — <a href="/internal-check"><code>/internal-check</code></a></li>
+            <li>Regex — <a href="/ops/ready"><code>/ops/ready</code></a></li>
+        </ul>
+        <p>Enable maintenance from the panel, then reload this page — you should get HTTP 503. The links above (and <code>/examples/*</code>) stay available.</p>
     </div>
 {% endblock %}

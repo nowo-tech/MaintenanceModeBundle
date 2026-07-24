@@ -35,7 +35,7 @@ return [
 ```yaml
 nowo_maintenance_mode:
     enabled: true
-    default_message: 'The site is temporarily unavailable for maintenance.'
+    default_message: "We're making a few gentle improvements. Everything you care about is safe."
     panel:
         enabled: true
         path_prefix: '/_maintenance'
@@ -44,22 +44,26 @@ nowo_maintenance_mode:
     #     password_hash: '%env(MAINTENANCE_PASSWORD_HASH)%'
 ```
 
-3. Import panel routes in `config/routes.yaml`:
+3. Import panel + preview routes in `config/routes.yaml`:
 
 ```yaml
 nowo_maintenance_mode:
     resource: '@NowoMaintenanceModeBundle/Resources/config/routes.yaml'
 ```
 
+This registers the admin panel under `panel.path_prefix` and the dev preview at `preview.path` (default `/_maintenance_preview`).
+
 4. Ensure the app has a writable directory for state/history (defaults under `%kernel.project_dir%/var/maintenance/`).
 
 5. Generate a password hash (never store plaintext):
 
 ```bash
-php -r 'echo password_hash("your-secret", PASSWORD_BCRYPT), PHP_EOL;'
+php bin/console nowo:maintenance-mode:hash-password
+# or: php bin/console nowo:maintenance-mode:hash-password 'your-secret'
+# optional: --algo=argon2id
 ```
 
-Put the hash in an env var and reference it as `password_hash: '%env(MAINTENANCE_PASSWORD_HASH)%'`.
+Put the printed hash in an env var and reference it as `password_hash: '%env(MAINTENANCE_PASSWORD_HASH)%'`.
 
 ## Next steps
 

@@ -1,0 +1,45 @@
+{# Example: Tailwind CSS 4 — aurora dusk (teal / indigo, soft glow)
+   Config: templates.page: '@NowoMaintenanceModeBundle/maintenance/examples/tailwind_aurora.html.twig'
+#}
+<!DOCTYPE html>
+<html lang="{{ app.request.locale|default('en')|slice(0, 2) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
+    <title>{{ 'maintenance.examples.tailwind_aurora.title'|trans({}, 'NowoMaintenanceModeBundle') }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+        @theme {
+            --font-sans: "Sora", ui-sans-serif, system-ui, sans-serif;
+            --font-display: "Instrument Serif", ui-serif, Georgia, serif;
+        }
+    </style>
+</head>
+<body class="min-h-screen font-sans text-slate-100 bg-[#0b1220] relative overflow-hidden">
+<div class="pointer-events-none absolute -top-24 left-1/2 h-80 w-[42rem] -translate-x-1/2 rounded-full bg-teal-400/20 blur-3xl"></div>
+<div class="pointer-events-none absolute bottom-0 right-0 h-72 w-72 rounded-full bg-sky-500/15 blur-3xl"></div>
+<main class="relative min-h-screen grid place-items-center px-4 py-10">
+    <section class="w-full max-w-lg rounded-3xl border border-white/10 bg-slate-900/70 backdrop-blur-xl px-8 py-10 text-center shadow-[0_25px_60px_rgba(0,0,0,0.45)]">
+        <p class="inline-flex rounded-full border border-teal-300/30 bg-teal-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-teal-200 mb-5">
+            {{ 'maintenance.examples.tailwind_aurora.eyebrow'|trans({}, 'NowoMaintenanceModeBundle') }}
+        </p>
+        <h1 class="font-[family-name:var(--font-display)] text-5xl italic leading-tight mb-4 text-white">
+            {{ 'maintenance.examples.tailwind_aurora.heading'|trans({}, 'NowoMaintenanceModeBundle') }}
+        </h1>
+        <p class="text-lg text-slate-300 leading-relaxed mb-4">
+            {{ message|default('maintenance.examples.tailwind_aurora.message'|trans({}, 'NowoMaintenanceModeBundle')) }}
+        </p>
+        <p class="text-slate-400 leading-relaxed mb-3">
+            {{ 'maintenance.examples.tailwind_aurora.reassure'|trans({}, 'NowoMaintenanceModeBundle') }}
+        </p>
+        <p class="font-semibold text-teal-200">
+            {{ 'maintenance.examples.tailwind_aurora.thanks'|trans({}, 'NowoMaintenanceModeBundle') }}
+        </p>
+    </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,57 @@
+{# Example: Bootstrap 5.3 — soft teal calm card
+   Config: templates.page: '@NowoMaintenanceModeBundle/maintenance/examples/bootstrap_calm.html.twig'
+#}
+<!DOCTYPE html>
+<html lang="{{ app.request.locale|default('en')|slice(0, 2) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
+    <title>{{ 'maintenance.examples.bootstrap_calm.title'|trans({}, 'NowoMaintenanceModeBundle') }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <style>
+        body {
+            min-height: 100vh;
+            font-family: Nunito, system-ui, sans-serif;
+            background: linear-gradient(160deg, #e8f7f4 0%, #f4fbf9 45%, #dff0ea 100%);
+        }
+        .mm-shell { min-height: 100vh; }
+        .mm-card {
+            border: 0;
+            border-radius: 1.5rem;
+            background: rgba(255, 255, 255, 0.92);
+            box-shadow: 0 1rem 2.5rem rgba(20, 80, 70, 0.08);
+        }
+        .mm-icon {
+            width: 4rem; height: 4rem; border-radius: 1rem;
+            display: grid; place-items: center;
+            background: #d7f0ea; color: #1f6f63; font-size: 1.6rem;
+        }
+        .text-calm { color: #3d5a55; }
+        .text-soft { color: #5f746f; }
+    </style>
+</head>
+<body>
+<div class="mm-shell d-flex align-items-center py-5">
+    <div class="container" style="max-width: 34rem;">
+        <div class="card mm-card p-4 p-md-5 text-center">
+            <div class="d-flex justify-content-center mb-3">
+                <div class="mm-icon" aria-hidden="true">☕</div>
+            </div>
+            <p class="badge rounded-pill text-bg-success-subtle text-success-emphasis mb-3">
+                {{ 'maintenance.examples.bootstrap_calm.eyebrow'|trans({}, 'NowoMaintenanceModeBundle') }}
+            </p>
+            <h1 class="h2 fw-bold mb-3">{{ 'maintenance.examples.bootstrap_calm.heading'|trans({}, 'NowoMaintenanceModeBundle') }}</h1>
+            <p class="lead text-calm mb-3">
+                {{ message|default('maintenance.examples.bootstrap_calm.message'|trans({}, 'NowoMaintenanceModeBundle')) }}
+            </p>
+            <p class="text-soft mb-2">{{ 'maintenance.examples.bootstrap_calm.reassure'|trans({}, 'NowoMaintenanceModeBundle') }}</p>
+            <p class="fw-semibold text-success-emphasis mb-0">{{ 'maintenance.examples.bootstrap_calm.thanks'|trans({}, 'NowoMaintenanceModeBundle') }}</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

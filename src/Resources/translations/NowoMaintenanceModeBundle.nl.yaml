@@ -1,31 +1,123 @@
-maintenance.page.title: Onderhoud
-maintenance.page.heading: We zijn zo terug
-maintenance.page.message: De site is tijdelijk niet beschikbaar wegens onderhoud.
-panel.title: Onderhoudspaneel
-panel.status: Status
-panel.status.enabled: ACTIEF
-panel.status.disabled: uitgeschakeld
-panel.message: Bericht
+maintenance.page.title: Een korte pauze
+maintenance.page.heading: We ruimen op — zo terug
+maintenance.page.message: 'We brengen een paar zachte verbeteringen aan. Alles wat u belangrijk vindt, is veilig.'
+maintenance.page.badge: Zo terug
+maintenance.page.reassure: U hoeft niets te doen. Neem een thee — we openen binnenkort weer.
+maintenance.page.thanks: Dank voor uw geduld. U bent belangrijk voor ons.
+maintenance.examples.bootstrap_calm.title: Even ademen
+maintenance.examples.bootstrap_calm.eyebrow: Zachte pauze
+maintenance.examples.bootstrap_calm.heading: Een rustig moment terwijl we opfrissen
+maintenance.examples.bootstrap_calm.message: We doen licht onderhoud zodat uw volgende bezoek nog soepeler voelt.
+maintenance.examples.bootstrap_calm.reassure: 'Uw gegevens en account zijn onaangeroerd. Dit is routinezorg, geen noodsituatie.'
+maintenance.examples.bootstrap_calm.thanks: Dank dat u vriendelijk met ons wacht.
+maintenance.examples.bootstrap_sunset.title: Warme pauze
+maintenance.examples.bootstrap_sunset.eyebrow: Zonsondergangspauze
+maintenance.examples.bootstrap_sunset.heading: We stralen zo weer
+maintenance.examples.bootstrap_sunset.message: De site rust even voor een korte update. Niets is kapot — we poetsen alleen.
+maintenance.examples.bootstrap_sunset.reassure: U mag dit tabblad sluiten en later terugkomen. We zijn er voor u.
+maintenance.examples.bootstrap_sunset.thanks: We waarderen uw serene geduld.
+maintenance.examples.foundation_garden.title: Tuinpauze
+maintenance.examples.foundation_garden.eyebrow: Stil groeien
+maintenance.examples.foundation_garden.heading: We planten een paar verbeteringen
+maintenance.examples.foundation_garden.message: We begieten de wortels van de site. Hij bloeit heel snel weer.
+maintenance.examples.foundation_garden.reassure: U heeft dit niet veroorzaakt. Dit is geplande zorg zodat alles gezond blijft.
+maintenance.examples.foundation_garden.thanks: Dank dat u ons een moment geeft om te groeien.
+maintenance.examples.foundation_night.title: Stille nacht
+maintenance.examples.foundation_night.eyebrow: Nachtzorg
+maintenance.examples.foundation_night.heading: De lichten zijn gedimd voor een zachte update
+maintenance.examples.foundation_night.message: We voeren stil onderhoud uit. Rust u gerust — uw plek hier is veilig.
+maintenance.examples.foundation_night.reassure: 'Geen haast, geen alarm. We doen de lichten zo weer aan.'
+maintenance.examples.foundation_night.thanks: Dank voor uw vertrouwen tijdens het wachten.
+maintenance.examples.tailwind_breeze.title: Frisse lucht
+maintenance.examples.tailwind_breeze.eyebrow: Briesmodus
+maintenance.examples.tailwind_breeze.heading: We openen een raam voor frisse updates
+maintenance.examples.tailwind_breeze.message: Een lichte onderhoudsbries waait door de site. Hij voelt snel helderder.
+maintenance.examples.tailwind_breeze.reassure: U kunt ontspannen. Niets urgents — we frissen alleen op.
+maintenance.examples.tailwind_breeze.thanks: Dankbaar voor uw ontspannen geduld.
+maintenance.examples.tailwind_aurora.title: Aurora-pauze
+maintenance.examples.tailwind_aurora.eyebrow: Zachte aurora
+maintenance.examples.tailwind_aurora.heading: Een stille gloed terwijl we de ervaring verbeteren
+maintenance.examples.tailwind_aurora.message: We stemmen zaken achter de schermen af. Het wachten zou kort en stressvrij moeten zijn.
+maintenance.examples.tailwind_aurora.reassure: Alles belangrijks blijft precies waar u het liet.
+maintenance.examples.tailwind_aurora.thanks: Dank dat u zacht bij ons blijft.
+maintenance.examples.idea_short.title: Zo terug
+maintenance.examples.idea_short.eyebrow: Korte pauze
+maintenance.examples.idea_short.heading: Straks weer terug
+maintenance.examples.idea_short.message: We doen een snelle update. Niets om u zorgen over te maken.
+maintenance.examples.idea_short.reassure: Geen actie nodig.
+maintenance.examples.idea_short.thanks: Dank voor het wachten.
+maintenance.examples.idea_compassion.title: Sorry voor de pauze
+maintenance.examples.idea_compassion.eyebrow: Met zorg
+maintenance.examples.idea_compassion.heading: Sorry voor het ongemak
+maintenance.examples.idea_compassion.message: Er is onderhoud zodat alles betrouwbaar blijft. We weten dat onderbrekingen frustrerend zijn.
+maintenance.examples.idea_compassion.reassure: Uw account en gegevens blijven veilig. We werken rustig aan heropening.
+maintenance.examples.idea_compassion.status_note: Liever live-status? Gebruik uw gebruikelijke statuskanaal — deze pagina linkt nooit naar admin-login.
+maintenance.examples.idea_compassion.thanks: Dank voor uw begrip.
+maintenance.examples.idea_playful.title: Kort pitstopje
+maintenance.examples.idea_playful.eyebrow: Lichte humor
+maintenance.examples.idea_playful.heading: De site rekt zich even
+maintenance.examples.idea_playful.message: We stappen even weg voor een snelle poetsbeurt. Geen drama — alleen een vriendelijke stop.
+maintenance.examples.idea_playful.punchline: De servers vroegen om koffie. Wij zeiden ja.
+maintenance.examples.idea_playful.reassure: Alles wat telt staat precies waar u het liet.
+maintenance.examples.idea_playful.thanks: Dank dat u meeknijpt.
+maintenance.examples.idea_brand.title: Onderhoud
+maintenance.examples.idea_brand.eyebrow: Officieel bericht
+maintenance.examples.idea_brand.heading: We zijn zo terug
+maintenance.examples.idea_brand.message: Gepland onderhoud om de ervaring consistent en betrouwbaar te houden.
+maintenance.examples.idea_brand.reassure: Probeer het zo opnieuw.
+maintenance.examples.idea_brand.thanks: We waarderen uw geduld.
+maintenance.examples.idea_brand.mark: N
+maintenance.examples.idea_countdown.title: Bijna klaar
+maintenance.examples.idea_countdown.eyebrow: Geschatte terugkeer
+maintenance.examples.idea_countdown.heading: Aftellen tot heropening
+maintenance.examples.idea_countdown.message: We ronden gepland onderhoud af. De timer gebruikt de geplande eindtijd wanneer die is gezet.
+maintenance.examples.idea_countdown.reassure: Laat dit tabblad open — het werkt vanzelf bij.
+maintenance.examples.idea_countdown.thanks: Dank dat u meewacht.
+maintenance.examples.idea_countdown.remaining: Resterende tijd
+maintenance.examples.idea_countdown.unknown_eta: Zo
+maintenance.examples.idea_updates.title: Live-updates
+maintenance.examples.idea_updates.eyebrow: Statuslog
+maintenance.examples.idea_updates.heading: We maken vorderingen
+maintenance.examples.idea_updates.message: Onderhoud is actief. Hier een rustige snapshot van wat achter de schermen gebeurt.
+maintenance.examples.idea_updates.reassure: Geen paniek-refresh nodig — we openen weer zodra het veilig is.
+maintenance.examples.idea_updates.thanks: Dank dat u bij ons blijft.
+maintenance.examples.idea_updates.log_1: Onderhoudsvenster open; niet-uitgesloten verkeer is gepauzeerd.
+maintenance.examples.idea_updates.log_2: Kerndiensten worden zorgvuldig ververst.
+maintenance.examples.idea_updates.log_3: Pre-checks klaar; hierna heropenen wanneer groen.
 panel.activated: Geactiveerd
+panel.clear_schedule: Planning wissen
 panel.deactivated: Gedeactiveerd
-panel.scheduled_enable: Geplande activatie
-panel.scheduled_disable: Geplande deactivatie
-panel.updated_by: Bijgewerkt door
-panel.enable: Onderhoud inschakelen
 panel.disable: Onderhoud uitschakelen
-panel.schedule: Planning
-panel.save_schedule: Planning opslaan
+panel.enable: Onderhoud inschakelen
+panel.flash.disabled: Onderhoud uitgeschakeld.
+panel.flash.enabled: Onderhoud ingeschakeld.
+panel.flash.schedule_cleared: Planning gewist.
+panel.flash.schedule_saved: Planning opgeslagen.
 panel.history: Geschiedenis
-panel.nav.panel: Paneel
-panel.nav.history: Geschiedenis
-panel.logout: Uitloggen
+panel.history.action: Actie
+panel.history.actor: Actor
+panel.history.empty: Nog geen geschiedenis.
+panel.history.message: Bericht
+panel.history.when: Wanneer
+panel.login.error: Ongeldig wachtwoord.
 panel.login.heading: Onderhoudspaneel
 panel.login.intro: Voer het onderhoudswachtwoord in om de site te beheren.
 panel.login.password: Wachtwoord
 panel.login.submit: Inloggen
-panel.login.error: Ongeldig wachtwoord.
-panel.history.when: Wanneer
-panel.history.action: Actie
-panel.history.actor: Actor
-panel.history.message: Bericht
-panel.history.empty: Nog geen geschiedenis.
+panel.logout: Uitloggen
+panel.message: Bericht
+panel.nav.history: Geschiedenis
+panel.nav.panel: Paneel
+panel.save_schedule: Planning opslaan
+panel.schedule: Planning
+panel.scheduled_disable: Geplande deactivatie
+panel.scheduled_enable: Geplande activatie
+panel.status: Status
+panel.status.disabled: uitgeschakeld
+panel.status.effective: Effectief
+panel.status.enabled: ACTIEF
+panel.status.manual: Handmatig
+panel.status.off: uit
+panel.status.on: AAN
+panel.title: Onderhoudspaneel
+panel.updated_by: Bijgewerkt door

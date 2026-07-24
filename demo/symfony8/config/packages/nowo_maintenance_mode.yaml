@@ -1,16 +1,34 @@
 nowo_maintenance_mode:
     enabled: true
-    default_message: 'Demo maintenance — back soon.'
+    default_message: "We're making a few gentle improvements. Everything you care about is safe."
     panel:
         enabled: true
+        # Auto-excluded from 503 — operators open this URL directly (do not link it from the public 503 page).
         path_prefix: '/_maintenance'
     security:
+        # Toggle panel login via YAML:
+        #   true  → require password_hash (demo password: maintenance)
+        #   false → no login section; panel is open (trusted networks / VPN only)
         password_protection: true
         # Demo only — password: maintenance (do not ship plaintext secrets in real apps)
         password_hash: '$2b$12$Mtv7gY6ONrFvGkRIVyCEBekiDNzH/06FSpI1YFc7AFIeHUi9e9yPu'
+        # Soft QA bypass (optional): visit /?maintenance_bypass=demo-bypass while maintenance is on
+        # bypass_token: 'demo-bypass'
     exclusions:
+        # Exact paths
         paths:
             - /health
-        path_prefixes: []
-        routes: []
-        patterns: []
+        # Path prefixes (everything under these stays available during maintenance)
+        path_prefixes:
+            - /examples
+            - /api/ops
+        # Symfony route names (see ExclusionExamplesController)
+        routes:
+            - app_status
+        # Glob (fnmatch) or regex (#…# / ~…~) against the request path
+        patterns:
+            - '/internal-*'
+            - '#^/ops/#'
+        # Client IPs / CIDR (set framework.trusted_proxies when behind a reverse proxy)
+        # ips:
+        #     - 127.0.0.1

@@ -1,0 +1,43 @@
+{# Idea 6 — Progress & updates (status log style; no external social required)
+   Config: templates.page: '@NowoMaintenanceModeBundle/maintenance/examples/idea_updates.html.twig'
+#}
+<!DOCTYPE html>
+<html lang="{{ app.request.locale|default('en')|slice(0, 2) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
+    <title>{{ 'maintenance.examples.idea_updates.title'|trans({}, 'NowoMaintenanceModeBundle') }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.9.0/dist/css/foundation.min.css" crossorigin="anonymous">
+    <style>
+        body { min-height: 100vh; font-family: "IBM Plex Sans", system-ui, sans-serif; background: #0b1220; color: #e8eef8; }
+        h1, .mm-brand { font-family: Sora, system-ui, sans-serif; }
+        .mm-shell { min-height: 100vh; display: grid; place-items: center; padding: 2rem 1rem; }
+        .mm-card { width: min(100%, 38rem); background: #121a2b; border: 1px solid #243049; border-radius: 1.25rem; padding: 2rem; box-shadow: 0 24px 60px rgba(0,0,0,.35); }
+        .mm-log { list-style: none; margin: 1.5rem 0 0; padding: 0; }
+        .mm-log li { display: grid; grid-template-columns: 4.5rem 1fr; gap: .75rem; padding: .85rem 0; border-top: 1px solid #243049; }
+        .mm-log time { color: #7dd3fc; font-size: .8rem; font-weight: 600; }
+        .mm-log p { margin: 0; color: #cbd5e1; }
+        .eyebrow { color: #94a3b8; text-transform: uppercase; letter-spacing: .12em; font-size: .75rem; font-weight: 600; }
+    </style>
+</head>
+<body>
+<div class="mm-shell">
+    <div class="mm-card">
+        <p class="eyebrow">{{ 'maintenance.examples.idea_updates.eyebrow'|trans({}, 'NowoMaintenanceModeBundle') }}</p>
+        <h1 class="mm-brand" style="margin:.6rem 0 1rem;font-size:1.75rem;">{{ 'maintenance.examples.idea_updates.heading'|trans({}, 'NowoMaintenanceModeBundle') }}</h1>
+        <p style="color:#cbd5e1;margin:0 0 .5rem;">{{ message|default('maintenance.examples.idea_updates.message'|trans({}, 'NowoMaintenanceModeBundle')) }}</p>
+        <p style="color:#94a3b8;margin:0;">{{ 'maintenance.examples.idea_updates.reassure'|trans({}, 'NowoMaintenanceModeBundle') }}</p>
+        <ul class="mm-log" aria-label="{{ 'maintenance.examples.idea_updates.eyebrow'|trans({}, 'NowoMaintenanceModeBundle') }}">
+            <li><time>T−0</time><p>{{ 'maintenance.examples.idea_updates.log_1'|trans({}, 'NowoMaintenanceModeBundle') }}</p></li>
+            <li><time>T−1</time><p>{{ 'maintenance.examples.idea_updates.log_2'|trans({}, 'NowoMaintenanceModeBundle') }}</p></li>
+            <li><time>T−2</time><p>{{ 'maintenance.examples.idea_updates.log_3'|trans({}, 'NowoMaintenanceModeBundle') }}</p></li>
+        </ul>
+        <p style="margin:1.5rem 0 0;font-weight:600;color:#e2e8f0;">{{ 'maintenance.examples.idea_updates.thanks'|trans({}, 'NowoMaintenanceModeBundle') }}</p>
+    </div>
+</div>
+</body>
+</html>

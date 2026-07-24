@@ -1,0 +1,74 @@
+{# Example: Foundation Sites 6.9 — calm night / slate
+   Config: templates.page: '@NowoMaintenanceModeBundle/maintenance/examples/foundation_night.html.twig'
+#}
+<!DOCTYPE html>
+<html lang="{{ app.request.locale|default('en')|slice(0, 2) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
+    <title>{{ 'maintenance.examples.foundation_night.title'|trans({}, 'NowoMaintenanceModeBundle') }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Serif:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.9.0/dist/css/foundation.min.css" crossorigin="anonymous">
+    <style>
+        body {
+            min-height: 100vh;
+            margin: 0;
+            font-family: "IBM Plex Sans", system-ui, sans-serif;
+            color: #e7eef8;
+            background:
+                radial-gradient(ellipse at top, #2a3a52 0%, transparent 55%),
+                linear-gradient(180deg, #121826, #1a2333 55%, #101722);
+        }
+        .mm-wrap {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+        .mm-card {
+            max-width: 36rem;
+            margin: 0 auto;
+            padding: 2.5rem 2rem;
+            border-radius: 1.1rem;
+            background: rgba(24, 34, 50, 0.88);
+            border: 1px solid rgba(150, 180, 220, 0.16);
+            box-shadow: 0 22px 48px rgba(0, 0, 0, 0.35);
+            text-align: center;
+        }
+        .mm-card h1 {
+            font-family: "IBM Plex Serif", Georgia, serif;
+            font-size: clamp(1.9rem, 4vw, 2.55rem);
+            margin-bottom: 0.9rem;
+        }
+        .mm-eyebrow {
+            display: inline-block;
+            margin-bottom: 1rem;
+            padding: 0.3rem 0.85rem;
+            border-radius: 999px;
+            background: rgba(120, 170, 230, 0.14);
+            color: #9ec2ef;
+            font-size: 0.82rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+        .mm-message { color: #c3d0e2; font-size: 1.08rem; line-height: 1.65; margin-bottom: 1rem; }
+        .mm-reassure { color: #9eacc0; margin-bottom: 0.85rem; }
+        .mm-thanks { color: #8fd0c4; font-weight: 700; margin: 0; }
+    </style>
+</head>
+<body>
+<div class="mm-wrap">
+    <div class="mm-card">
+        <p class="mm-eyebrow">{{ 'maintenance.examples.foundation_night.eyebrow'|trans({}, 'NowoMaintenanceModeBundle') }}</p>
+        <h1>{{ 'maintenance.examples.foundation_night.heading'|trans({}, 'NowoMaintenanceModeBundle') }}</h1>
+        <p class="mm-message">{{ message|default('maintenance.examples.foundation_night.message'|trans({}, 'NowoMaintenanceModeBundle')) }}</p>
+        <p class="mm-reassure">{{ 'maintenance.examples.foundation_night.reassure'|trans({}, 'NowoMaintenanceModeBundle') }}</p>
+        <p class="mm-thanks">{{ 'maintenance.examples.foundation_night.thanks'|trans({}, 'NowoMaintenanceModeBundle') }}</p>
+    </div>
+</div>
+</body>
+</html>

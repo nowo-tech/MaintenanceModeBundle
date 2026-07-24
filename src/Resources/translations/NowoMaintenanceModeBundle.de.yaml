@@ -1,31 +1,123 @@
-maintenance.page.title: Wartung
-maintenance.page.heading: Wir sind gleich zurück
-maintenance.page.message: Die Website ist vorübergehend wegen Wartung nicht verfügbar.
-panel.title: Wartungs-Panel
-panel.status: Status
-panel.status.enabled: AKTIV
-panel.status.disabled: inaktiv
-panel.message: Nachricht
+maintenance.page.title: Eine kurze Pause
+maintenance.page.heading: Wir räumen auf — gleich zurück
+maintenance.page.message: 'Wir nehmen sanfte Verbesserungen vor. Alles, was Ihnen wichtig ist, ist sicher.'
+maintenance.page.badge: Gleich wieder da
+maintenance.page.reassure: Sie müssen nichts tun. Holen Sie sich einen Tee — wir öffnen bald wieder.
+maintenance.page.thanks: Danke für Ihre Geduld. Sie sind uns wichtig.
+maintenance.examples.bootstrap_calm.title: Durchatmen
+maintenance.examples.bootstrap_calm.eyebrow: Sanfte Pause
+maintenance.examples.bootstrap_calm.heading: 'Ein ruhiger Moment, während wir auffrischen'
+maintenance.examples.bootstrap_calm.message: 'Wir führen leichte Wartung durch, damit Ihr nächster Besuch noch angenehmer wird.'
+maintenance.examples.bootstrap_calm.reassure: 'Ihre Daten und Ihr Konto sind unberührt. Das ist Routinepflege, kein Notfall.'
+maintenance.examples.bootstrap_calm.thanks: 'Danke, dass Sie freundlich warten.'
+maintenance.examples.bootstrap_sunset.title: Warme Pause
+maintenance.examples.bootstrap_sunset.eyebrow: Sonnenuntergangs-Pause
+maintenance.examples.bootstrap_sunset.heading: Bald strahlen wir wieder
+maintenance.examples.bootstrap_sunset.message: Die Seite ruht kurz für ein Update. Nichts ist kaputt — wir polieren nur.
+maintenance.examples.bootstrap_sunset.reassure: Sie können diesen Tab schließen und später zurückkommen. Wir sind für Sie da.
+maintenance.examples.bootstrap_sunset.thanks: Wir schätzen Ihre ruhige Geduld.
+maintenance.examples.foundation_garden.title: Gartenpause
+maintenance.examples.foundation_garden.eyebrow: Leises Wachstum
+maintenance.examples.foundation_garden.heading: Wir pflanzen ein paar Verbesserungen
+maintenance.examples.foundation_garden.message: Wir gießen die Wurzeln der Seite. Sie wird sehr bald wieder blühen.
+maintenance.examples.foundation_garden.reassure: Sie haben nichts verursacht. Das ist geplante Pflege für einen gesunden Betrieb.
+maintenance.examples.foundation_garden.thanks: 'Danke, dass Sie uns einen Moment zum Wachsen geben.'
+maintenance.examples.foundation_night.title: Stille Nacht
+maintenance.examples.foundation_night.eyebrow: Nachtpflege
+maintenance.examples.foundation_night.heading: Die Lichter sind gedimmt für ein sanftes Update
+maintenance.examples.foundation_night.message: Wir führen ruhige Wartung durch. Entspannen Sie sich — Ihr Platz hier ist sicher.
+maintenance.examples.foundation_night.reassure: 'Keine Eile, kein Alarm. Wir schalten die Lichter bald wieder an.'
+maintenance.examples.foundation_night.thanks: Danke für Ihr Vertrauen während der Wartezeit.
+maintenance.examples.tailwind_breeze.title: Frische Luft
+maintenance.examples.tailwind_breeze.eyebrow: Brisen-Modus
+maintenance.examples.tailwind_breeze.heading: Wir öffnen ein Fenster für frische Updates
+maintenance.examples.tailwind_breeze.message: Ein leichter Wartungs-Windzug weht durch die Seite. Bald fühlt sie sich klarer an.
+maintenance.examples.tailwind_breeze.reassure: Sie können sich entspannen. Nichts Dringendes — wir frischen nur auf.
+maintenance.examples.tailwind_breeze.thanks: Dankbar für Ihre gelassene Geduld.
+maintenance.examples.tailwind_aurora.title: Aurora-Pause
+maintenance.examples.tailwind_aurora.eyebrow: Sanfte Aurora
+maintenance.examples.tailwind_aurora.heading: 'Ein stilles Leuchten, während wir das Erlebnis verbessern'
+maintenance.examples.tailwind_aurora.message: Wir stimmen Dinge hinter den Kulissen ab. Das Warten sollte kurz und stressfrei sein.
+maintenance.examples.tailwind_aurora.reassure: 'Alles Wichtige bleibt genau dort, wo Sie es gelassen haben.'
+maintenance.examples.tailwind_aurora.thanks: 'Danke, dass Sie sanft bei uns bleiben.'
+maintenance.examples.idea_short.title: Gleich zurück
+maintenance.examples.idea_short.eyebrow: Kurze Pause
+maintenance.examples.idea_short.heading: Bald wieder da
+maintenance.examples.idea_short.message: Wir machen ein kurzes Update. Kein Grund zur Sorge.
+maintenance.examples.idea_short.reassure: Keine Aktion nötig.
+maintenance.examples.idea_short.thanks: Danke fürs Warten.
+maintenance.examples.idea_compassion.title: Entschuldigung für die Pause
+maintenance.examples.idea_compassion.eyebrow: Mit Sorgfalt
+maintenance.examples.idea_compassion.heading: Entschuldigen Sie die Unannehmlichkeit
+maintenance.examples.idea_compassion.message: Wartung läuft, damit alles zuverlässig bleibt. Unterbrechungen sind ärgerlich — das wissen wir.
+maintenance.examples.idea_compassion.reassure: Ihr Konto und Ihre Daten sind sicher. Wir arbeiten ruhig an der Wiedereröffnung.
+maintenance.examples.idea_compassion.status_note: Live-Status bevorzugt? Nutzen Sie Ihren üblichen Statuskanal — diese Seite verlinkt nie zum Admin-Login.
+maintenance.examples.idea_compassion.thanks: Danke für Ihr Verständnis.
+maintenance.examples.idea_playful.title: Kurzer Boxenstopp
+maintenance.examples.idea_playful.eyebrow: Sanfter Humor
+maintenance.examples.idea_playful.heading: Die Seite macht eine Dehnpause
+maintenance.examples.idea_playful.message: Wir sind kurz zum Polieren raus. Kein Drama — nur ein freundlicher Stopp.
+maintenance.examples.idea_playful.punchline: Die Server wollten Kaffee. Wir sagten ja.
+maintenance.examples.idea_playful.reassure: Alles Wichtige ist genau dort, wo Sie es gelassen haben.
+maintenance.examples.idea_playful.thanks: Danke, dass Sie mitlächeln.
+maintenance.examples.idea_brand.title: Wartung
+maintenance.examples.idea_brand.eyebrow: Offizielle Mitteilung
+maintenance.examples.idea_brand.heading: Wir sind bald zurück
+maintenance.examples.idea_brand.message: Geplante Wartung, damit das Erlebnis konsistent und verlässlich bleibt.
+maintenance.examples.idea_brand.reassure: Bitte versuchen Sie es in Kürze erneut.
+maintenance.examples.idea_brand.thanks: Wir danken für Ihre Geduld.
+maintenance.examples.idea_brand.mark: N
+maintenance.examples.idea_countdown.title: Fast geschafft
+maintenance.examples.idea_countdown.eyebrow: Geschätzte Rückkehr
+maintenance.examples.idea_countdown.heading: Countdown zur Wiedereröffnung
+maintenance.examples.idea_countdown.message: Wir beenden die geplante Wartung. Der Timer nutzt die geplante Endzeit, falls gesetzt.
+maintenance.examples.idea_countdown.reassure: Lassen Sie den Tab offen — er aktualisiert sich selbst.
+maintenance.examples.idea_countdown.thanks: Danke, dass Sie dabeibleiben.
+maintenance.examples.idea_countdown.remaining: Verbleibende Zeit
+maintenance.examples.idea_countdown.unknown_eta: Bald
+maintenance.examples.idea_updates.title: Live-Updates
+maintenance.examples.idea_updates.eyebrow: Statusprotokoll
+maintenance.examples.idea_updates.heading: Wir kommen voran
+maintenance.examples.idea_updates.message: Wartung ist aktiv. Hier ein ruhiger Überblick, was hinter den Kulissen passiert.
+maintenance.examples.idea_updates.reassure: Kein hektisches Aktualisieren nötig — wir öffnen wieder, sobald es sicher ist.
+maintenance.examples.idea_updates.thanks: Danke, dass Sie bei uns bleiben.
+maintenance.examples.idea_updates.log_1: Wartungsfenster offen; nicht ausgeschlossener Traffic pausiert.
+maintenance.examples.idea_updates.log_2: Kernservices werden sorgfältig aktualisiert.
+maintenance.examples.idea_updates.log_3: 'Vorchecks erledigt; als Nächstes: wieder öffnen, wenn grün.'
 panel.activated: Aktiviert
+panel.clear_schedule: Zeitplan löschen
 panel.deactivated: Deaktiviert
-panel.scheduled_enable: Geplante Aktivierung
-panel.scheduled_disable: Geplante Deaktivierung
-panel.updated_by: Aktualisiert von
-panel.enable: Wartung aktivieren
 panel.disable: Wartung deaktivieren
-panel.schedule: Zeitplan
-panel.save_schedule: Zeitplan speichern
+panel.enable: Wartung aktivieren
+panel.flash.disabled: Wartung deaktiviert.
+panel.flash.enabled: Wartung aktiviert.
+panel.flash.schedule_cleared: Zeitplan gelöscht.
+panel.flash.schedule_saved: Zeitplan gespeichert.
 panel.history: Verlauf
-panel.nav.panel: Panel
-panel.nav.history: Verlauf
-panel.logout: Abmelden
-panel.login.heading: Wartungs-Panel
-panel.login.intro: Geben Sie das Wartungskennwort ein, um die Website zu verwalten.
-panel.login.password: Kennwort
-panel.login.submit: Anmelden
-panel.login.error: Ungültiges Kennwort.
-panel.history.when: Wann
 panel.history.action: Aktion
 panel.history.actor: Akteur
-panel.history.message: Nachricht
 panel.history.empty: Noch kein Verlauf.
+panel.history.message: Nachricht
+panel.history.when: Wann
+panel.login.error: Ungültiges Kennwort.
+panel.login.heading: Wartungs-Panel
+panel.login.intro: 'Geben Sie das Wartungskennwort ein, um die Website zu verwalten.'
+panel.login.password: Kennwort
+panel.login.submit: Anmelden
+panel.logout: Abmelden
+panel.message: Nachricht
+panel.nav.history: Verlauf
+panel.nav.panel: Panel
+panel.save_schedule: Zeitplan speichern
+panel.schedule: Zeitplan
+panel.scheduled_disable: Geplante Deaktivierung
+panel.scheduled_enable: Geplante Aktivierung
+panel.status: Status
+panel.status.disabled: inaktiv
+panel.status.effective: Effektiv
+panel.status.enabled: AKTIV
+panel.status.manual: Manuell
+panel.status.off: aus
+panel.status.on: AN
+panel.title: Wartungs-Panel
+panel.updated_by: Aktualisiert von

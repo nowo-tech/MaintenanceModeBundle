@@ -51,4 +51,16 @@ final class MaintenanceExclusionMatcherTest extends TestCase
         $matcher = new MaintenanceExclusionMatcher(pathPrefixes: [''], patterns: ['']);
         self::assertFalse($matcher->matches(Request::create('/anything')));
     }
+
+    public function testClientIpExclusion(): void
+    {
+        $matcher = new MaintenanceExclusionMatcher(ips: ['127.0.0.1', '10.0.0.0/8']);
+        $local   = Request::create('/page', 'GET', server: ['REMOTE_ADDR' => '127.0.0.1']);
+        $cidr    = Request::create('/page', 'GET', server: ['REMOTE_ADDR' => '10.1.2.3']);
+        $other   = Request::create('/page', 'GET', server: ['REMOTE_ADDR' => '8.8.8.8']);
+
+        self::assertTrue($matcher->matches($local));
+        self::assertTrue($matcher->matches($cidr));
+        self::assertFalse($matcher->matches($other));
+    }
 }

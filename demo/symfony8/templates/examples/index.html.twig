@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Maintenance page examples{% endblock %}
+
+{% block body %}
+    <h1>Maintenance page examples</h1>
+    <p>
+        Calm, anxiety-light 503 templates shipped with the bundle.
+        Frameworks: <strong>Bootstrap 5.3</strong>, <strong>Foundation 6.9</strong>, <strong>Tailwind CSS 4</strong>, plus vanilla CSS.
+        Patterns: soft themes + six idea pages (short, compassionate, playful, brand, countdown, updates).
+        Locales: en · es · it · fr · pt · de · nl.
+    </p>
+
+    <div class="card">
+        <table>
+            <thead>
+            <tr>
+                <th>Slug</th>
+                <th>Framework</th>
+                <th>Style</th>
+                <th>Preview</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for slug, meta in examples %}
+                <tr>
+                    <td><code>{{ slug }}</code></td>
+                    <td>{{ meta.framework }}</td>
+                    <td>{{ meta.style }}</td>
+                    <td>
+                        {% for loc in locales %}
+                            <a href="{{ path('maintenance_example_show', {slug: slug, _locale: loc}) }}">{{ loc }}</a>{% if not loop.last %} · {% endif %}
+                        {% endfor %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <p><a href="{{ path('homepage') }}">← Demo home</a></p>
+{% endblock %}

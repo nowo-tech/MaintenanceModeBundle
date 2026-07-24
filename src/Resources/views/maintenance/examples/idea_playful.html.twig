@@ -1,0 +1,45 @@
+{# Idea 3 — Playful & light (gentle humor; anxiety-light)
+   Config: templates.page: '@NowoMaintenanceModeBundle/maintenance/examples/idea_playful.html.twig'
+#}
+<!DOCTYPE html>
+<html lang="{{ app.request.locale|default('en')|slice(0, 2) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
+    <title>{{ 'maintenance.examples.idea_playful.title'|trans({}, 'NowoMaintenanceModeBundle') }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800&family=Literata:opsz,wght@7..72,500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+        @theme {
+            --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+            --font-body: "Literata", ui-serif, Georgia, serif;
+            --color-play-50: #fff8ef;
+            --color-play-200: #ffd9a8;
+            --color-play-700: #b45309;
+            --color-play-900: #3b2410;
+        }
+    </style>
+</head>
+<body class="min-h-screen font-[family-name:var(--font-body)] text-play-900 bg-[radial-gradient(circle_at_20%_20%,#ffe8c7,transparent_40%),radial-gradient(circle_at_80%_80%,#ffd3d0,transparent_35%),linear-gradient(160deg,#fff8ef,#fde7d4)]">
+<main class="min-h-screen grid place-items-center px-4 py-10">
+    <section class="w-full max-w-lg rounded-[2rem] border border-play-200/80 bg-white/80 backdrop-blur px-8 py-10 text-center shadow-[0_24px_60px_rgba(59,36,16,0.08)]">
+        <div class="mx-auto mb-5 grid h-16 w-16 place-items-center rounded-2xl bg-play-200 text-3xl" aria-hidden="true">🛠️</div>
+        <p class="mb-3 inline-flex rounded-full bg-play-200/70 px-3 py-1 text-sm font-[family-name:var(--font-display)] font-bold text-play-700">
+            {{ 'maintenance.examples.idea_playful.eyebrow'|trans({}, 'NowoMaintenanceModeBundle') }}
+        </p>
+        <h1 class="mb-4 font-[family-name:var(--font-display)] text-4xl font-extrabold tracking-tight">
+            {{ 'maintenance.examples.idea_playful.heading'|trans({}, 'NowoMaintenanceModeBundle') }}
+        </h1>
+        <p class="mb-3 text-lg leading-relaxed text-stone-700">
+            {{ message|default('maintenance.examples.idea_playful.message'|trans({}, 'NowoMaintenanceModeBundle')) }}
+        </p>
+        <p class="mb-4 text-base italic text-play-700">{{ 'maintenance.examples.idea_playful.punchline'|trans({}, 'NowoMaintenanceModeBundle') }}</p>
+        <p class="text-stone-500">{{ 'maintenance.examples.idea_playful.reassure'|trans({}, 'NowoMaintenanceModeBundle') }}</p>
+        <p class="mt-4 font-[family-name:var(--font-display)] font-bold text-play-700">{{ 'maintenance.examples.idea_playful.thanks'|trans({}, 'NowoMaintenanceModeBundle') }}</p>
+    </section>
+</main>
+</body>
+</html>

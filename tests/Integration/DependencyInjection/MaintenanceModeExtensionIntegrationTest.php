@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Nowo\MaintenanceModeBundle\Tests\Integration\DependencyInjection;
 
 use Nowo\MaintenanceModeBundle\Controller\MaintenancePanelController;
+use Nowo\MaintenanceModeBundle\Controller\MaintenancePreviewController;
 use Nowo\MaintenanceModeBundle\DependencyInjection\MaintenanceModeExtension;
 use Nowo\MaintenanceModeBundle\EventSubscriber\MaintenanceRequestSubscriber;
 use Nowo\MaintenanceModeBundle\Exclusion\MaintenanceExclusionMatcher;
@@ -101,11 +102,44 @@ final class MaintenanceModeExtensionIntegrationTest extends TestCase
         self::assertSame('$2y$10$example', $gateDef->getArgument('$passwordHash'));
         self::assertFalse($gateDef->getArgument('$enabled'));
 
-        $subscriberTags = $container->getDefinition(MaintenanceRequestSubscriber::class)->getTag('kernel.event_subscriber');
-        self::assertSame(64, $subscriberTags[0]['priority']);
+        $requestTags = $container->getDefinition(MaintenanceRequestSubscriber::class)->getTag('kernel.event_listener');
+        self::assertSame('kernel.request', $requestTags[0]['event']);
+        self::assertSame(64, $requestTags[0]['priority']);
+        self::assertSame('onKernelRequest', $requestTags[0]['method']);
+        self::assertSame('kernel.response', $requestTags[1]['event']);
+        self::assertSame('onKernelResponse', $requestTags[1]['method']);
 
         $stateDef = $container->getDefinition(FilesystemMaintenanceStateStorage::class);
         self::assertNotEmpty($stateDef->getArgument('$filePath'));
+    }
+
+    public function testLoadConfiguresIpsAndBypassToken(): void
+    {
+        $container = new ContainerBuilder();
+        $container->setParameter('kernel.project_dir', sys_get_temp_dir());
+
+        $extension = new MaintenanceModeExtension();
+        $extension->load([[
+            'panel'      => ['enabled' => false],
+            'exclusions' => [
+                'ips' => ['127.0.0.1', '10.0.0.0/8'],
+            ],
+            'security' => [
+                'bypass_token'           => 'qa-secret',
+                'bypass_query_parameter' => 'mm_bypass',
+                'bypass_cookie_name'     => 'mm_cookie',
+                'bypass_set_cookie'      => false,
+            ],
+        ]], $container);
+
+        $matcherDef = $container->getDefinition(MaintenanceExclusionMatcher::class);
+        self::assertSame(['127.0.0.1', '10.0.0.0/8'], $matcherDef->getArgument('$ips'));
+
+        $subscriber = $container->getDefinition(MaintenanceRequestSubscriber::class);
+        self::assertSame('qa-secret', $subscriber->getArgument('$bypassToken'));
+        self::assertSame('mm_bypass', $subscriber->getArgument('$bypassQueryParameter'));
+        self::assertSame('mm_cookie', $subscriber->getArgument('$bypassCookieName'));
+        self::assertFalse($subscriber->getArgument('$bypassSetCookie'));
     }
 
     public function testLoadAddsPanelPrefixToExclusionMatcher(): void
@@ -126,6 +160,41 @@ final class MaintenanceModeExtensionIntegrationTest extends TestCase
 
         $matcherDef = $container->getDefinition(MaintenanceExclusionMatcher::class);
         self::assertContains('/custom-panel', $matcherDef->getArgument('$pathPrefixes'));
+        self::assertContains('/_maintenance_preview', $matcherDef->getArgument('$paths'));
+    }
+
+    public function testLoadEnablesPreviewFromKernelDebug(): void
+    {
+        $container = new ContainerBuilder();
+        $container->setParameter('kernel.project_dir', sys_get_temp_dir());
+        $container->setParameter('kernel.debug', true);
+
+        $extension = new MaintenanceModeExtension();
+        $extension->load([['panel' => ['enabled' => false]]], $container);
+
+        self::assertTrue($container->getParameter('nowo.maintenance_mode.preview.enabled'));
+        self::assertSame('/_maintenance_preview', $container->getParameter('nowo.maintenance_mode.preview.path'));
+
+        $preview = $container->getDefinition(MaintenancePreviewController::class);
+        self::assertTrue($preview->getArgument('$enabled'));
+    }
+
+    public function testLoadCanDisablePreviewExplicitly(): void
+    {
+        $container = new ContainerBuilder();
+        $container->setParameter('kernel.project_dir', sys_get_temp_dir());
+        $container->setParameter('kernel.debug', true);
+
+        $extension = new MaintenanceModeExtension();
+        $extension->load([[
+            'panel'   => ['enabled' => false],
+            'preview' => ['enabled' => false, 'path' => '/_custom_mm_preview'],
+        ]], $container);
+
+        self::assertFalse($container->getParameter('nowo.maintenance_mode.preview.enabled'));
+        self::assertSame('/_custom_mm_preview', $container->getParameter('nowo.maintenance_mode.preview.path'));
+        self::assertContains('/_custom_mm_preview', $container->getDefinition(MaintenanceExclusionMatcher::class)->getArgument('$paths'));
+        self::assertFalse($container->getDefinition(MaintenancePreviewController::class)->getArgument('$enabled'));
     }
 
     public function testLoadRemovesPanelControllerWhenDisabled(): void

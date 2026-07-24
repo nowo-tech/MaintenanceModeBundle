@@ -1,7 +1,7 @@
 # Default package config (Symfony Flex recipe also ships a copy).
 nowo_maintenance_mode:
     enabled: true
-    default_message: 'The site is temporarily unavailable for maintenance.'
+    default_message: 'We're making a few gentle improvements. Everything you care about is safe.'
     panel:
         enabled: true
         path_prefix: '/_maintenance'

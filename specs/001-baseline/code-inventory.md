@@ -11,6 +11,7 @@
 | Category | Files |
 | --- | ---: |
 | Bundle entry | 1 |
+| Command | 1 |
 | Controller | 1 |
 | DependencyInjection | 3 |
 | EventSubscriber | 1 |
@@ -19,15 +20,21 @@
 | Security | 2 |
 | Service | 1 |
 | Storage | 4 |
-| **Total production PHP (`src/*.php`)** | **16** |
+| **Total production PHP (`src/*.php`)** | **17** |
 
-Non-PHP production assets: `Resources/config/services.yaml`, `Resources/config/routes.yaml`, 5 Twig views, 7 translation files.
+Non-PHP production assets: `Resources/config/services.yaml`, `Resources/config/routes.yaml`, default + 6 example Twig maintenance views, 5 panel Twig views, 7 translation files.
 
 ## Bundle entry
 
 | File | Responsibility | Spec |
 | --- | --- | --- |
 | `NowoMaintenanceModeBundle.php` | Registers extension and `TwigPathsPass` | FR-11 |
+
+## Command
+
+| File | Responsibility | Spec |
+| --- | --- | --- |
+| `Command/HashPasswordCommand.php` | CLI hash helper for panel `password_hash` | FR-09 |
 
 ## Controller
 

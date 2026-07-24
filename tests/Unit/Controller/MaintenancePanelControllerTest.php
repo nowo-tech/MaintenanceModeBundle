@@ -17,6 +17,8 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Twig\Environment;
@@ -91,6 +93,8 @@ final class MaintenancePanelControllerTest extends TestCase
             'message' => 'Going down',
             '_token'  => 'valid',
         ]);
+        $session = new Session(new MockArraySessionStorage());
+        $request->setSession($session);
 
         $response = $this->createController()->enable($request);
 
@@ -98,6 +102,7 @@ final class MaintenancePanelControllerTest extends TestCase
         self::assertSame('/_maintenance', $response->getTargetUrl());
         self::assertTrue($this->stateStorage->state->isEnabled());
         self::assertSame('Going down', $this->stateStorage->state->getMessage());
+        self::assertSame(['panel.flash.enabled'], $session->getFlashBag()->peek('success'));
     }
 
     public function testEnableWithEmptyMessageUsesDefault(): void
@@ -230,6 +235,68 @@ final class MaintenancePanelControllerTest extends TestCase
         );
 
         self::assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+    }
+
+    public function testClearScheduleClearsTimestampsAndRedirects(): void
+    {
+        $this->stateStorage->state = (new MaintenanceState())
+            ->withScheduledEnableAt(new DateTimeImmutable('2026-07-25T08:00:00+00:00'))
+            ->withScheduledDisableAt(new DateTimeImmutable('2026-07-25T18:00:00+00:00'));
+        $this->accessGate->method('isGranted')->willReturn(true);
+        $this->csrfTokenManager->method('isTokenValid')->willReturn(true);
+
+        $request  = Request::create('/_maintenance/clear-schedule', 'POST', ['_token' => 'valid']);
+        $response = $this->createController()->clearSchedule($request);
+
+        self::assertInstanceOf(RedirectResponse::class, $response);
+        self::assertNull($this->stateStorage->state->getScheduledEnableAt());
+        self::assertNull($this->stateStorage->state->getScheduledDisableAt());
+        self::assertSame('clear_schedule', $this->historyStorage->entries[0]->getAction());
+    }
+
+    public function testClearScheduleReturns403OnInvalidCsrf(): void
+    {
+        $this->accessGate->method('isGranted')->willReturn(true);
+        $this->csrfTokenManager->method('isTokenValid')->willReturn(false);
+
+        $response = $this->createController()->clearSchedule(
+            Request::create('/_maintenance/clear-schedule', 'POST', ['_token' => 'bad']),
+        );
+
+        self::assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+    }
+
+    public function testClearScheduleRedirectsToLoginWhenDenied(): void
+    {
+        $this->accessGate->method('isGranted')->willReturn(false);
+
+        $response = $this->createController()->clearSchedule(
+            Request::create('/_maintenance/clear-schedule', 'POST'),
+        );
+
+        self::assertInstanceOf(RedirectResponse::class, $response);
+        self::assertSame('/_maintenance/login', $response->getTargetUrl());
+    }
+
+    public function testIndexPassesFlashesAndPasswordRequired(): void
+    {
+        $this->accessGate->method('isGranted')->willReturn(true);
+        $this->accessGate->method('isPasswordRequired')->willReturn(false);
+
+        $request = Request::create('/_maintenance');
+        $session = new Session(new MockArraySessionStorage());
+        $session->getFlashBag()->add('success', 'panel.flash.enabled');
+        $request->setSession($session);
+
+        $this->twig->expects(self::once())
+            ->method('render')
+            ->with(self::TEMPLATES['panel_index'], self::callback(static function (array $context): bool {
+                return ($context['password_required'] ?? null) === false
+                    && ($context['flashes']['success'][0] ?? null) === 'panel.flash.enabled';
+            }))
+            ->willReturn('<html>index</html>');
+
+        $this->createController()->index($request);
     }
 
     public function testHistoryRendersEntries(): void

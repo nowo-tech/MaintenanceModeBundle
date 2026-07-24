@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Nowo\MaintenanceModeBundle\DependencyInjection;
 
 use Nowo\MaintenanceModeBundle\Controller\MaintenancePanelController;
+use Nowo\MaintenanceModeBundle\Controller\MaintenancePreviewController;
 use Nowo\MaintenanceModeBundle\EventSubscriber\MaintenanceRequestSubscriber;
 use Nowo\MaintenanceModeBundle\Exclusion\MaintenanceExclusionMatcher;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceAccessGateInterface;
@@ -23,6 +24,7 @@ use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 use function array_values;
 use function in_array;
+use function is_bool;
 use function is_string;
 
 final class MaintenanceModeExtension extends Extension
@@ -39,6 +41,8 @@ final class MaintenanceModeExtension extends Extension
         $container->setParameter('nowo.maintenance_mode.subscriber_priority', $config['subscriber_priority']);
         $container->setParameter('nowo.maintenance_mode.panel.enabled', $config['panel']['enabled']);
         $container->setParameter('nowo.maintenance_mode.panel.path_prefix', $config['panel']['path_prefix']);
+        $container->setParameter('nowo.maintenance_mode.preview.enabled', $this->resolvePreviewEnabled($container, $config['preview']['enabled'] ?? null));
+        $container->setParameter('nowo.maintenance_mode.preview.path', $config['preview']['path']);
         $container->setParameter('nowo.maintenance_mode.exclusions', $config['exclusions']);
         $container->setParameter('nowo.maintenance_mode.security', $config['security']);
         $container->setParameter('nowo.maintenance_mode.storage', $config['storage']);
@@ -55,11 +59,21 @@ final class MaintenanceModeExtension extends Extension
         $this->configureManager($container, $config);
         $this->configureSubscriber($container, $config);
         $this->configurePanel($container, $config);
+        $this->configurePreview($container, $config);
     }
 
     public function getAlias(): string
     {
         return Configuration::ALIAS;
+    }
+
+    private function resolvePreviewEnabled(ContainerBuilder $container, mixed $configured): bool
+    {
+        if (is_bool($configured)) {
+            return $configured;
+        }
+
+        return $container->hasParameter('kernel.debug') && (bool) $container->getParameter('kernel.debug');
     }
 
     /**
@@ -98,17 +112,24 @@ final class MaintenanceModeExtension extends Extension
     {
         /** @var array{paths?: list<string>, path_prefixes?: list<string>, routes?: list<string>, patterns?: list<string>} $exclusions */
         $exclusions  = $config['exclusions'];
+        $paths       = array_values($exclusions['paths'] ?? []);
         $prefixes    = array_values($exclusions['path_prefixes'] ?? []);
         $panelPrefix = is_string($config['panel']['path_prefix'] ?? null) ? $config['panel']['path_prefix'] : '/_maintenance';
         if ($panelPrefix !== '' && !in_array($panelPrefix, $prefixes, true)) {
             $prefixes[] = $panelPrefix;
         }
 
+        $previewPath = is_string($config['preview']['path'] ?? null) ? $config['preview']['path'] : '/_maintenance_preview';
+        if ($previewPath !== '' && !in_array($previewPath, $paths, true)) {
+            $paths[] = $previewPath;
+        }
+
         $container->getDefinition(MaintenanceExclusionMatcher::class)
-            ->setArgument('$paths', array_values($exclusions['paths'] ?? []))
+            ->setArgument('$paths', $paths)
             ->setArgument('$pathPrefixes', $prefixes)
             ->setArgument('$routes', array_values($exclusions['routes'] ?? []))
-            ->setArgument('$patterns', array_values($exclusions['patterns'] ?? []));
+            ->setArgument('$patterns', array_values($exclusions['patterns'] ?? []))
+            ->setArgument('$ips', array_values($exclusions['ips'] ?? []));
     }
 
     /**
@@ -139,7 +160,8 @@ final class MaintenanceModeExtension extends Extension
         $container->getDefinition(MaintenanceManager::class)
             ->setArgument('$stateStorage', new Reference(MaintenanceStateStorageInterface::class))
             ->setArgument('$historyStorage', new Reference(MaintenanceHistoryStorageInterface::class))
-            ->setArgument('$defaultMessage', $config['default_message']);
+            ->setArgument('$defaultMessage', $config['default_message'])
+            ->setArgument('$eventDispatcher', new Reference('event_dispatcher', ContainerBuilder::IGNORE_ON_INVALID_REFERENCE));
     }
 
     /**
@@ -147,6 +169,9 @@ final class MaintenanceModeExtension extends Extension
      */
     private function configureSubscriber(ContainerBuilder $container, array $config): void
     {
+        $security = $config['security'];
+        $priority = (int) $config['subscriber_priority'];
+
         $definition = $container->getDefinition(MaintenanceRequestSubscriber::class);
         $definition
             ->setArgument('$enabled', (bool) $config['enabled'])
@@ -156,11 +181,22 @@ final class MaintenanceModeExtension extends Extension
             ->setArgument('$template', $config['templates']['page'])
             ->setArgument('$statusCode', (int) $config['status_code'])
             ->setArgument('$retryAfter', (int) $config['retry_after'])
-            ->setArgument('$panelPathPrefix', $config['panel']['path_prefix']);
+            ->setArgument('$panelPathPrefix', $config['panel']['path_prefix'])
+            ->setArgument('$bypassToken', is_string($security['bypass_token'] ?? null) ? $security['bypass_token'] : null)
+            ->setArgument('$bypassQueryParameter', (string) ($security['bypass_query_parameter'] ?? 'maintenance_bypass'))
+            ->setArgument('$bypassCookieName', (string) ($security['bypass_cookie_name'] ?? 'nowo_maintenance_bypass'))
+            ->setArgument('$bypassSetCookie', (bool) ($security['bypass_set_cookie'] ?? true));
 
-        $priority = (int) $config['subscriber_priority'];
         $definition->clearTags();
-        $definition->addTag('kernel.event_subscriber', ['priority' => $priority]);
+        $definition->addTag('kernel.event_listener', [
+            'event'    => 'kernel.request',
+            'method'   => 'onKernelRequest',
+            'priority' => $priority,
+        ]);
+        $definition->addTag('kernel.event_listener', [
+            'event'  => 'kernel.response',
+            'method' => 'onKernelResponse',
+        ]);
     }
 
     /**
@@ -185,6 +221,28 @@ final class MaintenanceModeExtension extends Extension
             ->setArgument('$templates', $config['templates'])
             ->setArgument('$pathPrefix', $config['panel']['path_prefix'])
             ->setArgument('$csrfTokenManager', new Reference(CsrfTokenManagerInterface::class, ContainerBuilder::IGNORE_ON_INVALID_REFERENCE))
+            ->setPublic(true);
+    }
+
+    /**
+     * @param array<string, mixed> $config
+     */
+    private function configurePreview(ContainerBuilder $container, array $config): void
+    {
+        if (!$container->hasDefinition(MaintenancePreviewController::class)) {
+            return; // @codeCoverageIgnore
+        }
+
+        $enabled = (bool) $container->getParameter('nowo.maintenance_mode.preview.enabled');
+
+        $container->getDefinition(MaintenancePreviewController::class)
+            ->setArgument('$enabled', $enabled)
+            ->setArgument('$manager', new Reference(MaintenanceManager::class))
+            ->setArgument('$twig', new Reference('twig'))
+            ->setArgument('$template', $config['templates']['page'])
+            ->setArgument('$defaultMessage', $config['default_message'])
+            ->setArgument('$statusCode', (int) $config['status_code'])
+            ->setArgument('$retryAfter', (int) $config['retry_after'])
             ->setPublic(true);
     }
 }

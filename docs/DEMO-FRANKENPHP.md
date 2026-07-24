@@ -13,8 +13,11 @@ make -C demo/symfony8 up   # Symfony 8 — http://localhost:8055
 ```
 
 - Home: `/`
-- Panel: `/_maintenance`
-- Demo panel password: `maintenance` (bcrypt hash in config)
+- Panel: `/_maintenance` (auto-excluded from 503; login toggled by `security.password_protection`)
+- Bypass guide: `/examples/bypass` — live exclusion examples (path, route name, prefix, glob, regex)
+- Examples gallery: `/examples` (framework themes + six idea patterns; `?_locale=es`)
+- Current page preview (dev): `/_maintenance_preview` — configured `templates.page` (like `/_error/503`)
+- Demo panel password when protection is on: `maintenance` (bcrypt hash in config)
 
 ## FrankenPHP modes (REQ-DEMO-010)
 

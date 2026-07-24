@@ -750,10 +750,14 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  * }
  * @psalm-type NowoMaintenanceModeConfig = array{ // Nowo Maintenance Mode Bundle configuration.
  *     enabled?: bool|Param, // Master switch: when false the subscriber never returns 503. // Default: true
- *     default_message?: scalar|Param|null, // Default message shown on the public maintenance page. // Default: "The site is temporarily unavailable for maintenance."
+ *     default_message?: scalar|Param|null, // Default message shown on the public maintenance page. // Default: "We're making a few gentle improvements. Everything you care about is safe."
  *     status_code?: int|Param, // HTTP status code for the maintenance response. // Default: 503
  *     retry_after?: int|Param, // Retry-After header value in seconds. // Default: 3600
- *     subscriber_priority?: int|Param, // kernel.request subscriber priority (high = early). // Default: 32
+ *     subscriber_priority?: int|Param, // kernel.request listener priority (default 31: after router so route/controller exclusions work). // Default: 31
+ *     preview?: array{ // Dev preview of the configured public maintenance page (like /_error/503).
+ *         enabled?: mixed, // null = enable when kernel.debug is true. Set false to disable even in debug. // Default: null
+ *         path?: scalar|Param|null, // URL path for the preview (auto-excluded from 503). // Default: "/_maintenance_preview"
+ *     },
  *     panel?: array{ // Admin CRUD panel settings.
  *         enabled?: bool|Param, // Expose the Twig CRUD panel controllers. // Default: true
  *         path_prefix?: scalar|Param|null, // URL prefix for the panel routes (also auto-excluded from 503). // Default: "/_maintenance"
@@ -763,11 +767,16 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         path_prefixes?: list<scalar|Param|null>,
  *         routes?: list<scalar|Param|null>,
  *         patterns?: list<scalar|Param|null>,
+ *         ips?: list<scalar|Param|null>,
  *     },
- *     security?: array{ // Panel access gate. Replace the service for a custom voter/authenticator.
- *         password_protection?: bool|Param, // When false, the panel does not require a password even if a hash is set. // Default: true
+ *     security?: array{ // Panel access gate + soft bypass for QA. Replace the gate service for a custom voter/authenticator.
+ *         password_protection?: bool|Param, // When false, the panel login section is disabled even if a hash is set (trusted networks only). // Default: true
  *         password_hash?: scalar|Param|null, // password_hash() output (bcrypt / argon2id / sodium). Prefer env: MAINTENANCE_PASSWORD_HASH. // Default: null
  *         access_gate?: scalar|Param|null, // FQCN or service id implementing MaintenanceAccessGateInterface. null = default password gate. // Default: null
+ *         bypass_token?: scalar|Param|null, // Optional shared secret: ?maintenance_bypass=TOKEN (or cookie) skips the 503 for QA without opening the panel. // Default: null
+ *         bypass_query_parameter?: scalar|Param|null, // Query parameter name for the soft bypass token. // Default: "maintenance_bypass"
+ *         bypass_cookie_name?: scalar|Param|null, // Cookie name set after a successful query bypass. // Default: "nowo_maintenance_bypass"
+ *         bypass_set_cookie?: bool|Param, // When true, a successful query bypass also sets a cookie for subsequent requests. // Default: true
  *     },
  *     storage?: array{ // Pluggable state / history backends (default: filesystem under var/).
  *         state_file?: scalar|Param|null, // JSON or YAML file for MaintenanceState. // Default: "%kernel.project_dir%/var/maintenance/state.json"

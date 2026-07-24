@@ -9,6 +9,8 @@ services:
         exclude:
             - '../../DependencyInjection/'
             - '../../Model/'
+            - '../../Event/'
+            - '../../Attribute/'
             - '../../Resources/'
             - '../../NowoMaintenanceModeBundle.php'
 
@@ -26,8 +28,14 @@ services:
 
     Nowo\MaintenanceModeBundle\Service\MaintenanceManager: ~
 
+    Nowo\MaintenanceModeBundle\Twig\MaintenanceExtension: ~
+
     Nowo\MaintenanceModeBundle\EventSubscriber\MaintenanceRequestSubscriber: ~
 
     Nowo\MaintenanceModeBundle\Controller\MaintenancePanelController:
+        public: true
+        tags: ['controller.service_arguments']
+
+    Nowo\MaintenanceModeBundle\Controller\MaintenancePreviewController:
         public: true
         tags: ['controller.service_arguments']

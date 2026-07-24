@@ -12,9 +12,11 @@ This bundle is **FrankenPHP worker mode friendly**.
 
 ## Features
 
-- **503 subscriber** — High-priority `kernel.request` interceptor with overrideable Twig page.
-- **Exclusions** — Exact paths, prefixes, route names, globs, and `#regex#` / `~regex~`.
-- **Admin panel** — Enable / disable / schedule / history under a configurable prefix (default `/_maintenance`).
+- **503 listener** — Configurable-priority `kernel.request` interceptor (default after router), HTML or JSON, dynamic `Retry-After`, `Cache-Control: no-store`.
+- **Exclusions** — Exact paths, prefixes, route names, globs, `#regex#` / `~regex~`, **IPs/CIDR**, `#[ExcludeFromMaintenance]`, soft bypass token.
+- **Admin panel** — Enable / disable / schedule / clear schedule / history under a configurable prefix (default `/_maintenance`).
+- **CLI** — `enable` / `disable` / `status` / `hash-password` for deploys and ops scripts.
+- **Events & Twig** — Domain events on state changes; `nowo_maintenance_is_enabled()` / `nowo_maintenance_state()`.
 - **Password gate** — Optional `password_hash` (bcrypt / argon2id); replaceable via `MaintenanceAccessGateInterface`.
 - **Pluggable storage** — Filesystem JSON/JSONL by default; swap for Doctrine or anything else via DI.
 
@@ -37,7 +39,7 @@ nowo_maintenance_mode:
 ```yaml
 nowo_maintenance_mode:
     enabled: true
-    default_message: 'The site is temporarily unavailable for maintenance.'
+    default_message: "We're making a few gentle improvements. Everything you care about is safe."
     panel:
         path_prefix: '/_maintenance'
     security:
@@ -50,7 +52,7 @@ nowo_maintenance_mode:
 
 ## Usage
 
-Open `/_maintenance` to toggle maintenance. Visitors hit the public page with **HTTP 503**; excluded routes and the panel keep working.
+Open `/_maintenance` to toggle maintenance. Visitors hit the public page with **HTTP 503**; excluded routes and the panel keep working. In **dev**, preview the configured page at `/_maintenance_preview` (like `/_error/503`). Demo gallery: `/examples`.
 
 ```php
 $maintenance->enable('Deploy in progress', 'ops');
@@ -77,6 +79,7 @@ See [docs/USAGE.md](docs/USAGE.md).
 ### Additional documentation
 
 - [Demo (FrankenPHP)](docs/DEMO-FRANKENPHP.md)
+- [Maintenance page examples](docs/MAINTENANCE-PAGE-EXAMPLES.md)
 - [GitHub CI notes](docs/GITHUB_CI.md)
 
 ## Requirements

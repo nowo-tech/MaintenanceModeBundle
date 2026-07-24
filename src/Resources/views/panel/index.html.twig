@@ -8,12 +8,26 @@
         <a href="{{ path_prefix }}/history">{{ 'panel.nav.history'|trans({}, 'NowoMaintenanceModeBundle') }}</a>
     </nav>
     <h1>{{ 'panel.title'|trans({}, 'NowoMaintenanceModeBundle') }}</h1>
+
+    {% for type, messages in flashes|default({}) %}
+        {% for message in messages %}
+            <p class="flash {{ type }}">{{ message|trans({}, 'NowoMaintenanceModeBundle') }}</p>
+        {% endfor %}
+    {% endfor %}
+
     <p>
-        {{ 'panel.status'|trans({}, 'NowoMaintenanceModeBundle') }}:
-        {% if state.enabled or state.effectivelyEnabled %}
+        {{ 'panel.status.manual'|trans({}, 'NowoMaintenanceModeBundle') }}:
+        {% if state.enabled %}
             <span class="status on">{{ 'panel.status.enabled'|trans({}, 'NowoMaintenanceModeBundle') }}</span>
         {% else %}
             <span class="status off">{{ 'panel.status.disabled'|trans({}, 'NowoMaintenanceModeBundle') }}</span>
+        {% endif %}
+        ·
+        {{ 'panel.status.effective'|trans({}, 'NowoMaintenanceModeBundle') }}:
+        {% if state.effectivelyEnabled %}
+            <span class="status on">{{ 'panel.status.on'|trans({}, 'NowoMaintenanceModeBundle') }}</span>
+        {% else %}
+            <span class="status off">{{ 'panel.status.off'|trans({}, 'NowoMaintenanceModeBundle') }}</span>
         {% endif %}
     </p>
 
@@ -53,10 +67,16 @@
             <textarea id="schedule_message" name="message" rows="2">{{ state.message }}</textarea>
             <button type="submit" class="secondary">{{ 'panel.save_schedule'|trans({}, 'NowoMaintenanceModeBundle') }}</button>
         </form>
+        <form method="post" action="{{ path_prefix }}/clear-schedule" style="margin-top:1rem">
+            <input type="hidden" name="_token" value="{{ csrf_token('nowo_maintenance_clear_schedule') }}">
+            <button type="submit" class="secondary">{{ 'panel.clear_schedule'|trans({}, 'NowoMaintenanceModeBundle') }}</button>
+        </form>
     </div>
 
+    {% if password_required|default(true) %}
     <form method="post" action="{{ path_prefix }}/logout" style="margin-top:1.5rem">
         <input type="hidden" name="_token" value="{{ csrf_token('nowo_maintenance_logout') }}">
         <button type="submit" class="secondary">{{ 'panel.logout'|trans({}, 'NowoMaintenanceModeBundle') }}</button>
     </form>
+    {% endif %}
 {% endblock %}

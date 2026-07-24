@@ -1,31 +1,123 @@
-maintenance.page.title: Manutenzione
-maintenance.page.heading: Torniamo subito
-maintenance.page.message: Il sito non è temporaneamente disponibile per manutenzione.
-panel.title: Pannello manutenzione
-panel.status: Stato
-panel.status.enabled: ATTIVO
-panel.status.disabled: disattivo
-panel.message: Messaggio
+maintenance.page.title: Una breve pausa
+maintenance.page.heading: Stiamo sistemando — torniamo presto
+maintenance.page.message: Stiamo facendo piccoli miglioramenti delicati. Tutto ciò che ti interessa è al sicuro.
+maintenance.page.badge: Torniamo subito
+maintenance.page.reassure: Non devi fare nulla. Prenditi un tè — riapriremo a breve.
+maintenance.page.thanks: Grazie per la pazienza. Conti per noi.
+maintenance.examples.bootstrap_calm.title: Un respiro
+maintenance.examples.bootstrap_calm.eyebrow: Pausa morbida
+maintenance.examples.bootstrap_calm.heading: Un momento calmo mentre rinfreschiamo il sito
+maintenance.examples.bootstrap_calm.message: Stiamo facendo una manutenzione leggera così la prossima visita sarà ancora più piacevole.
+maintenance.examples.bootstrap_calm.reassure: 'I tuoi dati e il tuo account sono intatti. È cura ordinaria, non un’emergenza.'
+maintenance.examples.bootstrap_calm.thanks: Grazie per aspettarci con gentilezza.
+maintenance.examples.bootstrap_sunset.title: Pausa calda
+maintenance.examples.bootstrap_sunset.eyebrow: Pausa al tramonto
+maintenance.examples.bootstrap_sunset.heading: Torneremo a brillare tra poco
+maintenance.examples.bootstrap_sunset.message: Il sito riposa per un breve aggiornamento. Nulla è rotto — stiamo solo lucidando.
+maintenance.examples.bootstrap_sunset.reassure: Puoi chiudere questa scheda e tornare più tardi. Saremo qui per te.
+maintenance.examples.bootstrap_sunset.thanks: Apprezziamo la tua pazienza serena.
+maintenance.examples.foundation_garden.title: Pausa in giardino
+maintenance.examples.foundation_garden.eyebrow: Crescita silenziosa
+maintenance.examples.foundation_garden.heading: Stiamo piantando qualche miglioramento
+maintenance.examples.foundation_garden.message: Stiamo annaffiando le radici del sito. Rifiorirà molto presto.
+maintenance.examples.foundation_garden.reassure: Non hai provocato nulla. È una cura pianificata per mantenere tutto sano.
+maintenance.examples.foundation_garden.thanks: Grazie per darci un momento per crescere.
+maintenance.examples.foundation_night.title: Notte quieta
+maintenance.examples.foundation_night.eyebrow: Cura notturna
+maintenance.examples.foundation_night.heading: Le luci sono basse per un aggiornamento delicato
+maintenance.examples.foundation_night.message: Stiamo facendo manutenzione silenziosa. Stai sereno — il tuo posto qui è al sicuro.
+maintenance.examples.foundation_night.reassure: 'Niente fretta, niente allarmi. Riaccenderemo le luci a breve.'
+maintenance.examples.foundation_night.thanks: Grazie per fidarti di noi durante l’attesa.
+maintenance.examples.tailwind_breeze.title: Aria fresca
+maintenance.examples.tailwind_breeze.eyebrow: Modalità brezza
+maintenance.examples.tailwind_breeze.heading: Apriamo una finestra per aggiornamenti freschi
+maintenance.examples.tailwind_breeze.message: Una leggera brezza di manutenzione attraversa il sito. Presto sembrerà più chiaro.
+maintenance.examples.tailwind_breeze.reassure: Puoi rilassarti. Nulla di urgente — stiamo solo rinfrescando.
+maintenance.examples.tailwind_breeze.thanks: Grati per la tua pazienza serena.
+maintenance.examples.tailwind_aurora.title: Pausa aurora
+maintenance.examples.tailwind_aurora.eyebrow: Aurora soft
+maintenance.examples.tailwind_aurora.heading: Un bagliore quieto mentre miglioriamo l’esperienza
+maintenance.examples.tailwind_aurora.message: Stiamo affinando dettagli dietro le quinte. L’attesa sarà breve e senza stress.
+maintenance.examples.tailwind_aurora.reassure: Tutto ciò che conta resta esattamente dove l’hai lasciato.
+maintenance.examples.tailwind_aurora.thanks: Grazie per restare gentili con noi.
+maintenance.examples.idea_short.title: Torniamo subito
+maintenance.examples.idea_short.eyebrow: Pausa breve
+maintenance.examples.idea_short.heading: Di ritorno a breve
+maintenance.examples.idea_short.message: Stiamo facendo un aggiornamento rapido. Nulla di cui preoccuparsi.
+maintenance.examples.idea_short.reassure: Nessuna azione richiesta.
+maintenance.examples.idea_short.thanks: Grazie per l’attesa.
+maintenance.examples.idea_compassion.title: Scusa per la pausa
+maintenance.examples.idea_compassion.eyebrow: Con cura
+maintenance.examples.idea_compassion.heading: Ci scusiamo per il disagio
+maintenance.examples.idea_compassion.message: È in corso manutenzione per mantenere tutto affidabile. Sappiamo che le interruzioni frustrano.
+maintenance.examples.idea_compassion.reassure: Account e dati restano al sicuro. Stiamo lavorando con calma per riaprire.
+maintenance.examples.idea_compassion.status_note: Preferisci lo stato in tempo reale? Usa il tuo canale di status abituale — questa pagina non collega mai al login admin.
+maintenance.examples.idea_compassion.thanks: Grazie per la comprensione.
+maintenance.examples.idea_playful.title: Pit stop
+maintenance.examples.idea_playful.eyebrow: Modalità umorismo soft
+maintenance.examples.idea_playful.heading: Il sito si stiracchia un attimo
+maintenance.examples.idea_playful.message: Siamo usciti per una lucidatura rapida. Niente drammi — solo una sosta amichevole.
+maintenance.examples.idea_playful.punchline: I server hanno chiesto un caffè. Abbiamo detto di sì.
+maintenance.examples.idea_playful.reassure: Tutto ciò che ti interessa è esattamente dove l’hai lasciato.
+maintenance.examples.idea_playful.thanks: Grazie per sorridere mentre aspetti.
+maintenance.examples.idea_brand.title: Manutenzione
+maintenance.examples.idea_brand.eyebrow: Avviso ufficiale
+maintenance.examples.idea_brand.heading: Torneremo presto
+maintenance.examples.idea_brand.message: Manutenzione pianificata per mantenere l’esperienza coerente e affidabile.
+maintenance.examples.idea_brand.reassure: Riprova tra poco.
+maintenance.examples.idea_brand.thanks: Apprezziamo la tua pazienza.
+maintenance.examples.idea_brand.mark: N
+maintenance.examples.idea_countdown.title: Quasi pronti
+maintenance.examples.idea_countdown.eyebrow: Rientro stimato
+maintenance.examples.idea_countdown.heading: Conto alla rovescia per la riapertura
+maintenance.examples.idea_countdown.message: Stiamo concludendo la manutenzione programmata. Il timer usa l’orario di fine previsto quando è impostato.
+maintenance.examples.idea_countdown.reassure: Puoi lasciare aperta questa scheda — si aggiorna da sola.
+maintenance.examples.idea_countdown.thanks: Grazie per restare con noi.
+maintenance.examples.idea_countdown.remaining: Tempo rimanente
+maintenance.examples.idea_countdown.unknown_eta: Presto
+maintenance.examples.idea_updates.title: Aggiornamenti live
+maintenance.examples.idea_updates.eyebrow: Registro di stato
+maintenance.examples.idea_updates.heading: Stiamo avanzando
+maintenance.examples.idea_updates.message: La manutenzione è attiva. Ecco uno snapshot calmo di ciò che accade dietro le quinte.
+maintenance.examples.idea_updates.reassure: Non serve aggiornare di continuo — riapriremo appena è sicuro.
+maintenance.examples.idea_updates.thanks: Grazie per restare con noi.
+maintenance.examples.idea_updates.log_1: Finestra di manutenzione aperta; il traffico non escluso è in pausa.
+maintenance.examples.idea_updates.log_2: I servizi principali vengono aggiornati con cura.
+maintenance.examples.idea_updates.log_3: 'Pre-check completati; prossimo passo: riaprire quando è verde.'
 panel.activated: Attivato
+panel.clear_schedule: Cancella programmazione
 panel.deactivated: Disattivato
-panel.scheduled_enable: Attivazione programmata
-panel.scheduled_disable: Disattivazione programmata
-panel.updated_by: Aggiornato da
-panel.enable: Attiva manutenzione
 panel.disable: Disattiva manutenzione
-panel.schedule: Pianificazione
-panel.save_schedule: Salva pianificazione
+panel.enable: Attiva manutenzione
+panel.flash.disabled: Manutenzione disattivata.
+panel.flash.enabled: Manutenzione attivata.
+panel.flash.schedule_cleared: Programmazione cancellata.
+panel.flash.schedule_saved: Programmazione salvata.
 panel.history: Cronologia
-panel.nav.panel: Pannello
-panel.nav.history: Cronologia
-panel.logout: Esci
+panel.history.action: Azione
+panel.history.actor: Autore
+panel.history.empty: Nessuna cronologia.
+panel.history.message: Messaggio
+panel.history.when: Quando
+panel.login.error: Password non valida.
 panel.login.heading: Pannello manutenzione
 panel.login.intro: Inserisci la password di manutenzione per gestire il sito.
 panel.login.password: Password
 panel.login.submit: Accedi
-panel.login.error: Password non valida.
-panel.history.when: Quando
-panel.history.action: Azione
-panel.history.actor: Autore
-panel.history.message: Messaggio
-panel.history.empty: Nessuna cronologia.
+panel.logout: Esci
+panel.message: Messaggio
+panel.nav.history: Cronologia
+panel.nav.panel: Pannello
+panel.save_schedule: Salva pianificazione
+panel.schedule: Pianificazione
+panel.scheduled_disable: Disattivazione programmata
+panel.scheduled_enable: Attivazione programmata
+panel.status: Stato
+panel.status.disabled: disattivo
+panel.status.effective: Effettivo
+panel.status.enabled: ATTIVO
+panel.status.manual: Manuale
+panel.status.off: disattivo
+panel.status.on: ATTIVO
+panel.title: Pannello manutenzione
+panel.updated_by: Aggiornato da
