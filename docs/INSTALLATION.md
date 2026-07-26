@@ -17,7 +17,7 @@ composer require nowo-tech/maintenance-mode-bundle
 
 ### With Symfony Flex
 
-The recipe enables the bundle and adds `config/packages/nowo_maintenance_mode.yaml`.
+If Symfony Flex is available, the Flex recipe under `.symfony/recipe/nowo-tech/maintenance-mode-bundle/` registers the bundle, copies `config/packages/nowo_maintenance_mode.yaml`, and adds `config/routes/nowo_maintenance_mode.yaml`. Adjust values as needed (see [Configuration](CONFIGURATION.md)).
 
 ### Without Flex
 

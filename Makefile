@@ -37,6 +37,7 @@ help:
 	@echo "  composer-sync Validate composer.json and align composer.lock (no install)"
 	@echo "  clean         Remove vendor and cache"
 	@echo "  update        Update composer.lock (composer update)"
+	@echo "  update-deps   Update bundle + all demos (REQ-MAKE-008)"
 	@echo "  validate      Run composer validate --strict"
 	@echo ""
 	@echo "Demos: make -C demo (when demos exist)"
@@ -69,7 +70,10 @@ ensure-up:
 	@if ! $(COMPOSE) exec -T $(SERVICE_PHP) true 2>/dev/null; then \
 		echo "Starting container (root docker-compose)..."; \
 		$(COMPOSE) up -d; \
-		sleep 3; \
+		sleep 5; \
+	fi
+	@if [ ! -d vendor ] || [ composer.lock -nt vendor/composer/installed.json ] 2>/dev/null; then \
+		echo "Installing / syncing Composer dependencies..."; \
 		$(COMPOSE) exec -T $(SERVICE_PHP) composer install --no-interaction; \
 	fi
 
@@ -111,7 +115,7 @@ update: ensure-up
 validate: ensure-up
 	$(COMPOSE) exec -T $(SERVICE_PHP) composer validate --strict
 
-release-check: check-no-cursor-coauthor ensure-up composer-sync cs-fix cs-check rector-dry phpstan validate-translations coverage-check release-check-demos
+release-check: ensure-up check-no-cursor-coauthor composer-sync cs-fix cs-check rector-dry phpstan validate-translations coverage-check release-check-demos
 
 release-check-demos:
 	@if [ -f demo/Makefile ]; then $(MAKE) -C demo release-check; else echo "No demo/Makefile — skip release-check-demos"; fi

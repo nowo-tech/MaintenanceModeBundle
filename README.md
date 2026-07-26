@@ -80,7 +80,7 @@ See [docs/USAGE.md](docs/USAGE.md).
 
 - [Demo (FrankenPHP)](docs/DEMO-FRANKENPHP.md)
 - [Maintenance page examples](docs/MAINTENANCE-PAGE-EXAMPLES.md)
-- [GitHub CI notes](docs/GITHUB_CI.md)
+- [GitHub Actions CI requirements](docs/GITHUB_CI.md)
 
 ## Requirements
 

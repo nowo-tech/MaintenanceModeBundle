@@ -28,7 +28,7 @@ final class MaintenancePreviewController
         private readonly MaintenanceManager $manager,
         private readonly Environment $twig,
         private readonly string $template,
-        private readonly string $defaultMessage,
+        private readonly ?string $defaultMessage,
         private readonly int $statusCode = Response::HTTP_SERVICE_UNAVAILABLE,
         private readonly int $retryAfter = 3600,
     ) {
@@ -44,6 +44,10 @@ final class MaintenancePreviewController
         $message = $request->query->getString('message');
         if ($message === '') {
             $message = $state->getMessage() ?? $this->defaultMessage;
+        }
+        // Empty string → null so Twig can fall back to translated maintenance.page.message
+        if ($message === '') {
+            $message = null;
         }
 
         $retryAfter = $this->resolveRetryAfter($state->getScheduledDisableAt());

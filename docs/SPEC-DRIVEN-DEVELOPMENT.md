@@ -1,10 +1,39 @@
 # Spec-driven development
 
-## Layers in sync
+## Table of contents
 
-1. **Product behaviour** — what consuming apps may rely on (503 maintenance, exclusions, panel, pluggable storage/gate). Documented in [USAGE.md](USAGE.md) and [CONFIGURATION.md](CONFIGURATION.md).
-2. **Traceability anchors** — `REQ-*` identifiers in Makefiles / demos (e.g. REQ-CS-005, REQ-DEMO-010, REQ-MAKE-001).
-3. **GitHub Spec Kit baseline** — when present under `specs/001-baseline/`; see [SPEC-KIT.md](SPEC-KIT.md).
+- [Three layers in sync](#three-layers-in-sync)
+- [GitHub Spec Kit baseline](#github-spec-kit-baseline)
+- [User stories](#user-stories)
+- [Functional scope](#functional-scope)
+- [Validating the functional spec](#validating-the-functional-spec)
+- [Requirement identifiers](#requirement-identifiers-selected)
+- [Contributor workflow](#contributor-workflow)
+- [Relationship to Engram](#relationship-to-engram)
+- [See also](#see-also)
+
+## Three layers in sync
+
+1. **Spec Kit baseline** — [`specs/001-baseline/`](../specs/001-baseline/) records
+   the current product, functional requirements, success criteria, and a complete
+   `src/` inventory.
+2. **Product behaviour** — what consuming applications may rely on: HTTP 503
+   maintenance, exclusions, panel, schedules, and pluggable storage/gates.
+   Documented in [USAGE.md](USAGE.md) and [CONFIGURATION.md](CONFIGURATION.md).
+3. **REQ-* anchors** — identifiers that tie repository policies and implementation
+   constraints to their source files and validation, such as `REQ-CS-005`,
+   `REQ-DEMO-010`, and `REQ-MAKE-001`.
+
+All three layers must remain aligned.
+
+## GitHub Spec Kit baseline
+
+GitHub Spec Kit is the repository workflow for maintaining the baseline and
+incremental feature specifications. Read [SPEC-KIT.md](SPEC-KIT.md) for CLI
+installation, initialization, and Cursor Agent skills. The current baseline is
+[`specs/001-baseline/`](../specs/001-baseline/), including its
+[`spec.md`](../specs/001-baseline/spec.md) and
+[`code-inventory.md`](../specs/001-baseline/code-inventory.md).
 
 ## User stories
 
@@ -45,7 +74,11 @@ Behaviour changes require tests under `tests/`.
 
 ## Contributor workflow
 
-Clarify → implement with tests → update docs/config → `make release-check`.
+1. Clarify the behaviour and applicable REQ-* anchors.
+2. Implement with tests.
+3. Update integrator documentation and configuration guidance when needed.
+4. When `src/` changes, update the baseline inventory and its FR-* mapping.
+5. Run `make release-check`.
 
 ## Relationship to Engram
 
@@ -53,4 +86,8 @@ See [ENGRAM.md](ENGRAM.md) for AI memory; this file owns product behaviour and R
 
 ## See also
 
-[USAGE](USAGE.md) · [CONFIGURATION](CONFIGURATION.md) · [CONTRIBUTING](CONTRIBUTING.md) · [RELEASE](RELEASE.md) · [SPEC-KIT](SPEC-KIT.md)
+[USAGE](USAGE.md) · [CONFIGURATION](CONFIGURATION.md) ·
+[CONTRIBUTING](CONTRIBUTING.md) · [RELEASE](RELEASE.md) ·
+[SPEC-KIT](SPEC-KIT.md) ·
+[Baseline spec](../specs/001-baseline/spec.md) ·
+[Baseline code inventory](../specs/001-baseline/code-inventory.md)

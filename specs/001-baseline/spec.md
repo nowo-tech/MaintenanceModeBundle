@@ -1,7 +1,7 @@
 # Maintenance Mode Bundle — Baseline product specification
 
 **Package**: `nowo-tech/maintenance-mode-bundle`  
-**Last audited**: 2026-07-24  
+**Last audited**: 2026-07-26
 **Inventory**: [`code-inventory.md`](code-inventory.md)
 
 ## Overview
@@ -24,6 +24,12 @@ Maintenance Mode Bundle puts a Symfony application into **maintenance mode** (HT
 | FR-10 | **Scheduled enable/disable** windows affect `isEffectivelyEnabled()` without manual toggling. |
 | FR-11 | Bundle Twig views register under namespace `NowoMaintenanceModeBundle`; app overrides win (REQ-TWIG-001). |
 | FR-12 | Master config switch `nowo_maintenance_mode.enabled` disables the subscriber entirely. |
+| FR-13 | CLI commands enable, disable, and report effective maintenance status for deployment and operations workflows. |
+| FR-14 | The preview controller renders the configured public maintenance page in development without enabling maintenance mode. |
+| FR-15 | State mutations dispatch enabled, disabled, or updated domain events for integrator side effects. |
+| FR-16 | `#[ExcludeFromMaintenance]` and its route default exclude marked controllers or actions from maintenance mode. |
+| FR-17 | Twig helpers expose maintenance state for application templates. |
+| FR-18 | The bundle ships selectable example Twig maintenance themes. |
 
 ## User scenarios
 
@@ -70,6 +76,7 @@ Maintenance Mode Bundle puts a Symfony application into **maintenance mode** (HT
 | SC-01 | PHPUnit covers all PHP under `src/` (interfaces excluded where not executable). |
 | SC-02 | PHPStan level 8 passes with `nowo-tech/phpstan-frankenphp` rulesets. |
 | SC-03 | Demo FrankenPHP apps boot and smoke-test panel + 503 behaviour. |
+| SC-04 | `code-inventory.md` maps 100% of production files under `src/` (53/53) to one or more `FR-*` IDs. |
 
 ## Validation
 

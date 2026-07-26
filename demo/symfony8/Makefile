@@ -1,63 +1,88 @@
-.PHONY: help up down build install shell logs test cache-clear update-bundle ensure-up verify
+# Makefile for Maintenance Mode Bundle Demo - Symfony 8
+# Run from this directory: make up, make install, etc.
+
+SHELL := /bin/bash
+DOCKER ?= $(shell command -v docker 2>/dev/null || echo /usr/bin/docker)
+COMPOSE_FILE := docker-compose.yml
+DOCKER_COMPOSE := $(DOCKER) compose -f $(COMPOSE_FILE)
+SERVICE_PHP := php
+
+.PHONY: help up down restart build install shell logs cache-clear update-bundle ensure-up test test-coverage verify release-check
 
 BUNDLE_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/../..)
-SERVICE_PHP := php
 
 help:
 	@echo "Symfony 8 Demo - Maintenance Mode Bundle"
 	@echo ""
 	@echo "  make up            Start FrankenPHP demo"
 	@echo "  make down          Stop demo"
-	@echo "  make test          Run PHPUnit smoke tests"
-	@echo "  make verify        HTTP healthcheck on PORT"
+	@echo "  make restart       Restart container"
+	@echo "  make build         Build image (no cache)"
+	@echo "  make install       Composer install in container"
+	@echo "  make shell         Open shell in PHP container"
+	@echo "  make logs          Show container logs"
+	@echo "  make cache-clear   Clear Symfony cache"
 	@echo "  make update-bundle Sync path-repo bundle + clear cache"
+	@echo "  make test          Run PHPUnit smoke tests"
+	@echo "  make test-coverage Run tests with coverage (if configured)"
+	@echo "  make verify        HTTP healthcheck on PORT"
+	@echo "  make release-check update-bundle + test + verify"
 	@echo ""
 
 up:
 	@if [ ! -f .env ]; then cp .env.example .env 2>/dev/null || true; fi
-	docker-compose up -d --build
+	@PORT_VALUE=$$(grep "^PORT=" .env 2>/dev/null | cut -d= -f2 | tr -d '\r'); \
+	[ -z "$$PORT_VALUE" ] && PORT_VALUE=$$(grep "^PORT=" .env.example 2>/dev/null | cut -d= -f2 | tr -d '\r'); \
+	PORT=$$PORT_VALUE $(DOCKER_COMPOSE) up -d
 	@echo "Waiting for container to be ready..."
-	@sleep 3
+	@sleep 5
 	@echo "Installing dependencies..."
-	@docker-compose exec -T -e COMPOSER_MEMORY_LIMIT=-1 php composer install --no-interaction
-	@# Give FrankenPHP time to finish waiting for vendor and boot workers
-	@sleep 3
+	@$(DOCKER_COMPOSE) exec -T -e COMPOSER_MEMORY_LIMIT=-1 $(SERVICE_PHP) composer install --no-interaction
 	@PORT=$$(grep "^PORT=" .env 2>/dev/null | cut -d= -f2 | tr -d '\r'); \
 	[ -z "$$PORT" ] && PORT=$$(grep "^PORT=" .env.example 2>/dev/null | cut -d= -f2 | tr -d '\r'); \
 	echo "Demo started at: http://localhost:$$PORT"
 
 ensure-up:
-	@if ! docker-compose exec -T php true 2>/dev/null; then \
+	@if ! $(DOCKER_COMPOSE) exec -T $(SERVICE_PHP) true 2>/dev/null; then \
 		echo "Starting demo container..."; \
-		docker-compose up -d; \
-		sleep 3; \
+		PORT_VALUE=$$(grep "^PORT=" .env 2>/dev/null | cut -d= -f2 | tr -d '\r'); \
+		[ -z "$$PORT_VALUE" ] && PORT_VALUE=$$(grep "^PORT=" .env.example 2>/dev/null | cut -d= -f2 | tr -d '\r'); \
+		PORT=$$PORT_VALUE $(DOCKER_COMPOSE) up -d; \
+		sleep 5; \
+		$(DOCKER_COMPOSE) exec -T -e COMPOSER_MEMORY_LIMIT=-1 $(SERVICE_PHP) composer install --no-interaction; \
 	fi
 
 down:
-	docker-compose down
+	$(DOCKER_COMPOSE) down
+
+restart: ensure-up
+	$(DOCKER_COMPOSE) restart
 
 build:
-	docker-compose build --no-cache
+	$(DOCKER_COMPOSE) build --no-cache
 
 install: ensure-up
-	docker-compose exec -T -e COMPOSER_MEMORY_LIMIT=-1 php composer install --no-interaction
+	$(DOCKER_COMPOSE) exec -T -e COMPOSER_MEMORY_LIMIT=-1 $(SERVICE_PHP) composer install --no-interaction
 
 shell: ensure-up
-	docker-compose exec php sh
+	$(DOCKER_COMPOSE) exec $(SERVICE_PHP) sh
 
 logs:
-	docker-compose logs -f
+	$(DOCKER_COMPOSE) logs -f
 
 test: ensure-up update-bundle
-	docker-compose exec -T -e APP_ENV=test php php bin/phpunit
+	$(DOCKER_COMPOSE) exec -T -e APP_ENV=test $(SERVICE_PHP) php bin/phpunit
+
+test-coverage: ensure-up update-bundle
+	$(DOCKER_COMPOSE) exec -T -e APP_ENV=test $(SERVICE_PHP) php bin/phpunit --coverage-text
 
 cache-clear: ensure-up
-	docker-compose exec -T php php bin/console cache:clear
+	$(DOCKER_COMPOSE) exec -T $(SERVICE_PHP) php bin/console cache:clear
 
 # REQ-DEMO-007
 update-bundle: ensure-up
-	docker-compose exec -T php composer update nowo-tech/maintenance-mode-bundle --no-interaction
-	docker-compose exec -T php php bin/console cache:clear --env=dev
+	$(DOCKER_COMPOSE) exec -T $(SERVICE_PHP) composer update nowo-tech/maintenance-mode-bundle --no-interaction
+	$(DOCKER_COMPOSE) exec -T $(SERVICE_PHP) php bin/console cache:clear --env=dev
 
 verify: ensure-up
 	@PORT=$$(grep "^PORT=" .env 2>/dev/null | cut -d= -f2 | tr -d '\r'); \
@@ -65,6 +90,8 @@ verify: ensure-up
 	code=$$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:$$PORT/" 2>/dev/null || echo "000"); \
 	if [ "$$code" != "200" ]; then echo "Healthcheck failed: $$code"; exit 1; fi; \
 	echo "Healthcheck OK ($$code)"
+
+release-check: update-bundle test verify
 
 # REQ-MAKE-008: update-deps
 include $(BUNDLE_ROOT)/../.scripts/Makefile.demo-update-deps.mk

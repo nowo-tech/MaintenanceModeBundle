@@ -1,5 +1,43 @@
 # Upgrading
 
+## To 1.1.1
+
+Patch release: preview `default_message` null/empty handling for Twig translations, recipe preview defaults documented, and Nowo standards/docs scaffolding. Requirements are unchanged.
+
+### Requirements
+
+Same as 1.1.0 / 1.0.0:
+
+- **PHP** `>=8.2` and `<8.6`. Symfony **8.x** still needs **PHP 8.4+**.
+- **Symfony** `^7.0 || ^8.0` (CI minors: **7.4**, **8.0**, **8.1**).
+
+### Install / update
+
+```bash
+composer require nowo-tech/maintenance-mode-bundle:^1.1
+php bin/console cache:clear
+```
+
+### Behaviour notes (non-breaking)
+
+| Topic | Before | 1.1.1 |
+| --- | --- | --- |
+| `default_message` + preview | Empty/`null` could leave an empty string in the Twig context | `null` and `''` become `null` so `|default(...)` / `maintenance.page.message` work |
+| Recipe / sample YAML | Preview keys often omitted | Documents `preview.enabled` / `preview.path` |
+
+Optional — rely on translations for the public page body:
+
+```yaml
+nowo_maintenance_mode:
+    default_message: null
+```
+
+### Breaking changes
+
+None.
+
+---
+
 ## To 1.1.0
 
 Minor release: new ops CLI, exclusions, preview route, events, Twig helpers, and page examples. Requirements are unchanged.

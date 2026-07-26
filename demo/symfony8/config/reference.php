@@ -748,9 +748,25 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     intercept_redirects?: bool|Param, // Default: false
  *     excluded_ajax_paths?: scalar|Param|null, // Default: "^/((index|app(_[\\w]+)?)\\.php/)?_wdt"
  * }
+ * @psalm-type NowoTwigInspectorConfig = array{
+ *     enabled_extensions?: list<scalar|Param|null>,
+ *     excluded_templates?: list<scalar|Param|null>,
+ *     excluded_blocks?: list<scalar|Param|null>,
+ *     enable_metrics?: bool|Param, // Enable collection of template usage metrics in DataCollector // Default: true
+ *     inject_on_sub_requests?: bool|Param, // When true, inject comments also during sub-requests (e.g. when main content is rendered as fragment). Enable if all templates show "sub-request" and none get inspected. // Default: false
+ *     cookie_name?: scalar|Param|null, // Name of the cookie used to enable/disable the inspector // Default: "twig_inspector_is_active"
+ *     max_injection_depth?: int|Param, // Maximum nesting depth for comment injection (0 = unlimited). Reduces overhead on very deep template trees. // Default: 0
+ *     excluded_templates_regex?: list<scalar|Param|null>,
+ *     excluded_templates_prefixes?: list<scalar|Param|null>,
+ *     excluded_blocks_regex?: list<scalar|Param|null>,
+ *     overlay_theme?: scalar|Param|null, // Overlay theme: "light", "dark", or "auto" (follow system preference). // Default: "light"
+ *     overlay_compact?: bool|Param, // Use compact tooltip style for the overlay. // Default: false
+ *     reduced_motion?: bool|Param, // Respect reduced motion (accessibility). When true or system prefers-reduced-motion, animations are minimized. // Default: false
+ *     keyboard_shortcut?: scalar|Param|null, // Keyboard shortcut to toggle inspector (e.g. "Ctrl+Shift+T"). Empty to disable. // Default: "Ctrl+Shift+T"
+ * }
  * @psalm-type NowoMaintenanceModeConfig = array{ // Nowo Maintenance Mode Bundle configuration.
  *     enabled?: bool|Param, // Master switch: when false the subscriber never returns 503. // Default: true
- *     default_message?: scalar|Param|null, // Default message shown on the public maintenance page. // Default: "We're making a few gentle improvements. Everything you care about is safe."
+ *     default_message?: scalar|Param|null, // Default message shown on the public maintenance page. null = rely on Twig translation (maintenance.page.message). // Default: "We're making a few gentle improvements. Everything you care about is safe."
  *     status_code?: int|Param, // HTTP status code for the maintenance response. // Default: 503
  *     retry_after?: int|Param, // Retry-After header value in seconds. // Default: 3600
  *     subscriber_priority?: int|Param, // kernel.request listener priority (default 31: after router so route/controller exclusions work). // Default: 31
@@ -807,6 +823,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         twig?: TwigConfig,
  *         debug?: DebugConfig,
  *         web_profiler?: WebProfilerConfig,
+ *         nowo_twig_inspector?: NowoTwigInspectorConfig,
  *         nowo_maintenance_mode?: NowoMaintenanceModeConfig,
  *     },
  *     "when@prod"?: array{
@@ -825,6 +842,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         twig?: TwigConfig,
  *         debug?: DebugConfig,
  *         web_profiler?: WebProfilerConfig,
+ *         nowo_twig_inspector?: NowoTwigInspectorConfig,
  *         nowo_maintenance_mode?: NowoMaintenanceModeConfig,
  *     },
  *     ...<string, ExtensionType|array{ // extra keys must follow the when@%env% pattern or match an extension alias

@@ -17,6 +17,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Twig\Environment;
 
+use function array_key_exists;
+
 final class MaintenancePreviewControllerTest extends TestCase
 {
     private InMemoryStateStorage $stateStorage;
@@ -79,6 +81,32 @@ final class MaintenancePreviewControllerTest extends TestCase
         $this->createController(enabled: true)(Request::create('/_maintenance_preview'));
     }
 
+    public function testAllowsNullDefaultMessageForTranslationFallback(): void
+    {
+        $this->twig->expects(self::once())
+            ->method('render')
+            ->with(
+                self::anything(),
+                self::callback(static fn (array $ctx): bool => array_key_exists('message', $ctx) && $ctx['message'] === null),
+            )
+            ->willReturn('ok');
+
+        $this->createController(enabled: true, defaultMessage: null)(Request::create('/_maintenance_preview'));
+    }
+
+    public function testEmptyStringDefaultMessageBecomesNullForTranslationFallback(): void
+    {
+        $this->twig->expects(self::once())
+            ->method('render')
+            ->with(
+                self::anything(),
+                self::callback(static fn (array $ctx): bool => array_key_exists('message', $ctx) && $ctx['message'] === null),
+            )
+            ->willReturn('ok');
+
+        $this->createController(enabled: true, defaultMessage: '')(Request::create('/_maintenance_preview'));
+    }
+
     public function testQueryMessageOverridesState(): void
     {
         $this->stateStorage->state = (new MaintenanceState())->withMessage('Stored');
@@ -119,14 +147,14 @@ final class MaintenancePreviewControllerTest extends TestCase
         self::assertSame('42', $response->headers->get('Retry-After'));
     }
 
-    private function createController(bool $enabled, int $retryAfter = 3600): MaintenancePreviewController
+    private function createController(bool $enabled, int $retryAfter = 3600, ?string $defaultMessage = 'Default preview'): MaintenancePreviewController
     {
         return new MaintenancePreviewController(
             enabled: $enabled,
             manager: $this->manager,
             twig: $this->twig,
             template: '@NowoMaintenanceModeBundle/maintenance/page.html.twig',
-            defaultMessage: 'Default preview',
+            defaultMessage: $defaultMessage,
             statusCode: 503,
             retryAfter: $retryAfter,
         );

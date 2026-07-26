@@ -24,3 +24,17 @@ composer.lock.bak
 !.env.example
 !.env.test
 composer.lock
+
+# PHP-CS-Fixer cache (REQ-GITIGNORE-002)
+.php-cs-fixer.cache
+
+# pnpm local store (REQ-GITIGNORE-003)
+/.pnpm-store
+
+# Archives / compressed
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z

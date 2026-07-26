@@ -1,5 +1,18 @@
 # Usage
 
+## Table of contents
+
+- [Public maintenance page](#public-maintenance-page)
+  - [Attribute / route default](#attribute--route-default)
+  - [Calm page examples](#calm-page-examples)
+- [Dev preview](#dev-preview-like-_error503)
+- [Admin panel](#admin-panel)
+- [CLI](#cli-deploy--ops)
+- [Programmatic API](#programmatic-api)
+  - [Twig](#twig)
+- [Custom storage / access gate](#custom-storage--access-gate)
+- [Twig overrides](#twig-overrides)
+
 ## Public maintenance page
 
 When maintenance is **effectively enabled** (manual flag or schedule window), `MaintenanceRequestSubscriber` intercepts main HTTP requests and returns **HTTP 503** with a `Retry-After` header (and `Cache-Control: no-store`). Clients that prefer JSON receive a JSON body (`status`, `message`, `retry_after`, `scheduled_disable_at`).

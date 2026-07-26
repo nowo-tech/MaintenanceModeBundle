@@ -19,6 +19,7 @@
         "symfony/yaml": "8.1.*"
     },
     "require-dev": {
+        "nowo-tech/twig-inspector-bundle": "^1.0",
         "phpunit/phpunit": "^11.5",
         "symfony/browser-kit": "8.1.*",
         "symfony/css-selector": "8.1.*",

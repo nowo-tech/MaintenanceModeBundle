@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-07-26
+
+### Fixed
+
+- Preview controller accepts `default_message: null` (and treats empty string as null) so apps can rely on Twig translation (`maintenance.page.message`).
+
+### Changed
+
+- Recipe and package sample config document `preview.enabled` / `preview.path`.
+- Nowo bundle standards: canonical `docs/GITHUB_CI.md` (REQ-GIT-001), Spec Kit skills + `.specify/`, Copilot instructions, expanded FrankenPHP / security docs, demo `.gitignore` archive and cache patterns.
+
+### Compatibility
+
+- Unchanged: PHP `>=8.2`, `<8.6`; Symfony `^7.0 || ^8.0` (CI minors **7.4**, **8.0**, **8.1**).
+
 ## [1.1.0] - 2026-07-24
 
 ### Added
@@ -55,6 +70,7 @@ First stable release.
 - PHP `>=8.2`, `<8.6` (Symfony **8.x** requires PHP **8.4+**)
 - Symfony `^7.0 || ^8.0` (CI / mandatory minors: **7.4**, **8.0**, **8.1**; also tested against **7.0**)
 
-[Unreleased]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.0.0

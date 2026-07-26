@@ -2,6 +2,10 @@
 nowo_maintenance_mode:
     enabled: true
     default_message: 'We're making a few gentle improvements. Everything you care about is safe.'
+    preview:
+        # null = enable when kernel.debug is true (like /_error/{code})
+        enabled: ~
+        path: '/_maintenance_preview'
     panel:
         enabled: true
         path_prefix: '/_maintenance'

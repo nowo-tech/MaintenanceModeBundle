@@ -4,6 +4,15 @@ Ready-to-use public 503 templates with **calm, anxiety-light copy** in **en / es
 
 Inspiration for the “idea_*” set: common maintenance-page patterns (short & sweet, compassionate, playful, brand-familiar, countdown, live updates) — adapted for Symfony without linking the public page to panel login. See also [this showcase of maintenance-page ideas](https://es.ephesossoftware.com/articles/showcase/6-maintenance-page-ideas-you-can-use-on-your-wordpress-site.html).
 
+## Table of contents
+
+- [Framework gallery](#framework-gallery)
+- [Idea gallery](#idea-gallery-6-patterns)
+- [Activate an example](#activate-an-example)
+- [Demo gallery](#demo-gallery)
+- [Translation keys](#translation-keys)
+- [Operator access](#operator-access-important)
+
 ## Framework gallery
 
 CDN frameworks (latest at ship time):

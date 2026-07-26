@@ -31,7 +31,7 @@ final class Configuration implements ConfigurationInterface
                     ->defaultTrue()
                 ->end()
                 ->scalarNode('default_message')
-                    ->info('Default message shown on the public maintenance page.')
+                    ->info('Default message shown on the public maintenance page. null = rely on Twig translation (maintenance.page.message).')
                     ->defaultValue("We're making a few gentle improvements. Everything you care about is safe.")
                 ->end()
                 ->integerNode('status_code')

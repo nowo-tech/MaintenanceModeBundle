@@ -1,10 +1,27 @@
 # GitHub Spec Kit — installation, structure, and usage
 
-This manual explains how **GitHub Spec Kit** is set up and used in this repository. It complements [`SPEC-DRIVEN-DEVELOPMENT.md`](SPEC-DRIVEN-DEVELOPMENT.md) (product behaviour and traceability) and the normative baseline under [`specs/001-baseline/`](../specs/001-baseline/).
+## Purpose
+
+This manual explains how **GitHub Spec Kit** is set up and used in this repository.
+It complements [`SPEC-DRIVEN-DEVELOPMENT.md`](SPEC-DRIVEN-DEVELOPMENT.md), which
+defines product behaviour and REQ-* traceability, and the normative baseline under
+[`specs/001-baseline/`](../specs/001-baseline/).
 
 **Official upstream docs:** [github/spec-kit](https://github.com/github/spec-kit) · [Spec Kit documentation](https://github.github.io/spec-kit/)
 
----
+## Table of contents
+
+- [What Spec Kit adds](#what-spec-kit-adds)
+- [Prerequisites — install Specify CLI](#prerequisites--install-specify-cli)
+- [Initialize Spec Kit in this repository](#initialize-spec-kit-in-this-repository)
+- [Folder structure](#folder-structure)
+- [How the layers fit together](#how-the-layers-fit-together)
+- [Baseline backfill](#baseline-backfill-specs001-baseline)
+- [Using Spec Kit in Cursor Agent](#using-spec-kit-in-cursor-agent)
+- [Incremental features](#incremental-features-specs002)
+- [Maintainer checklist](#maintainer-checklist)
+- [Troubleshooting](#troubleshooting)
+- [See also](#see-also)
 
 ## What Spec Kit adds
 
@@ -15,8 +32,6 @@ GitHub Spec Kit is a **spec-driven development toolkit**. In Nowo bundles it pro
 3. **Cursor Agent skills** (`/speckit-specify`, `/speckit-plan`, …) to author new feature specs consistently.
 
 Spec Kit does **not** replace PHPUnit, PHPStan, or integrator docs — it **anchors** them.
-
----
 
 ## Prerequisites — install Specify CLI
 
@@ -45,7 +60,8 @@ specify init --here --force --integration cursor-agent --script sh
 | `--integration cursor-agent` | **Cursor Agent** (mandatory for Nowo bundles) |
 | `--script sh` | POSIX shell helpers (Linux/macOS/WSL) |
 
-Expected after init: `.specify/`, `.cursor/skills/speckit-*`, tailored `.specify/memory/constitution.md`.
+Expected after initialization: `.specify/`, `.cursor/skills/speckit-*`, and a
+tailored `.specify/memory/constitution.md`.
 
 **Re-init** after upgrading Specify CLI:
 
@@ -74,12 +90,24 @@ Repository root/
 
 | Path | Role |
 | --- | --- |
-| **`.specify/`** | **How** to work — tooling from `specify init` |
-| **`specs/`** | **What** the product does — versioned specifications |
+| **`.specify/`** | **How** to work — generated templates, scripts, and constitution from `specify init` |
+| **`specs/`** | **What** the product does — repository-owned, versioned specifications |
 | **`docs/SPEC-DRIVEN-DEVELOPMENT.md`** | User stories, REQ-* anchors, validation |
 | **`docs/SPEC-KIT.md`** | Tooling manual (this file) |
 
 ---
+
+## How the layers fit together
+
+1. **Spec Kit baseline** (`specs/001-baseline/`) inventories the current product and
+   defines its functional requirements.
+2. **Product behaviour** (`docs/USAGE.md`, `docs/CONFIGURATION.md`, and tests)
+   explains and proves what integrators can rely on.
+3. **REQ-* anchors** connect repository policy and implementation constraints to
+   their defining files and validation.
+
+Keep the three layers aligned: a production-code change updates the baseline,
+behaviour documentation when relevant, and any affected REQ-* anchor.
 
 ## Baseline backfill (`specs/001-baseline/`)
 
@@ -93,8 +121,8 @@ Every Nowo bundle with Spec Kit must ship:
 **Audit:**
 
 ```bash
-find src -type f -name '*.php' | wc -l
-# Must match "Total production PHP" row in code-inventory.md (16 for this bundle)
+find src -type f | wc -l
+# Must match code-inventory.md: 53/53 production files for this bundle
 ```
 
 When you change product behaviour:
@@ -122,11 +150,20 @@ For **baseline maintenance**, edit [`specs/001-baseline/spec.md`](../specs/001-b
 
 ---
 
+## Incremental features (`specs/002+`)
+
+Use a new numbered directory such as `specs/002-preview-improvements/` for a
+feature that is planned or delivered after the baseline. Use the Cursor skills to
+specify, plan, and implement it. Once implemented, update the baseline inventory
+when files under `src/` change; do not use an incremental spec to leave the
+baseline stale.
+
 ## Maintainer checklist
 
 Before merging a PR that changes production code:
 
 - [ ] `specs/001-baseline/code-inventory.md` includes every new/changed file under `src/`
+- [ ] `find src -type f | wc -l` matches the documented **53/53** count, or its updated count
 - [ ] `specs/001-baseline/spec.md` describes behaviour with `FR-*` / `SC-*` IDs
 - [ ] `docs/SPEC-DRIVEN-DEVELOPMENT.md` still accurate
 - [ ] Integrator docs updated if config or public API changed
