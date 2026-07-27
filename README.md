@@ -4,7 +4,7 @@
 
 > ⭐ **Found this useful?** [Install from Packagist](https://packagist.org/packages/nowo-tech/maintenance-mode-bundle) · Give it a **star** on [GitHub](https://github.com/nowo-tech/MaintenanceModeBundle) so more developers can find it.
 
-**Maintenance Mode Bundle** — Put a Symfony site into **maintenance mode** (HTTP **503**) with configurable exclusions, a Twig admin panel, scheduled windows, append-only history, and pluggable storage / access gates. Tested on Symfony **7.4**, **8.0**, and **8.1** (also compatible with Symfony 7.0–7.3) · PHP 8.2+ (Symfony 8.x requires PHP 8.4+).
+**Maintenance Mode Bundle** — Put a Symfony site into **maintenance mode** (HTTP **503**) with configurable exclusions, a Twig admin panel, scheduled windows, append-only history, and pluggable storage / access gates. Tested on Symfony **7.4**, **8.0**, and **8.1** · PHP 8.2+ (Symfony 8.x requires PHP 8.4+).
 
 ![FrankenPHP Friendly Worker Mode](docs/images/frankenphp-friendly.png)
 
@@ -85,7 +85,7 @@ See [docs/USAGE.md](docs/USAGE.md).
 ## Requirements
 
 - PHP `>=8.2` (<8.6); **Symfony 8.0** and **8.1** require **PHP 8.4+**
-- Symfony **7.4**, **8.0**, or **8.1** (minimum supported minors; also works on Symfony 7.0–7.3 via `composer.json` constraints)
+- Symfony **7.4**, **8.0**, or **8.1** (`^7.4 || ^8.0`)
 - Twig for the maintenance page and panel templates
 
 ## Development

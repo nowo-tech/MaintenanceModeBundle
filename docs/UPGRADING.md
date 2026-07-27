@@ -1,15 +1,46 @@
 # Upgrading
 
+## To 1.1.2
+
+Patch release: Symfony **8** installability for core Composer constraints, and docs aligned to the supported floor (**7.4** / **8.0** / **8.1**).
+
+### Requirements
+
+- **PHP** `>=8.2` and `<8.6`. Symfony **8.x** still needs **PHP 8.4+**.
+- **Symfony** `^7.4 || ^8.0` (CI / mandatory minors: **7.4**, **8.0**, **8.1**). Symfony **7.0–7.3** and **6.4** are not supported.
+
+### Install / update
+
+```bash
+composer require nowo-tech/maintenance-mode-bundle:^1.1
+php bin/console cache:clear
+```
+
+If you are on Symfony **8.0** or **8.1** and Composer rejected `v1.1.1` for `symfony/config` (or related) packages, upgrade to **1.1.2+**.
+
+### Behaviour notes (non-breaking)
+
+| Topic | Before (1.1.1) | 1.1.2 |
+| --- | --- | --- |
+| Core `symfony/*` constraints | `^7.4` only on config / DI / http-* / security-core | `^7.4 \|\| ^8.0` — installable on Symfony 8 |
+| Documented SF 7 floor | Mixed messaging (7.0–7.3 vs 7.4) | Explicit floor **7.4** |
+
+### Breaking changes
+
+None for public PHP APIs or config keys.
+
+---
+
 ## To 1.1.1
 
-Patch release: preview `default_message` null/empty handling for Twig translations, recipe preview defaults documented, and Nowo standards/docs scaffolding. Requirements are unchanged.
+Patch release: preview `default_message` null/empty handling for Twig translations, recipe preview defaults documented, and Nowo standards/docs scaffolding. Requirements are unchanged from 1.1.0 (Symfony 8 apps should use **1.1.2+** — see above).
 
 ### Requirements
 
 Same as 1.1.0 / 1.0.0:
 
 - **PHP** `>=8.2` and `<8.6`. Symfony **8.x** still needs **PHP 8.4+**.
-- **Symfony** `^7.0 || ^8.0` (CI minors: **7.4**, **8.0**, **8.1**).
+- **Symfony** floor **7.4** (CI minors: **7.4**, **8.0**, **8.1**).
 
 ### Install / update
 
@@ -22,7 +53,7 @@ php bin/console cache:clear
 
 | Topic | Before | 1.1.1 |
 | --- | --- | --- |
-| `default_message` + preview | Empty/`null` could leave an empty string in the Twig context | `null` and `''` become `null` so `|default(...)` / `maintenance.page.message` work |
+| `default_message` + preview | Empty/`null` could leave an empty string in the Twig context | `null` and `''` become `null` so `\|default(...)` / `maintenance.page.message` work |
 | Recipe / sample YAML | Preview keys often omitted | Documents `preview.enabled` / `preview.path` |
 
 Optional — rely on translations for the public page body:
@@ -47,7 +78,7 @@ Minor release: new ops CLI, exclusions, preview route, events, Twig helpers, and
 Same as 1.0.0:
 
 - **PHP** `>=8.2` and `<8.6`. Symfony **8.x** still needs **PHP 8.4+**.
-- **Symfony** `^7.0 || ^8.0` (CI minors: **7.4**, **8.0**, **8.1**).
+- **Symfony** floor **7.4** (CI minors: **7.4**, **8.0**, **8.1**).
 
 ### Install / update
 
@@ -117,7 +148,7 @@ First public release. No prior Packagist versions.
 ### Requirements
 
 - **PHP** `>=8.2` and `<8.6`. Symfony **8.x** still needs **PHP 8.4+**.
-- **Symfony** `^7.0 || ^8.0` (mandatory minors in CI: **7.4**, **8.0**, **8.1**). Symfony **6.4** is not supported.
+- **Symfony** floor **7.4** (mandatory minors in CI: **7.4**, **8.0**, **8.1**). Symfony **6.4** is not supported.
 
 ### Install
 

@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.2] - 2026-07-27
+
+### Fixed
+
+- Composer constraints for `symfony/config`, `dependency-injection`, `http-foundation`, `http-kernel`, and `security-core` allow Symfony **8** (`^7.4 || ^8.0`). Tag `v1.1.1` used `^7.4` alone and was not installable on Symfony 8 apps.
+
+### Changed
+
+- Documented supported floor as Symfony **7.4** / **8.0** / **8.1** (PHP `>=8.2`, `<8.6`; Symfony 8.x needs PHP **8.4+**). Dropped misleading claims of Symfony 7.0–7.3 support where core packages require `^7.4`.
+- CI Symfony matrix keeps mandatory minors **7.4**, **8.0**, and **8.1** (optional `7.0` cell removed).
+
+### Compatibility
+
+- PHP `>=8.2`, `<8.6` (Symfony **8.x** requires PHP **8.4+**)
+- Symfony `^7.4 || ^8.0` (CI / mandatory minors: **7.4**, **8.0**, **8.1**)
+
 ## [1.1.1] - 2026-07-26
 
 ### Fixed
@@ -20,7 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Compatibility
 
-- Unchanged: PHP `>=8.2`, `<8.6`; Symfony `^7.0 || ^8.0` (CI minors **7.4**, **8.0**, **8.1**).
+- PHP `>=8.2`, `<8.6`; Symfony floor **7.4** with optional peripheral `^7.0` constraints (CI minors **7.4**, **8.0**, **8.1**). Note: `v1.1.1` core `symfony/*` packages were `^7.4` only — Symfony 8 installs need **1.1.2+**.
 
 ## [1.1.0] - 2026-07-24
 
@@ -46,7 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Compatibility
 
-- Unchanged: PHP `>=8.2`, `<8.6`; Symfony `^7.0 || ^8.0` (CI minors **7.4**, **8.0**, **8.1**).
+- Unchanged: PHP `>=8.2`, `<8.6`; Symfony floor **7.4** (CI minors **7.4**, **8.0**, **8.1**).
 
 ## [1.0.0] - 2026-07-24
 
@@ -68,9 +84,10 @@ First stable release.
 ### Compatibility
 
 - PHP `>=8.2`, `<8.6` (Symfony **8.x** requires PHP **8.4+**)
-- Symfony `^7.0 || ^8.0` (CI / mandatory minors: **7.4**, **8.0**, **8.1**; also tested against **7.0**)
+- Symfony floor **7.4** (CI / mandatory minors: **7.4**, **8.0**, **8.1**)
 
-[Unreleased]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.1.2...HEAD
+[1.1.2]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.0.0
