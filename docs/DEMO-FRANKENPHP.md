@@ -2,7 +2,7 @@
 
 This document describes how the Maintenance Mode Bundle demo runs under **FrankenPHP** in Docker, and how to reproduce **development** and **production**-like configurations.
 
-## Contents
+## Table of contents
 
 - [Overview](#overview)
 - [What the demos include](#what-the-demos-include)
@@ -125,6 +125,7 @@ Compose mounts the bundle root at `/var/maintenance-mode-bundle` (Composer path 
 make -C demo help
 make -C demo up-symfony8
 make -C demo test-symfony8
+make -C demo demo-smoke   # REQ-TEST-011: up → HTTP 200 → down
 make -C demo release-check
 ```
 

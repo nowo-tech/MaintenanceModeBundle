@@ -15,6 +15,7 @@ use Nowo\MaintenanceModeBundle\Storage\FilesystemMaintenanceHistoryStorage;
 use Nowo\MaintenanceModeBundle\Storage\FilesystemMaintenanceStateStorage;
 use Nowo\MaintenanceModeBundle\Storage\MaintenanceHistoryStorageInterface;
 use Nowo\MaintenanceModeBundle\Storage\MaintenanceStateStorageInterface;
+use Nowo\MaintenanceModeBundle\Twig\MaintenanceExtension as TwigMaintenanceExtension;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
@@ -48,7 +49,21 @@ final class MaintenanceModeExtension extends Extension
         $container->setParameter('nowo.maintenance_mode.storage', $config['storage']);
         $container->setParameter('nowo.maintenance_mode.storage.state_file', $config['storage']['state_file']);
         $container->setParameter('nowo.maintenance_mode.storage.history_file', $config['storage']['history_file']);
+        $defaultLayout = '@NowoMaintenanceModeBundle/panel/layout.html.twig';
+        // REQ-UI-001: web_ui.layout_template is canonical; preserve legacy templates.panel_layout overrides.
+        if ($config['web_ui']['layout_template'] === $defaultLayout
+            && $config['templates']['panel_layout'] !== $defaultLayout) {
+            $config['web_ui']['layout_template'] = $config['templates']['panel_layout'];
+        } else {
+            $config['templates']['panel_layout'] = $config['web_ui']['layout_template'];
+        }
+
         $container->setParameter('nowo.maintenance_mode.templates', $config['templates']);
+        $container->setParameter('nowo.maintenance_mode.web_ui', $config['web_ui']);
+        $container->setParameter('nowo.maintenance_mode.web_ui.enabled', (bool) $config['web_ui']['enabled']);
+        $container->setParameter('nowo.maintenance_mode.web_ui.layout_template', $config['web_ui']['layout_template']);
+        $container->setParameter('nowo.maintenance_mode.web_ui.css_framework', $config['web_ui']['css_framework']);
+        $container->setParameter('nowo.maintenance_mode.web_ui.icon_set', $config['web_ui']['icon_set']);
 
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.yaml');
@@ -60,6 +75,7 @@ final class MaintenanceModeExtension extends Extension
         $this->configureSubscriber($container, $config);
         $this->configurePanel($container, $config);
         $this->configurePreview($container, $config);
+        $this->configureTwigExtension($container, $config);
     }
 
     public function getAlias(): string
@@ -244,5 +260,21 @@ final class MaintenanceModeExtension extends Extension
             ->setArgument('$statusCode', (int) $config['status_code'])
             ->setArgument('$retryAfter', (int) $config['retry_after'])
             ->setPublic(true);
+    }
+
+    /**
+     * @param array<string, mixed> $config
+     */
+    private function configureTwigExtension(ContainerBuilder $container, array $config): void
+    {
+        if (!$container->hasDefinition(TwigMaintenanceExtension::class)) {
+            return;
+        }
+
+        $webUi = $config['web_ui'];
+        $container->getDefinition(TwigMaintenanceExtension::class)
+            ->setArgument('$layoutTemplate', $webUi['layout_template'])
+            ->setArgument('$cssFramework', $webUi['css_framework'])
+            ->setArgument('$iconSet', $webUi['icon_set']);
     }
 }

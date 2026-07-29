@@ -32,6 +32,10 @@ final class ConfigurationTest extends TestCase
         self::assertSame('/_maintenance_preview', $config['preview']['path']);
         self::assertStringContainsString('var/maintenance/state.json', $config['storage']['state_file']);
         self::assertSame('@NowoMaintenanceModeBundle/maintenance/page.html.twig', $config['templates']['page']);
+        self::assertTrue($config['web_ui']['enabled']);
+        self::assertSame('@NowoMaintenanceModeBundle/panel/layout.html.twig', $config['web_ui']['layout_template']);
+        self::assertSame('custom', $config['web_ui']['css_framework']);
+        self::assertSame('none', $config['web_ui']['icon_set']);
     }
 
     public function testCustomExclusionsAndPanelPrefix(): void

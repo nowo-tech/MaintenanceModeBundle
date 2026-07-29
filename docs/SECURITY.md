@@ -12,6 +12,7 @@
 - [Permissions and exposure](#permissions-and-exposure)
 - [Reporting a vulnerability](#reporting-a-vulnerability)
 - [Release security checklist (12.4.1)](#release-security-checklist-1241)
+- [AI security audit](#ai-security-audit)
 
 ## Scope
 
@@ -120,6 +121,7 @@ Before tagging a release, confirm:
 | **Cryptography** | Password hashing via Symfony hasher / `password_hash`; no custom crypto. |
 | **Permissions / exposure** | Host must firewall `/_maintenance`; `var/maintenance/` not web-accessible. |
 | **Limits / DoS** | Public 503 path is cacheable/static where possible; panel is ops-only. |
+| **AI security audit (REQ-SEC-004)** | Grade **Pass (conditional)** / risk **Medium** (2026-07-29). Recorded in the Nowo monorepo `BUNDLES_SECURITY_ANALYSIS.md`. |
 | **Release notes** | Security-relevant changes reflected in `CHANGELOG.md` / `UPGRADING.md` when needed. |
 
 Recommended commands:
@@ -128,3 +130,13 @@ Recommended commands:
 composer audit
 make release-check
 ```
+
+## AI security audit
+
+| Field | Value |
+| ----- | ----- |
+| Date | 2026-07-29 |
+| Grade | Pass (conditional) |
+| Risk | Medium |
+| Method | Cursor security-review / campaign static pass (`src/`, Flex recipe, demo, SECURITY docs) |
+| Open residuals | No Critical/High. **Accepted Medium:** panel is ops-sensitive — host MUST firewall `/_maintenance` (and custom prefixes); keep `password_protection` + hash in production or equivalent access_control; never put bypass tokens or panel login links on the public 503 page; treat maintenance message HTML as trusted admin content. |

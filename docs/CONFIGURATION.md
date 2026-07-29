@@ -14,6 +14,10 @@ Root alias: `nowo_maintenance_mode`.
 | `preview.path` | `/_maintenance_preview` | Preview URL (auto-excluded from 503) |
 | `panel.path_prefix` | `/_maintenance` | CRUD panel URL prefix (auto-excluded) |
 | `panel.enabled` | `true` | Register panel controllers |
+| `web_ui.enabled` | `true` | Look-and-feel contract active (REQ-UI-001) |
+| `web_ui.layout_template` | `@NowoMaintenanceModeBundle/panel/layout.html.twig` | Outer Twig layout panel pages extend (set to the **project** layout in host apps). Syncs `templates.panel_layout` |
+| `web_ui.css_framework` | `custom` | Host CSS stack: `bootstrap5`, `tailwind`, `foundation`, `custom`, … |
+| `web_ui.icon_set` | `none` | Icon strategy (`bootstrap-icons`, `tabler-icons`, `ux_icon`, `svg_inline`, `none`) |
 | `security.password_protection` | `true` | When `true` and a hash is set, the panel shows login. Set to `false` to disable the login section entirely (trusted networks only) |
 | `security.password_hash` | `null` | `password_hash()` (bcrypt/argon2id). Prefer env var; generate with `bin/console nowo:maintenance-mode:hash-password` |
 | `security.bypass_token` | `null` | Shared secret for soft QA bypass (`?maintenance_bypass=TOKEN` + optional cookie) |

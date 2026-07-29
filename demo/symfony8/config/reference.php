@@ -778,6 +778,12 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         enabled?: bool|Param, // Expose the Twig CRUD panel controllers. // Default: true
  *         path_prefix?: scalar|Param|null, // URL prefix for the panel routes (also auto-excluded from 503). // Default: "/_maintenance"
  *     },
+ *     web_ui?: array{ // REQ-UI-001 look-and-feel for the admin panel (layout, CSS stack, icons).
+ *         enabled?: bool|Param, // When false, panel Twig globals still resolve but hosts may hide chrome; panel routes follow panel.enabled. // Default: true
+ *         layout_template?: scalar|Param|null, // Twig layout that panel pages extend (host apps SHOULD set their project layout). Syncs templates.panel_layout. // Default: "@NowoMaintenanceModeBundle/panel/layout.html.twig"
+ *         css_framework?: "bootstrap"|"bootstrap4"|"bootstrap5"|"tailwind"|"foundation"|"custom"|"tabler"|"none"|Param, // Host-chosen CSS stack for semantic nowo-ui-* markup. // Default: "custom"
+ *         icon_set?: "bootstrap-icons"|"tabler-icons"|"ux_icon"|"svg_inline"|"none"|Param, // Icon strategy for panel actions (panel uses text buttons by default). // Default: "none"
+ *     },
  *     exclusions?: array{ // Requests matching any rule bypass the maintenance page.
  *         paths?: list<scalar|Param|null>,
  *         path_prefixes?: list<scalar|Param|null>,

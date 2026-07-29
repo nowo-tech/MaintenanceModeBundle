@@ -1,19 +1,21 @@
-{% extends layout %}
+{% extends layout|default(nowo_maintenance_mode_layout_template) %}
 
 {% block title %}{{ 'panel.login.heading'|trans({}, 'NowoMaintenanceModeBundle') }}{% endblock %}
 
 {% block body %}
-    <h1>{{ 'panel.login.heading'|trans({}, 'NowoMaintenanceModeBundle') }}</h1>
+    <header class="nowo-ui-page-header">
+        <h1>{{ 'panel.login.heading'|trans({}, 'NowoMaintenanceModeBundle') }}</h1>
+    </header>
     <p>{{ 'panel.login.intro'|trans({}, 'NowoMaintenanceModeBundle') }}</p>
     {% if error %}
-        <p class="error">{{ 'panel.login.error'|trans({}, 'NowoMaintenanceModeBundle') }}</p>
+        <p class="nowo-ui-error error">{{ 'panel.login.error'|trans({}, 'NowoMaintenanceModeBundle') }}</p>
     {% endif %}
-    <div class="card">
+    <div class="nowo-ui-card card">
         <form method="post" action="{{ path_prefix }}/login">
             <input type="hidden" name="_token" value="{{ csrf_token('nowo_maintenance_login') }}">
             <label for="password">{{ 'panel.login.password'|trans({}, 'NowoMaintenanceModeBundle') }}</label>
             <input type="password" id="password" name="password" required autocomplete="current-password">
-            <button type="submit">{{ 'panel.login.submit'|trans({}, 'NowoMaintenanceModeBundle') }}</button>
+            <button type="submit" class="nowo-ui-btn nowo-ui-btn--primary">{{ 'panel.login.submit'|trans({}, 'NowoMaintenanceModeBundle') }}</button>
         </form>
     </div>
 {% endblock %}

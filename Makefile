@@ -2,10 +2,12 @@
 # All dev targets use the root docker-compose.yml.
 
 COMPOSE_FILE := docker-compose.yml
-COMPOSE     := docker-compose -f $(COMPOSE_FILE)
+# Prefer Compose V2 plugin (GitHub Actions / modern Docker Desktop); fall back to docker-compose V1 (REQ-MAKE-010).
+COMPOSE_BIN := $(shell docker compose version >/dev/null 2>&1 && echo "docker compose" || echo "docker-compose")
+COMPOSE     := $(COMPOSE_BIN) -f $(COMPOSE_FILE)
 SERVICE_PHP := php
 
-.PHONY: help up down down-dev build shell install ensure-up test test-coverage coverage-php-percent cs-check cs-fix qa clean release-check release-check-demos composer-sync rector rector-dry phpstan update validate assets setup-hooks check-no-cursor-coauthor strip-cursor-coauthor-from-history validate-translations coverage-check
+.PHONY: help up down down-dev build shell install ensure-up test test-coverage coverage-php-percent cs-check cs-fix qa clean release-check release-check-demos demo-smoke composer-sync rector rector-dry phpstan update validate assets setup-hooks check-no-cursor-coauthor strip-cursor-coauthor-from-history validate-translations coverage-check
 
 help:
 	@echo "Maintenance Mode Bundle - Development Commands"
@@ -15,7 +17,7 @@ help:
 	@echo "Targets:"
 	@echo "  up            Start Docker container"
 	@echo "  down          Stop Docker container"
-	@echo "  down-dev      Stop root docker-compose (dev) and remove orphans"
+	@echo "  down-dev      Stop root $(COMPOSE) (dev) and remove orphans"
 	@echo "  build         Rebuild Docker image (no cache)"
 	@echo "  shell         Open shell in container"
 	@echo "  install       Install Composer dependencies"
@@ -31,6 +33,7 @@ help:
 	@echo "  validate-translations  YAML syntax + key parity (en/es/it/fr/pt/de/nl)"
 	@echo "  qa            Run all QA checks (cs-check + test)"
 	@echo "  release-check Pre-release: Cursor trailer check, cs-fix, cs-check, rector-dry, phpstan, validate-translations, test-coverage, coverage-check, demos"
+	@echo "  demo-smoke    REQ-TEST-011: boot demo + HTTP 200 (make -C demo demo-smoke)"
 	@echo "  setup-hooks   Install git hooks (.githooks — REQ-MAKE-006 / REQ-GIT-001)"
 	@echo "  check-no-cursor-coauthor  Fail if Cursor co-author trailers exist in history"
 	@echo "  strip-cursor-coauthor-from-history  Rewrite history to remove Cursor trailers"
@@ -68,7 +71,7 @@ install: ensure-up
 
 ensure-up:
 	@if ! $(COMPOSE) exec -T $(SERVICE_PHP) true 2>/dev/null; then \
-		echo "Starting container (root docker-compose)..."; \
+		echo "Starting container (root $(COMPOSE))..."; \
 		$(COMPOSE) up -d; \
 		sleep 5; \
 	fi
@@ -120,6 +123,9 @@ release-check: ensure-up check-no-cursor-coauthor composer-sync cs-fix cs-check 
 release-check-demos:
 	@if [ -f demo/Makefile ]; then $(MAKE) -C demo release-check; else echo "No demo/Makefile — skip release-check-demos"; fi
 
+demo-smoke:
+	@if [ -f demo/Makefile ]; then $(MAKE) -C demo demo-smoke; else echo "No demo/Makefile — skip demo-smoke"; fi
+
 composer-sync: ensure-up
 	$(COMPOSE) exec -T $(SERVICE_PHP) composer validate --strict
 	$(COMPOSE) exec -T $(SERVICE_PHP) composer update --no-install
@@ -147,4 +153,5 @@ setup-hooks:
 
 # REQ-MAKE-008: update-deps (REQ-MAKE-008)
 BUNDLE_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
-include $(BUNDLE_ROOT)/../.scripts/Makefile.update-deps.mk
+# Optional: monorepo helper absent on standalone GitHub Actions checkout (REQ-MAKE-009).
+-include $(BUNDLE_ROOT)/../.scripts/Makefile.update-deps.mk

@@ -4,37 +4,40 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}{{ 'panel.title'|trans({}, 'NowoMaintenanceModeBundle') }}{% endblock %}</title>
+    {% block stylesheets %}
     <style>
         :root { color-scheme: light; --bg: #f6f4ef; --ink: #1a1a1a; --accent: #0b5fff; --muted: #5c5c5c; }
         body { margin: 0; font-family: "Segoe UI", system-ui, sans-serif; background: linear-gradient(160deg, #f6f4ef, #e8eef8); color: var(--ink); min-height: 100vh; }
-        .wrap { max-width: 42rem; margin: 0 auto; padding: 3rem 1.25rem; }
+        .nowo-ui-container { max-width: 42rem; margin: 0 auto; padding: 3rem 1.25rem; }
         h1 { font-size: 1.75rem; margin: 0 0 .75rem; }
         p { color: var(--muted); line-height: 1.5; }
-        .card { background: rgba(255,255,255,.85); border: 1px solid #ddd; border-radius: .75rem; padding: 1.25rem; margin-top: 1.5rem; }
+        .nowo-ui-card { background: rgba(255,255,255,.85); border: 1px solid #ddd; border-radius: .75rem; padding: 1.25rem; margin-top: 1.5rem; }
         label { display: block; font-size: .875rem; margin-bottom: .35rem; }
         input[type=text], input[type=password], input[type=datetime-local], textarea {
             width: 100%; box-sizing: border-box; padding: .55rem .7rem; border: 1px solid #ccc; border-radius: .4rem; margin-bottom: .85rem;
         }
-        button, .btn {
+        .nowo-ui-btn, button, .btn {
             display: inline-block; background: var(--accent); color: #fff; border: 0; border-radius: .4rem;
             padding: .55rem 1rem; cursor: pointer; text-decoration: none; font: inherit;
         }
-        button.secondary { background: #444; }
-        button.danger { background: #b42318; }
-        nav a { margin-right: 1rem; color: var(--accent); }
-        .status { font-weight: 600; }
-        .status.on { color: #b42318; }
-        .status.off { color: #067647; }
-        .error { color: #b42318; }
-        .flash { padding: .65rem .85rem; border-radius: .45rem; margin: 1rem 0; }
-        .flash.success { background: #e8f8ef; color: #067647; border: 1px solid #abe0c0; }
-        table { width: 100%; border-collapse: collapse; font-size: .9rem; }
-        th, td { text-align: left; padding: .4rem; border-bottom: 1px solid #e5e5e5; }
+        .nowo-ui-btn--secondary, button.secondary { background: #444; }
+        .nowo-ui-btn--danger, button.danger { background: #b42318; }
+        .nowo-ui-nav a { margin-right: 1rem; color: var(--accent); }
+        .nowo-ui-status { font-weight: 600; }
+        .nowo-ui-status--on { color: #b42318; }
+        .nowo-ui-status--off { color: #067647; }
+        .nowo-ui-error, .error { color: #b42318; }
+        .nowo-ui-flash, .flash { padding: .65rem .85rem; border-radius: .45rem; margin: 1rem 0; }
+        .nowo-ui-flash--success, .flash.success { background: #e8f8ef; color: #067647; border: 1px solid #abe0c0; }
+        .nowo-ui-table-wrap table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+        .nowo-ui-table th, .nowo-ui-table td { text-align: left; padding: .4rem; border-bottom: 1px solid #e5e5e5; }
     </style>
+    {% endblock %}
 </head>
-<body>
-<div class="wrap">
+<body class="nowo-ui-page nowo-ui-maintenance-panel" data-css-framework="{{ nowo_maintenance_mode_css_framework|default('custom') }}" data-icon-set="{{ nowo_maintenance_mode_icon_set|default('none') }}">
+<div class="nowo-ui-container wrap">
     {% block body %}{% endblock %}
 </div>
+{% block javascripts %}{% endblock %}
 </body>
 </html>

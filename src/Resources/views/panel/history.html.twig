@@ -1,15 +1,17 @@
-{% extends layout %}
+{% extends layout|default(nowo_maintenance_mode_layout_template) %}
 
 {% block title %}{{ 'panel.history'|trans({}, 'NowoMaintenanceModeBundle') }}{% endblock %}
 
 {% block body %}
-    <nav>
+    <nav class="nowo-ui-nav" aria-label="Panel">
         <a href="{{ path_prefix }}">{{ 'panel.nav.panel'|trans({}, 'NowoMaintenanceModeBundle') }}</a>
         <a href="{{ path_prefix }}/history">{{ 'panel.nav.history'|trans({}, 'NowoMaintenanceModeBundle') }}</a>
     </nav>
-    <h1>{{ 'panel.history'|trans({}, 'NowoMaintenanceModeBundle') }}</h1>
-    <div class="card">
-        <table>
+    <header class="nowo-ui-page-header">
+        <h1>{{ 'panel.history'|trans({}, 'NowoMaintenanceModeBundle') }}</h1>
+    </header>
+    <div class="nowo-ui-card nowo-ui-table-wrap card">
+        <table class="nowo-ui-table">
             <thead>
             <tr>
                 <th>{{ 'panel.history.when'|trans({}, 'NowoMaintenanceModeBundle') }}</th>
@@ -27,7 +29,7 @@
                     <td>{{ entry.message ?? '—' }}</td>
                 </tr>
             {% else %}
-                <tr><td colspan="4">{{ 'panel.history.empty'|trans({}, 'NowoMaintenanceModeBundle') }}</td></tr>
+                <tr><td class="nowo-ui-empty" colspan="4">{{ 'panel.history.empty'|trans({}, 'NowoMaintenanceModeBundle') }}</td></tr>
             {% endfor %}
             </tbody>
         </table>

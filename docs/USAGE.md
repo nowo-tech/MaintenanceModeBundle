@@ -7,6 +7,7 @@
   - [Calm page examples](#calm-page-examples)
 - [Dev preview](#dev-preview-like-_error503)
 - [Admin panel](#admin-panel)
+  - [Look-and-feel (REQ-UI-001)](#look-and-feel-req-ui-001)
 - [CLI](#cli-deploy--ops)
 - [Programmatic API](#programmatic-api)
   - [Twig](#twig)
@@ -117,6 +118,20 @@ Default URL prefix: `/_maintenance`.
 
 If `security.password_protection` is `false`, or `security.password_hash` is empty, the panel does **not** show a login form — enable/disable is available immediately under the panel prefix.
 
+### Look-and-feel (REQ-UI-001)
+
+Point the panel at your project chrome and CSS stack:
+
+```yaml
+nowo_maintenance_mode:
+    web_ui:
+        layout_template: 'base.html.twig'   # project layout (stylesheets / javascripts with parent())
+        css_framework: bootstrap5           # or: tailwind | foundation | custom
+        icon_set: none
+```
+
+Twig globals: `nowo_maintenance_mode_layout_template`, `nowo_maintenance_mode_css_framework`, `nowo_maintenance_mode_icon_set`. Panel markup uses semantic `nowo-ui-*` classes so hosts can restyle without forking every template.
+
 Generate a hash for `password_hash` / `MAINTENANCE_PASSWORD_HASH`:
 
 ```bash
@@ -194,6 +209,6 @@ Application templates under `templates/bundles/NowoMaintenanceModeBundle/` win o
 | `@NowoMaintenanceModeBundle/panel/login.html.twig` | Panel login |
 | `@NowoMaintenanceModeBundle/panel/history.html.twig` | History table |
 
-Or set `templates.*` keys in config.
+Or set `templates.*` / `web_ui.layout_template` keys in config.
 
 Translation domain: `NowoMaintenanceModeBundle`. Locales shipped: **en, es, it, fr, pt, de, nl** (REQ-I18N-002). Calm maintenance page examples use the same domain under `maintenance.examples.*`.

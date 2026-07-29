@@ -1,6 +1,6 @@
 DEMOS := symfony8
 
-.PHONY: help clean test-all verify-all release-check release-verify update-bundle-all
+.PHONY: help clean test-all verify-all release-check release-verify demo-smoke update-bundle-all
 .PHONY: $(foreach demo,$(DEMOS),up-$(demo) down-$(demo) restart-$(demo) build-$(demo) install-$(demo) update-bundle-$(demo) shell-$(demo) logs-$(demo) test-$(demo) verify-$(demo))
 .PHONY: up down restart build install update-bundle test shell logs verify
 
@@ -8,6 +8,8 @@ help:
 	@echo "Maintenance Mode Bundle - Demo Commands"
 	@echo ""
 	@echo "  make up-symfony8 / down-symfony8 / test-symfony8 / verify-symfony8"
+	@echo "  make demo-smoke             REQ-TEST-011: up -> HTTP 200 -> down"
+	@echo "  make release-verify         Alias of demo-smoke"
 	@echo "  make release-check"
 	@echo ""
 	@echo "Access: Symfony 8 http://localhost:8055"
@@ -49,11 +51,22 @@ test:
 	@[ -n "$(DEMO)" ] || { echo "Usage: make test DEMO=symfony8"; exit 1; }
 	@$(MAKE) test-$(DEMO)
 
-release-verify:
-	@$(foreach d,$(DEMOS),$(MAKE) up-$(d) && $(MAKE) verify-$(d) && $(MAKE) down-$(d);)
+release-verify: demo-smoke
+
+# REQ-TEST-011: boot demo stack and expect HTTP 200
+demo-smoke:
+	@PORT=$$(grep "^PORT=" symfony8/.env.example 2>/dev/null | cut -d= -f2 | tr -d '\r'); \
+	[ -z "$$PORT" ] && PORT=8055; \
+	echo "Demo smoke: symfony8 (http://127.0.0.1:$$PORT)"; \
+	$(MAKE) up-symfony8; sleep 8; \
+	code=$$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:$$PORT" 2>/dev/null || echo "000"); \
+	$(MAKE) down-symfony8 2>/dev/null || true; \
+	if [ "$$code" != "200" ]; then echo "symfony8 failed with HTTP $$code"; exit 1; fi; \
+	echo "symfony8 OK (HTTP $$code)"
 
 release-check: update-bundle-all test-all release-verify
 
 BUNDLE_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/..)
 # REQ-MAKE-008: update-deps-all
-include $(BUNDLE_ROOT)/../.scripts/Makefile.demo-aggregate-update-deps.mk
+# Optional: monorepo helper absent on standalone GitHub Actions checkout (REQ-MAKE-009).
+-include $(BUNDLE_ROOT)/../.scripts/Makefile.demo-aggregate-update-deps.mk

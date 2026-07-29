@@ -1,5 +1,84 @@
 # Upgrading
 
+## Table of contents
+
+- [To 1.2.0](#to-120)
+  - [Requirements](#requirements)
+  - [Install / update](#install--update)
+  - [New optional config](#new-optional-config)
+  - [Behaviour notes (non-breaking)](#behaviour-notes-non-breaking)
+  - [Breaking changes](#breaking-changes)
+- [To 1.1.2](#to-112)
+  - [Requirements](#requirements-1)
+  - [Install / update](#install--update-1)
+  - [Behaviour notes (non-breaking)](#behaviour-notes-non-breaking-1)
+  - [Breaking changes](#breaking-changes-1)
+- [To 1.1.1](#to-111)
+  - [Requirements](#requirements-2)
+  - [Install / update](#install--update-2)
+  - [Behaviour notes (non-breaking)](#behaviour-notes-non-breaking-2)
+  - [Breaking changes](#breaking-changes-2)
+- [To 1.1.0](#to-110)
+  - [Requirements](#requirements-3)
+  - [Install / update](#install--update-3)
+  - [Behaviour changes (non-breaking for most apps)](#behaviour-changes-non-breaking-for-most-apps)
+  - [New optional config (defaults are safe)](#new-optional-config-defaults-are-safe)
+  - [New console commands](#new-console-commands)
+  - [After upgrading](#after-upgrading)
+  - [Breaking changes](#breaking-changes-3)
+- [To 1.0.0](#to-100)
+  - [Requirements](#requirements-4)
+  - [Install](#install)
+  - [Breaking changes](#breaking-changes-4)
+  - [Storage backends](#storage-backends)
+  - [After upgrading](#after-upgrading-1)
+
+## To 1.2.0
+
+Minor release: optional panel look-and-feel (`web_ui`), demo smoke target, deprecation-strict PHPUnit, and docs/Make standards. Requirements are unchanged from 1.1.2.
+
+### Requirements
+
+- **PHP** `>=8.2` and `<8.6`. Symfony **8.x** still needs **PHP 8.4+**.
+- **Symfony** `^7.4 || ^8.0` (CI / mandatory minors: **7.4**, **8.0**, **8.1**).
+
+### Install / update
+
+```bash
+composer require nowo-tech/maintenance-mode-bundle:^1.2
+php bin/console cache:clear
+```
+
+### New optional config
+
+```yaml
+nowo_maintenance_mode:
+    web_ui:
+        enabled: true
+        layout_template: 'base.html.twig'   # host project layout
+        css_framework: bootstrap5           # or tailwind | foundation | custom | …
+        icon_set: none
+```
+
+`web_ui.layout_template` stays in sync with legacy `templates.panel_layout` (whichever you set wins when the other is still the bundle default).
+
+Twig globals: `nowo_maintenance_mode_layout_template`, `nowo_maintenance_mode_css_framework`, `nowo_maintenance_mode_icon_set`.
+
+### Behaviour notes (non-breaking)
+
+| Topic | Before | 1.2.0 |
+| --- | --- | --- |
+| Core `symfony/*` constraints | Some packages still `^7.4` only on the published tree | All runtime `symfony/*` use `^7.4 \|\| ^8.0` |
+| Panel chrome | Bundle-only layout / classes | Semantic `nowo-ui-*` + optional host layout via `web_ui` |
+| Demo smoke | `release-verify` loop | Explicit `make demo-smoke` (REQ-TEST-011) |
+| PHPUnit deprecations | Default helper | `max[direct]=0` (REQ-SF-005) |
+
+### Breaking changes
+
+None for public PHP APIs or existing config keys.
+
+---
+
 ## To 1.1.2
 
 Patch release: Symfony **8** installability for core Composer constraints, and docs aligned to the supported floor (**7.4** / **8.0** / **8.1**).

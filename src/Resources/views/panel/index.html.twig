@@ -1,37 +1,39 @@
-{% extends layout %}
+{% extends layout|default(nowo_maintenance_mode_layout_template) %}
 
 {% block title %}{{ 'panel.title'|trans({}, 'NowoMaintenanceModeBundle') }}{% endblock %}
 
 {% block body %}
-    <nav>
+    <nav class="nowo-ui-nav" aria-label="Panel">
         <a href="{{ path_prefix }}">{{ 'panel.nav.panel'|trans({}, 'NowoMaintenanceModeBundle') }}</a>
         <a href="{{ path_prefix }}/history">{{ 'panel.nav.history'|trans({}, 'NowoMaintenanceModeBundle') }}</a>
     </nav>
-    <h1>{{ 'panel.title'|trans({}, 'NowoMaintenanceModeBundle') }}</h1>
+    <header class="nowo-ui-page-header">
+        <h1>{{ 'panel.title'|trans({}, 'NowoMaintenanceModeBundle') }}</h1>
+    </header>
 
     {% for type, messages in flashes|default({}) %}
         {% for message in messages %}
-            <p class="flash {{ type }}">{{ message|trans({}, 'NowoMaintenanceModeBundle') }}</p>
+            <p class="nowo-ui-flash flash {{ type }} nowo-ui-flash--{{ type }}">{{ message|trans({}, 'NowoMaintenanceModeBundle') }}</p>
         {% endfor %}
     {% endfor %}
 
     <p>
         {{ 'panel.status.manual'|trans({}, 'NowoMaintenanceModeBundle') }}:
         {% if state.enabled %}
-            <span class="status on">{{ 'panel.status.enabled'|trans({}, 'NowoMaintenanceModeBundle') }}</span>
+            <span class="nowo-ui-status nowo-ui-status--on status on">{{ 'panel.status.enabled'|trans({}, 'NowoMaintenanceModeBundle') }}</span>
         {% else %}
-            <span class="status off">{{ 'panel.status.disabled'|trans({}, 'NowoMaintenanceModeBundle') }}</span>
+            <span class="nowo-ui-status nowo-ui-status--off status off">{{ 'panel.status.disabled'|trans({}, 'NowoMaintenanceModeBundle') }}</span>
         {% endif %}
         ·
         {{ 'panel.status.effective'|trans({}, 'NowoMaintenanceModeBundle') }}:
         {% if state.effectivelyEnabled %}
-            <span class="status on">{{ 'panel.status.on'|trans({}, 'NowoMaintenanceModeBundle') }}</span>
+            <span class="nowo-ui-status nowo-ui-status--on status on">{{ 'panel.status.on'|trans({}, 'NowoMaintenanceModeBundle') }}</span>
         {% else %}
-            <span class="status off">{{ 'panel.status.off'|trans({}, 'NowoMaintenanceModeBundle') }}</span>
+            <span class="nowo-ui-status nowo-ui-status--off status off">{{ 'panel.status.off'|trans({}, 'NowoMaintenanceModeBundle') }}</span>
         {% endif %}
     </p>
 
-    <div class="card">
+    <div class="nowo-ui-card card">
         <p><strong>{{ 'panel.message'|trans({}, 'NowoMaintenanceModeBundle') }}:</strong> {{ state.message ?? '—' }}</p>
         <p><strong>{{ 'panel.activated'|trans({}, 'NowoMaintenanceModeBundle') }}:</strong> {{ state.activatedAt ? state.activatedAt|date('Y-m-d H:i:s') : '—' }}</p>
         <p><strong>{{ 'panel.deactivated'|trans({}, 'NowoMaintenanceModeBundle') }}:</strong> {{ state.deactivatedAt ? state.deactivatedAt|date('Y-m-d H:i:s') : '—' }}</p>
@@ -40,20 +42,20 @@
         <p><strong>{{ 'panel.updated_by'|trans({}, 'NowoMaintenanceModeBundle') }}:</strong> {{ state.updatedBy ?? '—' }}</p>
     </div>
 
-    <div class="card">
+    <div class="nowo-ui-card card">
         <form method="post" action="{{ path_prefix }}/enable">
             <input type="hidden" name="_token" value="{{ csrf_token('nowo_maintenance_enable') }}">
             <label for="message">{{ 'panel.message'|trans({}, 'NowoMaintenanceModeBundle') }}</label>
             <textarea id="message" name="message" rows="3">{{ state.message }}</textarea>
-            <button type="submit">{{ 'panel.enable'|trans({}, 'NowoMaintenanceModeBundle') }}</button>
+            <button type="submit" class="nowo-ui-btn nowo-ui-btn--primary">{{ 'panel.enable'|trans({}, 'NowoMaintenanceModeBundle') }}</button>
         </form>
         <form method="post" action="{{ path_prefix }}/disable" style="margin-top:1rem">
             <input type="hidden" name="_token" value="{{ csrf_token('nowo_maintenance_disable') }}">
-            <button type="submit" class="danger">{{ 'panel.disable'|trans({}, 'NowoMaintenanceModeBundle') }}</button>
+            <button type="submit" class="nowo-ui-btn nowo-ui-btn--danger danger">{{ 'panel.disable'|trans({}, 'NowoMaintenanceModeBundle') }}</button>
         </form>
     </div>
 
-    <div class="card">
+    <div class="nowo-ui-card card">
         <h2>{{ 'panel.schedule'|trans({}, 'NowoMaintenanceModeBundle') }}</h2>
         <form method="post" action="{{ path_prefix }}/schedule">
             <input type="hidden" name="_token" value="{{ csrf_token('nowo_maintenance_schedule') }}">
@@ -65,18 +67,18 @@
                    value="{{ state.scheduledDisableAt ? state.scheduledDisableAt|date('Y-m-d\\TH:i') : '' }}">
             <label for="schedule_message">{{ 'panel.message'|trans({}, 'NowoMaintenanceModeBundle') }}</label>
             <textarea id="schedule_message" name="message" rows="2">{{ state.message }}</textarea>
-            <button type="submit" class="secondary">{{ 'panel.save_schedule'|trans({}, 'NowoMaintenanceModeBundle') }}</button>
+            <button type="submit" class="nowo-ui-btn nowo-ui-btn--secondary secondary">{{ 'panel.save_schedule'|trans({}, 'NowoMaintenanceModeBundle') }}</button>
         </form>
         <form method="post" action="{{ path_prefix }}/clear-schedule" style="margin-top:1rem">
             <input type="hidden" name="_token" value="{{ csrf_token('nowo_maintenance_clear_schedule') }}">
-            <button type="submit" class="secondary">{{ 'panel.clear_schedule'|trans({}, 'NowoMaintenanceModeBundle') }}</button>
+            <button type="submit" class="nowo-ui-btn nowo-ui-btn--secondary secondary">{{ 'panel.clear_schedule'|trans({}, 'NowoMaintenanceModeBundle') }}</button>
         </form>
     </div>
 
     {% if password_required|default(true) %}
     <form method="post" action="{{ path_prefix }}/logout" style="margin-top:1.5rem">
         <input type="hidden" name="_token" value="{{ csrf_token('nowo_maintenance_logout') }}">
-        <button type="submit" class="secondary">{{ 'panel.logout'|trans({}, 'NowoMaintenanceModeBundle') }}</button>
+        <button type="submit" class="nowo-ui-btn nowo-ui-btn--secondary secondary">{{ 'panel.logout'|trans({}, 'NowoMaintenanceModeBundle') }}</button>
     </form>
     {% endif %}
 {% endblock %}

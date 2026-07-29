@@ -15,7 +15,9 @@ use Nowo\MaintenanceModeBundle\Service\MaintenanceManager;
 use Nowo\MaintenanceModeBundle\Storage\FilesystemMaintenanceStateStorage;
 use Nowo\MaintenanceModeBundle\Storage\MaintenanceHistoryStorageInterface;
 use Nowo\MaintenanceModeBundle\Storage\MaintenanceStateStorageInterface;
+use Nowo\MaintenanceModeBundle\Twig\MaintenanceExtension as TwigMaintenanceExtension;
 use PHPUnit\Framework\TestCase;
+use ReflectionMethod;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 
@@ -206,6 +208,72 @@ final class MaintenanceModeExtensionIntegrationTest extends TestCase
         $extension->load([['panel' => ['enabled' => false]]], $container);
 
         self::assertFalse($container->hasDefinition(MaintenancePanelController::class));
+    }
+
+    public function testLoadPreservesLegacyPanelLayoutWhenWebUiUsesDefault(): void
+    {
+        $container = new ContainerBuilder();
+        $container->setParameter('kernel.project_dir', sys_get_temp_dir());
+
+        $legacy    = '@App/layouts/admin.html.twig';
+        $extension = new MaintenanceModeExtension();
+        $extension->load([[
+            'panel'     => ['enabled' => false],
+            'templates' => [
+                'panel_layout' => $legacy,
+            ],
+        ]], $container);
+
+        self::assertSame($legacy, $container->getParameter('nowo.maintenance_mode.web_ui.layout_template'));
+        /** @var array<string, mixed> $templates */
+        $templates = $container->getParameter('nowo.maintenance_mode.templates');
+        self::assertSame($legacy, $templates['panel_layout']);
+    }
+
+    public function testLoadSyncsPanelLayoutFromWebUi(): void
+    {
+        $container = new ContainerBuilder();
+        $container->setParameter('kernel.project_dir', sys_get_temp_dir());
+
+        $layout    = 'base.html.twig';
+        $extension = new MaintenanceModeExtension();
+        $extension->load([[
+            'panel'  => ['enabled' => false],
+            'web_ui' => [
+                'layout_template' => $layout,
+                'css_framework'   => 'bootstrap5',
+                'icon_set'        => 'bootstrap-icons',
+            ],
+        ]], $container);
+
+        self::assertSame($layout, $container->getParameter('nowo.maintenance_mode.web_ui.layout_template'));
+        /** @var array<string, mixed> $templates */
+        $templates = $container->getParameter('nowo.maintenance_mode.templates');
+        self::assertSame($layout, $templates['panel_layout']);
+        self::assertSame('bootstrap5', $container->getParameter('nowo.maintenance_mode.web_ui.css_framework'));
+        self::assertSame('bootstrap-icons', $container->getParameter('nowo.maintenance_mode.web_ui.icon_set'));
+
+        $twigDef = $container->getDefinition(TwigMaintenanceExtension::class);
+        self::assertSame($layout, $twigDef->getArgument('$layoutTemplate'));
+        self::assertSame('bootstrap5', $twigDef->getArgument('$cssFramework'));
+        self::assertSame('bootstrap-icons', $twigDef->getArgument('$iconSet'));
+    }
+
+    public function testConfigureTwigExtensionNoopsWithoutDefinition(): void
+    {
+        $container = new ContainerBuilder();
+        $extension = new MaintenanceModeExtension();
+        $method    = new ReflectionMethod(MaintenanceModeExtension::class, 'configureTwigExtension');
+        $method->setAccessible(true);
+        $method->invoke($extension, $container, [
+            'web_ui' => [
+                'layout_template' => '@NowoMaintenanceModeBundle/panel/layout.html.twig',
+                'css_framework'   => 'custom',
+                'icon_set'        => 'none',
+            ],
+        ]);
+
+        self::assertFalse($container->hasDefinition(TwigMaintenanceExtension::class));
     }
 
     public function testGetAlias(): void

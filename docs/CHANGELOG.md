@@ -5,7 +5,53 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Table of contents
+
+- [\[Unreleased\]](#unreleased)
+- [\[1.2.0\] - 2026-07-29](#120---2026-07-29)
+  - [Added](#added)
+  - [Fixed](#fixed)
+  - [Changed](#changed)
+  - [Compatibility](#compatibility)
+- [\[1.1.2\] - 2026-07-27](#112---2026-07-27)
+  - [Fixed](#fixed-1)
+  - [Changed](#changed-1)
+  - [Compatibility](#compatibility-1)
+- [\[1.1.1\] - 2026-07-26](#111---2026-07-26)
+  - [Fixed](#fixed-2)
+  - [Changed](#changed-2)
+  - [Compatibility](#compatibility-2)
+- [\[1.1.0\] - 2026-07-24](#110---2026-07-24)
+  - [Added](#added-1)
+  - [Changed](#changed-3)
+  - [Compatibility](#compatibility-3)
+- [\[1.0.0\] - 2026-07-24](#100---2026-07-24)
+  - [Added](#added-2)
+  - [Compatibility](#compatibility-4)
+
 ## [Unreleased]
+
+## [1.2.0] - 2026-07-29
+
+### Added
+
+- REQ-UI-001 `web_ui` (`layout_template`, `css_framework`, `icon_set`) + Twig globals (`nowo_maintenance_mode_*`) and semantic `nowo-ui-*` panel markup.
+- `make demo-smoke` / `make -C demo demo-smoke` (REQ-TEST-011); PHPUnit `SYMFONY_DEPRECATIONS_HELPER=max[direct]=0` (REQ-SF-005).
+- TOC on long docs (REQ-DOCS-005); GitHub About / topics notes (REQ-DOCS-018).
+- REQ-SEC-004 Pass (conditional) recorded in `docs/SECURITY.md`.
+
+### Fixed
+
+- Composer constraints for core `symfony/*` packages (`config`, `dependency-injection`, `http-foundation`, `http-kernel`, `security-core`) correctly allow Symfony **8** (`^7.4 || ^8.0`) — completes the 1.1.2 intent when those pins were still `^7.4` only on the published tree.
+
+### Changed
+
+- Makefiles prefer `docker compose` (V2) with V1 fallback; optional monorepo `update-deps` includes use `-include` for standalone CI checkouts (REQ-MAKE-009 / REQ-MAKE-010).
+- `web_ui.layout_template` is canonical and stays in sync with legacy `templates.panel_layout`.
+
+### Compatibility
+
+- Unchanged: PHP `>=8.2`, `<8.6`; Symfony `^7.4 || ^8.0` (CI minors **7.4**, **8.0**, **8.1**).
 
 ## [1.1.2] - 2026-07-27
 
@@ -86,7 +132,8 @@ First stable release.
 - PHP `>=8.2`, `<8.6` (Symfony **8.x** requires PHP **8.4+**)
 - Symfony floor **7.4** (CI / mandatory minors: **7.4**, **8.0**, **8.1**)
 
-[Unreleased]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.1.2...HEAD
+[Unreleased]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.1.2...v1.2.0
 [1.1.2]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.0.0...v1.1.0
