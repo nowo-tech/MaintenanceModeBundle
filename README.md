@@ -34,6 +34,12 @@ nowo_maintenance_mode:
     resource: '@NowoMaintenanceModeBundle/Resources/config/routes.yaml'
 ```
 
+## Requirements
+
+- PHP `>=8.2` (<8.6); **Symfony 8.0** and **8.1** require **PHP 8.4+**
+- Symfony **7.4**, **8.0**, or **8.1** (`^7.4 || ^8.0`)
+- Twig for the maintenance page and panel templates
+
 ## Configuration
 
 ```yaml
@@ -61,6 +67,30 @@ $maintenance->disable('ops');
 
 See [docs/USAGE.md](docs/USAGE.md).
 
+## Demo
+
+| Demo | Symfony | PHP | Default port |
+| --- | --- | --- | --- |
+| `demo/symfony8` | **8.1** | 8.5 | **8055** |
+
+Runs **FrankenPHP + Caddy** (`FRANKENPHP_MODE=worker` by default). Panel password: `maintenance`. See [docs/DEMO-FRANKENPHP.md](docs/DEMO-FRANKENPHP.md).
+
+```bash
+make -C demo help
+make -C demo up-symfony8
+```
+
+## Development
+
+```bash
+make up
+make install
+make test
+make cs-check
+make phpstan
+make release-check
+```
+
 ## Documentation
 
 - [Installation](docs/INSTALLATION.md)
@@ -81,36 +111,6 @@ See [docs/USAGE.md](docs/USAGE.md).
 - [Demo (FrankenPHP)](docs/DEMO-FRANKENPHP.md)
 - [Maintenance page examples](docs/MAINTENANCE-PAGE-EXAMPLES.md)
 - [GitHub Actions CI requirements](docs/GITHUB_CI.md)
-
-## Requirements
-
-- PHP `>=8.2` (<8.6); **Symfony 8.0** and **8.1** require **PHP 8.4+**
-- Symfony **7.4**, **8.0**, or **8.1** (`^7.4 || ^8.0`)
-- Twig for the maintenance page and panel templates
-
-## Development
-
-```bash
-make up
-make install
-make test
-make cs-check
-make phpstan
-make release-check
-```
-
-## Demo
-
-| Demo | Symfony | PHP | Default port |
-| --- | --- | --- | --- |
-| `demo/symfony8` | **8.1** | 8.5 | **8055** |
-
-Runs **FrankenPHP + Caddy** (`FRANKENPHP_MODE=worker` by default). Panel password: `maintenance`. See [docs/DEMO-FRANKENPHP.md](docs/DEMO-FRANKENPHP.md).
-
-```bash
-make -C demo help
-make -C demo up-symfony8
-```
 
 ## Tests and coverage
 
