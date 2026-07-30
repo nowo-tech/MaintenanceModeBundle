@@ -430,7 +430,7 @@ final class MaintenancePanelControllerTest extends TestCase
         self::assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
     }
 
-    public function testCsrfSkippedWhenManagerNull(): void
+    public function testCsrfFailClosedWhenManagerNull(): void
     {
         $this->accessGate->method('isGranted')->willReturn(true);
 
@@ -443,11 +443,15 @@ final class MaintenancePanelControllerTest extends TestCase
         );
 
         $response = $controller->enable(
-            Request::create('/_maintenance/enable', 'POST', ['message' => 'No CSRF']),
+            Request::create('/_maintenance/enable', 'POST', [
+                'message' => 'No CSRF',
+                '_token'  => 'anything',
+            ]),
         );
 
-        self::assertInstanceOf(RedirectResponse::class, $response);
-        self::assertTrue($this->stateStorage->state->isEnabled());
+        self::assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+        self::assertSame('Invalid CSRF token.', $response->getContent());
+        self::assertFalse($this->stateStorage->state->isEnabled());
     }
 
     public function testCsrfTokenValidatedWithExpectedId(): void

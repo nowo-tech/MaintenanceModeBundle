@@ -202,8 +202,9 @@ final class MaintenancePanelController
 
     private function isCsrfValid(Request $request, string $tokenId): bool
     {
+        // Fail-closed (REQ-SEC-005): deny mutations when CSRF cannot be validated.
         if (!$this->csrfTokenManager instanceof CsrfTokenManagerInterface) {
-            return true;
+            return false;
         }
 
         $token = $request->request->getString('_token');

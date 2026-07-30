@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Table of contents
 
 - [\[Unreleased\]](#unreleased)
+- [\[1.2.2\] - 2026-07-30](#122---2026-07-30)
+  - [Fixed](#fixed)
+  - [Compatibility](#compatibility)
 - [\[1.2.1\] - 2026-07-30](#121---2026-07-30)
   - [Fixed](#fixed)
   - [Changed](#changed)
@@ -34,6 +37,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - [Compatibility](#compatibility-5)
 
 ## [Unreleased]
+
+## [1.2.2] - 2026-07-30
+
+### Fixed
+
+- **Security (REQ-SEC-005):** panel CSRF validation is **fail-closed** — when `CsrfTokenManagerInterface` is missing, mutating panel actions (enable/disable/schedule/login/logout) return HTTP 403 instead of skipping CSRF checks.
+
+### Compatibility
+
+- Unchanged: PHP `>=8.2`, `<8.6`; Symfony `^7.4 || ^8.0`. Requires `symfony/security-csrf` for panel mutations.
 
 ## [1.2.1] - 2026-07-30
 

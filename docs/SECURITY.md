@@ -57,7 +57,7 @@ The bundle does **not** spawn subprocesses or perform third-party HTTP calls (RE
 | --- | --- |
 | **Panel auth** | Default password gate with Symfony password hasher; session flag only after successful verify |
 | **Plaintext passwords** | Store only `password_hash` (env); generate with `nowo:maintenance-mode:hash-password` |
-| **CSRF** | Panel POSTs require CSRF when `CsrfTokenManagerInterface` is available (FrameworkBundle default) |
+| **CSRF** | Panel POSTs require CSRF (**fail-closed**, REQ-SEC-005): if `CsrfTokenManagerInterface` is missing, mutations are denied. Needs `symfony/security-csrf` (FrameworkBundle CSRF) |
 | **Bypass token** | Soft QA escape hatch via shared secret; rotate often; prefer IP allowlists + trusted proxies |
 | **Public page leakage** | Do not advertise panel URL or login on the public 503 page; use `exclusions.*` for ops endpoints |
 | **XSS** | Prefer Twig auto-escaping; treat custom maintenance HTML as **trusted admin content** |

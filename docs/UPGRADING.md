@@ -2,6 +2,12 @@
 
 ## Table of contents
 
+- [Unreleased](#unreleased)
+- [To 1.2.2](#to-122)
+  - [Behaviour change (panel CSRF)](#behaviour-change-panel-csrf)
+  - [Requirements](#requirements)
+  - [Install / update](#install--update)
+  - [Breaking changes](#breaking-changes)
 - [To 1.2.1](#to-121)
   - [Requirements](#requirements)
   - [Install / update](#install--update)
@@ -37,6 +43,42 @@
   - [Breaking changes](#breaking-changes-5)
   - [Storage backends](#storage-backends)
   - [After upgrading](#after-upgrading-1)
+
+## Unreleased
+
+## To 1.2.2
+
+Patch release: panel CSRF **fail-closed** (REQ-SEC-005).
+
+### Behaviour change (panel CSRF)
+
+
+Panel mutations are **fail-closed** when CSRF cannot be validated (REQ-SEC-005):
+
+| Topic | Before | After |
+| --- | --- | --- |
+| `CsrfTokenManagerInterface` missing | Panel POSTs accepted without CSRF (fail-open) | Panel POSTs return **403** (fail-closed) |
+
+**Requirement:** `symfony/security-csrf` must be available and FrameworkBundle CSRF enabled so `CsrfTokenManagerInterface` is registered. Without it, enable/disable/schedule/login/logout panel actions will always fail with HTTP 403.
+
+Demos and minimal kernels that previously ran the panel without Security CSRF must enable CSRF (or install/enable `symfony/security-csrf` via FrameworkBundle) before using panel mutations.
+
+### Requirements
+
+Same as 1.2.1, plus working Framework CSRF (`symfony/security-csrf`).
+
+### Install / update
+
+```bash
+composer require nowo-tech/maintenance-mode-bundle:^1.2
+php bin/console cache:clear
+```
+
+### Breaking changes
+
+None for apps that already had CSRF enabled for the panel. Apps that relied on fail-open (no CSRF manager) will see **403** on panel mutations until CSRF is enabled.
+
+---
 
 ## To 1.2.1
 
