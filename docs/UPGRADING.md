@@ -2,36 +2,73 @@
 
 ## Table of contents
 
-- [To 1.2.0](#to-120)
+- [To 1.2.1](#to-121)
   - [Requirements](#requirements)
   - [Install / update](#install--update)
-  - [New optional config](#new-optional-config)
   - [Behaviour notes (non-breaking)](#behaviour-notes-non-breaking)
   - [Breaking changes](#breaking-changes)
-- [To 1.1.2](#to-112)
+- [To 1.2.0](#to-120)
   - [Requirements](#requirements-1)
   - [Install / update](#install--update-1)
+  - [New optional config](#new-optional-config)
   - [Behaviour notes (non-breaking)](#behaviour-notes-non-breaking-1)
   - [Breaking changes](#breaking-changes-1)
-- [To 1.1.1](#to-111)
+- [To 1.1.2](#to-112)
   - [Requirements](#requirements-2)
   - [Install / update](#install--update-2)
   - [Behaviour notes (non-breaking)](#behaviour-notes-non-breaking-2)
   - [Breaking changes](#breaking-changes-2)
-- [To 1.1.0](#to-110)
+- [To 1.1.1](#to-111)
   - [Requirements](#requirements-3)
   - [Install / update](#install--update-3)
+  - [Behaviour notes (non-breaking)](#behaviour-notes-non-breaking-3)
+  - [Breaking changes](#breaking-changes-3)
+- [To 1.1.0](#to-110)
+  - [Requirements](#requirements-4)
+  - [Install / update](#install--update-4)
   - [Behaviour changes (non-breaking for most apps)](#behaviour-changes-non-breaking-for-most-apps)
   - [New optional config (defaults are safe)](#new-optional-config-defaults-are-safe)
   - [New console commands](#new-console-commands)
   - [After upgrading](#after-upgrading)
-  - [Breaking changes](#breaking-changes-3)
-- [To 1.0.0](#to-100)
-  - [Requirements](#requirements-4)
-  - [Install](#install)
   - [Breaking changes](#breaking-changes-4)
+- [To 1.0.0](#to-100)
+  - [Requirements](#requirements-5)
+  - [Install](#install)
+  - [Breaking changes](#breaking-changes-5)
   - [Storage backends](#storage-backends)
   - [After upgrading](#after-upgrading-1)
+
+## To 1.2.1
+
+Patch release: restore Symfony **8** Composer constraints after a post-`v1.2.0` automation commit narrowed several packages back to `^7.4` only; README section reorder; panel layout Twig comment.
+
+### Requirements
+
+Same as 1.2.0:
+
+- **PHP** `>=8.2` and `<8.6`. Symfony **8.x** still needs **PHP 8.4+**.
+- **Symfony** `^7.4 || ^8.0` (CI / mandatory minors: **7.4**, **8.0**, **8.1**).
+
+### Install / update
+
+```bash
+composer require nowo-tech/maintenance-mode-bundle:^1.2
+php bin/console cache:clear
+```
+
+If Composer rejects installs on Symfony **8.0** / **8.1** after pulling `v1.2.0` + later automation commits, upgrade to **1.2.1+**.
+
+### Behaviour notes (non-breaking)
+
+| Topic | Before (post-1.2.0 tree) | 1.2.1 |
+| --- | --- | --- |
+| Core `symfony/*` | Some pins back to `^7.4` only | All runtime packages `^7.4 \|\| ^8.0` again |
+
+### Breaking changes
+
+None.
+
+---
 
 ## To 1.2.0
 
