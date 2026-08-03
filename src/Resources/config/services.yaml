@@ -13,6 +13,9 @@ services:
             - '../../Attribute/'
             - '../../Resources/'
             - '../../NowoMaintenanceModeBundle.php'
+            - '../../Security/MaintenanceModeAccessCheckerInterface.php'
+            - '../../Security/ConfigurableMaintenanceModeAccessChecker.php'
+            - '../../Security/AllowAllMaintenanceModeAccessChecker.php'
 
     Nowo\MaintenanceModeBundle\Storage\FilesystemMaintenanceStateStorage:
         arguments:

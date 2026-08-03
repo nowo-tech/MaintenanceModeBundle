@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace Nowo\MaintenanceModeBundle\Tests\Integration\DependencyInjection;
 
+use LogicException;
 use Nowo\MaintenanceModeBundle\Controller\MaintenancePanelController;
 use Nowo\MaintenanceModeBundle\Controller\MaintenancePreviewController;
 use Nowo\MaintenanceModeBundle\DependencyInjection\MaintenanceModeExtension;
 use Nowo\MaintenanceModeBundle\EventSubscriber\MaintenanceRequestSubscriber;
 use Nowo\MaintenanceModeBundle\Exclusion\MaintenanceExclusionMatcher;
+use Nowo\MaintenanceModeBundle\Security\AllowAllMaintenanceModeAccessChecker;
+use Nowo\MaintenanceModeBundle\Security\ConfigurableMaintenanceModeAccessChecker;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceAccessGateInterface;
+use Nowo\MaintenanceModeBundle\Security\MaintenanceModeAccessCheckerInterface;
 use Nowo\MaintenanceModeBundle\Security\PasswordMaintenanceAccessGate;
 use Nowo\MaintenanceModeBundle\Service\MaintenanceManager;
 use Nowo\MaintenanceModeBundle\Storage\FilesystemMaintenanceStateStorage;
@@ -20,6 +24,7 @@ use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
+use Symfony\Component\DependencyInjection\Extension\Extension;
 
 final class MaintenanceModeExtensionIntegrationTest extends TestCase
 {
@@ -51,12 +56,115 @@ final class MaintenanceModeExtensionIntegrationTest extends TestCase
 
         $extension = new MaintenanceModeExtension();
         $extension->load([[
-            'enabled' => true,
-            'panel'   => ['enabled' => true],
+            'enabled'  => true,
+            'panel'    => ['enabled' => true],
+            'security' => ['allow_unauthenticated' => true],
         ]], $container);
 
         self::assertTrue($container->hasDefinition(MaintenancePanelController::class));
         self::assertTrue($container->getDefinition(MaintenancePanelController::class)->isPublic());
+    }
+
+    public function testLoadThrowsWhenPanelEnabledWithoutSecurityBundle(): void
+    {
+        $container = new ContainerBuilder();
+        $container->setParameter('kernel.project_dir', sys_get_temp_dir());
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('allow_unauthenticated');
+
+        (new MaintenanceModeExtension())->load([[
+            'panel'    => ['enabled' => true],
+            'security' => ['allow_unauthenticated' => false],
+        ]], $container);
+    }
+
+    public function testLoadRegistersAllowAllAccessCheckerWhenUnauthenticatedAllowed(): void
+    {
+        $container = new ContainerBuilder();
+        $container->setParameter('kernel.project_dir', sys_get_temp_dir());
+
+        (new MaintenanceModeExtension())->load([[
+            'panel'    => ['enabled' => true],
+            'security' => ['allow_unauthenticated' => true],
+        ]], $container);
+
+        self::assertTrue($container->hasDefinition('nowo_maintenance_mode.access_checker.allow_all'));
+        self::assertSame(
+            AllowAllMaintenanceModeAccessChecker::class,
+            $container->getDefinition('nowo_maintenance_mode.access_checker.allow_all')->getClass(),
+        );
+        self::assertSame(
+            'nowo_maintenance_mode.access_checker.allow_all',
+            (string) $container->getAlias(MaintenanceModeAccessCheckerInterface::class),
+        );
+        self::assertTrue($container->getDefinition(MaintenancePanelController::class)->getArgument('$allowUnauthenticated'));
+    }
+
+    public function testLoadRegistersConfigurableAccessCheckerWhenSecurityBundlePresent(): void
+    {
+        $container = new ContainerBuilder();
+        $container->setParameter('kernel.project_dir', sys_get_temp_dir());
+        $container->setParameter('kernel.bundles', ['SecurityBundle' => 'Symfony\Bundle\SecurityBundle\SecurityBundle']);
+
+        (new MaintenanceModeExtension())->load([[
+            'panel'    => ['enabled' => true],
+            'security' => [
+                'allow_unauthenticated' => false,
+                'access_roles'          => ['ROLE_ADMIN', 'ROLE_OPS'],
+            ],
+        ]], $container);
+
+        self::assertTrue($container->hasDefinition('nowo_maintenance_mode.access_checker.default'));
+        $def = $container->getDefinition('nowo_maintenance_mode.access_checker.default');
+        self::assertSame(ConfigurableMaintenanceModeAccessChecker::class, $def->getClass());
+        self::assertSame(['ROLE_ADMIN', 'ROLE_OPS'], $def->getArgument('$accessRoles'));
+        self::assertFalse($container->getDefinition(MaintenancePanelController::class)->getArgument('$allowUnauthenticated'));
+    }
+
+    public function testLoadAcceptsPanelWhenSecurityExtensionRegistered(): void
+    {
+        $container = new ContainerBuilder();
+        $container->setParameter('kernel.project_dir', sys_get_temp_dir());
+        $container->registerExtension(new class extends Extension {
+            public function load(array $configs, ContainerBuilder $container): void
+            {
+            }
+
+            public function getAlias(): string
+            {
+                return 'security';
+            }
+        });
+
+        (new MaintenanceModeExtension())->load([[
+            'panel'    => ['enabled' => true],
+            'security' => ['allow_unauthenticated' => false],
+        ]], $container);
+
+        self::assertTrue($container->hasDefinition(MaintenancePanelController::class));
+        self::assertTrue($container->hasDefinition('nowo_maintenance_mode.access_checker.default'));
+    }
+
+    public function testLoadUsesCustomAccessCheckerServiceId(): void
+    {
+        $container = new ContainerBuilder();
+        $container->setParameter('kernel.project_dir', sys_get_temp_dir());
+        $container->setDefinition('app.custom_access_checker', new Definition('stdClass'));
+
+        (new MaintenanceModeExtension())->load([[
+            'panel'    => ['enabled' => false],
+            'security' => [
+                'access_checker' => 'app.custom_access_checker',
+            ],
+        ]], $container);
+
+        self::assertSame(
+            'app.custom_access_checker',
+            (string) $container->getAlias(MaintenanceModeAccessCheckerInterface::class),
+        );
+        self::assertFalse($container->hasDefinition('nowo_maintenance_mode.access_checker.default'));
+        self::assertFalse($container->hasDefinition('nowo_maintenance_mode.access_checker.allow_all'));
     }
 
     public function testLoadWithCustomStorageAndAccessGateOverrides(): void

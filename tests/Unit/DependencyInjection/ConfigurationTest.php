@@ -22,6 +22,9 @@ final class ConfigurationTest extends TestCase
         self::assertSame(31, $config['subscriber_priority']);
         self::assertTrue($config['security']['password_protection']);
         self::assertNull($config['security']['password_hash']);
+        self::assertSame(['ROLE_ADMIN'], $config['security']['access_roles']);
+        self::assertNull($config['security']['access_checker']);
+        self::assertFalse($config['security']['allow_unauthenticated']);
         self::assertNull($config['security']['bypass_token']);
         self::assertSame('maintenance_bypass', $config['security']['bypass_query_parameter']);
         self::assertSame('nowo_maintenance_bypass', $config['security']['bypass_cookie_name']);

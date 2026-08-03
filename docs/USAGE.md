@@ -25,6 +25,9 @@ Excluded requests (exact paths, prefixes, route names, globs / `#regex#`, **IPs/
 ```yaml
 nowo_maintenance_mode:
     security:
+        access_roles: [ROLE_ADMIN]
+        access_checker: null
+        allow_unauthenticated: false   # true only for local demos without SecurityBundle
         password_protection: false   # no login section; panel opens directly
         # password_protection: true
         # password_hash: '%env(MAINTENANCE_PASSWORD_HASH)%'
@@ -37,6 +40,8 @@ nowo_maintenance_mode:
         patterns: ['/internal-*', '#^/ops/#']
         ips: ['127.0.0.1', '10.0.0.0/8']
 ```
+
+When `allow_unauthenticated` is `false` (default), the panel requires `symfony/security-bundle` and at least one of `access_roles` (or a custom `access_checker`). The ops **password gate** remains an **additional** layer when `password_protection` is true.
 
 See the FrankenPHP demo guide at `/examples/bypass` for live smoke links.
 
@@ -188,6 +193,8 @@ nowo_maintenance_mode:
         history_storage: App\Maintenance\DoctrineHistoryStorage
     security:
         access_gate: App\Maintenance\SecurityVoterGate
+        # Or custom REQ-UI-002 checker:
+        # access_checker: App\Maintenance\MyAccessChecker
 ```
 
 Implement:
@@ -195,6 +202,7 @@ Implement:
 - `Nowo\MaintenanceModeBundle\Storage\MaintenanceStateStorageInterface`
 - `Nowo\MaintenanceModeBundle\Storage\MaintenanceHistoryStorageInterface`
 - `Nowo\MaintenanceModeBundle\Security\MaintenanceAccessGateInterface`
+- `Nowo\MaintenanceModeBundle\Security\MaintenanceModeAccessCheckerInterface` (optional custom `access_checker`)
 
 ## Twig overrides
 

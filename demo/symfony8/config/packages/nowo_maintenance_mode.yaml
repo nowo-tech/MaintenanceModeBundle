@@ -6,6 +6,9 @@ nowo_maintenance_mode:
         # Auto-excluded from 503 — operators open this URL directly (do not link it from the public 503 page).
         path_prefix: '/_maintenance'
     security:
+        # Demo: password gate only (no SecurityBundle). Never copy allow_unauthenticated to production.
+        allow_unauthenticated: true
+        access_roles: [ROLE_ADMIN]
         # Toggle panel login via YAML:
         #   true  → require password_hash (demo password: maintenance)
         #   false → no login section; panel is open (trusted networks / VPN only)

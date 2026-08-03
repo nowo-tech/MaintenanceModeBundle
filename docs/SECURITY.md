@@ -55,15 +55,16 @@ The bundle does **not** spawn subprocesses or perform third-party HTTP calls (RE
 
 | Threat | Control |
 | --- | --- |
-| **Panel auth** | Default password gate with Symfony password hasher; session flag only after successful verify |
+| **Panel auth** | REQ-UI-002 `security.access_roles` / `MaintenanceModeAccessCheckerInterface` (default `ROLE_ADMIN`) unless `allow_unauthenticated`; plus optional ops password gate |
 | **Plaintext passwords** | Store only `password_hash` (env); generate with `nowo:maintenance-mode:hash-password` |
 | **CSRF** | Panel POSTs require CSRF (**fail-closed**, REQ-SEC-005): if `CsrfTokenManagerInterface` is missing, mutations are denied. Needs `symfony/security-csrf` (FrameworkBundle CSRF) |
 | **Bypass token** | Soft QA escape hatch via shared secret; rotate often; prefer IP allowlists + trusted proxies |
 | **Public page leakage** | Do not advertise panel URL or login on the public 503 page; use `exclusions.*` for ops endpoints |
 | **XSS** | Prefer Twig auto-escaping; treat custom maintenance HTML as **trusted admin content** |
 | **Storage exposure** | `var/maintenance/` must not be web-accessible; document in host runbooks |
-| **Disable password gate** | `security.password_protection: false` only when panel is otherwise protected (VPN, IP firewall, SecurityBundle) |
-| **Pluggable gate** | Replace `MaintenanceAccessGateInterface` with a SecurityBundle voter/authenticator when needed |
+| **Disable password gate** | `security.password_protection: false` only when panel is otherwise protected (VPN, IP firewall, SecurityBundle roles) |
+| **allow_unauthenticated** | **Demo/dev only.** When `false` (default), panel requires `symfony/security-bundle`. Never `true` in production |
+| **Pluggable gate** | Replace `MaintenanceAccessGateInterface` with a SecurityBundle voter/authenticator when needed; optional custom `security.access_checker` |
 
 ## Secrets and cryptography
 

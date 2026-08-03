@@ -791,7 +791,10 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         patterns?: list<scalar|Param|null>,
  *         ips?: list<scalar|Param|null>,
  *     },
- *     security?: array{ // Panel access gate + soft bypass for QA. Replace the gate service for a custom voter/authenticator.
+ *     security?: array{ // REQ-UI-002 roles + optional ops password gate / soft bypass. Password gate is additional to access_roles.
+ *         access_roles?: list<scalar|Param|null>,
+ *         access_checker?: scalar|Param|null, // Optional service id implementing MaintenanceModeAccessCheckerInterface. null = role-based default (or AllowAll when allow_unauthenticated). // Default: null
+ *         allow_unauthenticated?: bool|Param, // DEV/DEMO only: skip Symfony Security role check (password gate may still apply). Never true in production. // Default: false
  *         password_protection?: bool|Param, // When false, the panel login section is disabled even if a hash is set (trusted networks only). // Default: true
  *         password_hash?: scalar|Param|null, // password_hash() output (bcrypt / argon2id / sodium). Prefer env: MAINTENANCE_PASSWORD_HASH. // Default: null
  *         access_gate?: scalar|Param|null, // FQCN or service id implementing MaintenanceAccessGateInterface. null = default password gate. // Default: null

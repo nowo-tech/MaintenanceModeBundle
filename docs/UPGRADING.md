@@ -2,12 +2,17 @@
 
 ## Table of contents
 
-- [Unreleased](#unreleased)
-- [To 1.2.2](#to-122)
-  - [Behaviour change (panel CSRF)](#behaviour-change-panel-csrf)
+- [To 1.3.0](#to-130)
   - [Requirements](#requirements)
   - [Install / update](#install--update)
+  - [Behaviour change (panel roles)](#behaviour-change-panel-roles)
+  - [New optional config](#new-optional-config)
   - [Breaking changes](#breaking-changes)
+- [To 1.2.2](#to-122)
+  - [Behaviour change (panel CSRF)](#behaviour-change-panel-csrf)
+  - [Requirements](#requirements-1)
+  - [Install / update](#install--update-1)
+  - [Breaking changes](#breaking-changes-1)
 - [To 1.2.1](#to-121)
   - [Requirements](#requirements)
   - [Install / update](#install--update)
@@ -44,7 +49,55 @@
   - [Storage backends](#storage-backends)
   - [After upgrading](#after-upgrading-1)
 
-## Unreleased
+## To 1.3.0
+
+Minor release: REQ-UI-002 role-based panel access (`access_roles` / `access_checker`) plus restore of Symfony **8** Composer constraints. Default panel security is stricter.
+
+### Requirements
+
+- **PHP** `>=8.2` and `<8.6`. Symfony **8.x** still needs **PHP 8.4+**.
+- **Symfony** `^7.4 || ^8.0` (CI minors: **7.4**, **8.0**, **8.1**).
+- **SecurityBundle** when the panel is enabled and `security.allow_unauthenticated` is `false` (default).
+
+### Install / update
+
+```bash
+composer require nowo-tech/maintenance-mode-bundle:^1.3
+php bin/console cache:clear
+```
+
+### Behaviour change (panel roles)
+
+| Topic | Before | 1.3.0 |
+| --- | --- | --- |
+| Default panel auth | Ops password gate only | Symfony roles (`ROLE_ADMIN` by default) **plus** optional password gate |
+| Apps without SecurityBundle | Panel could boot | Boot fails with `LogicException` unless `allow_unauthenticated: true` |
+
+**Demos / trusted local kernels** without SecurityBundle:
+
+```yaml
+nowo_maintenance_mode:
+    security:
+        allow_unauthenticated: true   # never in production
+```
+
+**Production** (recommended): keep `allow_unauthenticated: false`, ensure SecurityBundle is installed, and grant at least one of `access_roles` (or provide a custom `access_checker`).
+
+### New optional config
+
+```yaml
+nowo_maintenance_mode:
+    security:
+        access_roles: [ROLE_ADMIN]
+        access_checker: null
+        allow_unauthenticated: false
+```
+
+### Breaking changes
+
+Apps that enabled the panel without SecurityBundle (or without a matching `access_roles` grant) must either install/configure SecurityBundle roles or set `allow_unauthenticated: true` for non-production use.
+
+---
 
 ## To 1.2.2
 

@@ -51,6 +51,8 @@ nowo_maintenance_mode:
     security:
         password_protection: true
         password_hash: '%env(MAINTENANCE_PASSWORD_HASH)%'
+        access_roles: [ROLE_ADMIN]
+        # allow_unauthenticated: false
     exclusions:
         paths: ['/health']
         path_prefixes: ['/api/health']

@@ -6,6 +6,7 @@ namespace Nowo\MaintenanceModeBundle\Controller;
 
 use DateTimeImmutable;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceAccessGateInterface;
+use Nowo\MaintenanceModeBundle\Security\MaintenanceModeAccessCheckerInterface;
 use Nowo\MaintenanceModeBundle\Service\MaintenanceManager;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -38,6 +39,8 @@ final class MaintenancePanelController
         private readonly array $templates,
         private readonly string $pathPrefix = '/_maintenance',
         private readonly ?CsrfTokenManagerInterface $csrfTokenManager = null,
+        private readonly ?MaintenanceModeAccessCheckerInterface $accessChecker = null,
+        private readonly bool $allowUnauthenticated = true,
     ) {
     }
 
@@ -157,6 +160,10 @@ final class MaintenancePanelController
     #[Route(path: '/login', name: 'nowo_maintenance_mode_panel_login', methods: ['GET', 'POST'])]
     public function login(Request $request): Response
     {
+        if (($response = $this->denyUnlessRoleAccess()) instanceof Response) {
+            return $response;
+        }
+
         if (!$this->accessGate->isPasswordRequired() || $this->accessGate->isGranted($request)) {
             return new RedirectResponse($this->pathPrefix);
         }
@@ -193,11 +200,28 @@ final class MaintenancePanelController
 
     private function denyUnlessGranted(Request $request): ?Response
     {
+        if (($response = $this->denyUnlessRoleAccess()) instanceof Response) {
+            return $response;
+        }
+
         if ($this->accessGate->isGranted($request)) {
             return null;
         }
 
         return new RedirectResponse($this->pathPrefix . '/login');
+    }
+
+    private function denyUnlessRoleAccess(): ?Response
+    {
+        if ($this->allowUnauthenticated) {
+            return null;
+        }
+
+        if (!$this->accessChecker instanceof MaintenanceModeAccessCheckerInterface || !$this->accessChecker->canAccess(null)) {
+            return new Response('Access denied.', Response::HTTP_FORBIDDEN);
+        }
+
+        return null;
     }
 
     private function isCsrfValid(Request $request, string $tokenId): bool

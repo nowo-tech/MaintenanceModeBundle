@@ -9,9 +9,12 @@ nowo_maintenance_mode:
     panel:
         enabled: true
         path_prefix: '/_maintenance'
-    # security:
-    #     password_protection: true
-    #     password_hash: '%env(MAINTENANCE_PASSWORD_HASH)%'
+    security:
+        password_protection: true
+        # password_hash: '%env(MAINTENANCE_PASSWORD_HASH)%'
+        # access_roles: [ROLE_ADMIN]
+        # access_checker: null
+        # allow_unauthenticated: false   # default; never true in production
     # exclusions:
     #     paths: ['/health']
     #     path_prefixes: ['/api/health']

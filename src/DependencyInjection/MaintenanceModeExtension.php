@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace Nowo\MaintenanceModeBundle\DependencyInjection;
 
+use LogicException;
 use Nowo\MaintenanceModeBundle\Controller\MaintenancePanelController;
 use Nowo\MaintenanceModeBundle\Controller\MaintenancePreviewController;
 use Nowo\MaintenanceModeBundle\EventSubscriber\MaintenanceRequestSubscriber;
 use Nowo\MaintenanceModeBundle\Exclusion\MaintenanceExclusionMatcher;
+use Nowo\MaintenanceModeBundle\Security\AllowAllMaintenanceModeAccessChecker;
+use Nowo\MaintenanceModeBundle\Security\ConfigurableMaintenanceModeAccessChecker;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceAccessGateInterface;
+use Nowo\MaintenanceModeBundle\Security\MaintenanceModeAccessCheckerInterface;
 use Nowo\MaintenanceModeBundle\Security\PasswordMaintenanceAccessGate;
 use Nowo\MaintenanceModeBundle\Service\MaintenanceManager;
 use Nowo\MaintenanceModeBundle\Storage\FilesystemMaintenanceHistoryStorage;
@@ -18,6 +22,7 @@ use Nowo\MaintenanceModeBundle\Storage\MaintenanceStateStorageInterface;
 use Nowo\MaintenanceModeBundle\Twig\MaintenanceExtension as TwigMaintenanceExtension;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
@@ -46,6 +51,7 @@ final class MaintenanceModeExtension extends Extension
         $container->setParameter('nowo.maintenance_mode.preview.path', $config['preview']['path']);
         $container->setParameter('nowo.maintenance_mode.exclusions', $config['exclusions']);
         $container->setParameter('nowo.maintenance_mode.security', $config['security']);
+        $container->setParameter('nowo.maintenance_mode.security.allow_unauthenticated', $config['security']['allow_unauthenticated']);
         $container->setParameter('nowo.maintenance_mode.storage', $config['storage']);
         $container->setParameter('nowo.maintenance_mode.storage.state_file', $config['storage']['state_file']);
         $container->setParameter('nowo.maintenance_mode.storage.history_file', $config['storage']['history_file']);
@@ -65,12 +71,21 @@ final class MaintenanceModeExtension extends Extension
         $container->setParameter('nowo.maintenance_mode.web_ui.css_framework', $config['web_ui']['css_framework']);
         $container->setParameter('nowo.maintenance_mode.web_ui.icon_set', $config['web_ui']['icon_set']);
 
+        if (
+            (bool) $config['panel']['enabled']
+            && !$config['security']['allow_unauthenticated']
+            && !$this->isSecurityBundleAvailable($container)
+        ) {
+            throw new LogicException('NowoMaintenanceModeBundle panel requires symfony/security-bundle when security.allow_unauthenticated is false.');
+        }
+
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.yaml');
 
         $this->configureStorage($container, $config['storage']);
         $this->configureExclusions($container, $config);
         $this->configureAccessGate($container, $config['security']);
+        $this->registerAccessChecker($container, $config['security']);
         $this->configureManager($container, $config);
         $this->configureSubscriber($container, $config);
         $this->configurePanel($container, $config);
@@ -168,6 +183,49 @@ final class MaintenanceModeExtension extends Extension
         $container->setAlias(MaintenanceAccessGateInterface::class, PasswordMaintenanceAccessGate::class)->setPublic(false);
     }
 
+    /** @param array<string, mixed> $security */
+    private function registerAccessChecker(ContainerBuilder $container, array $security): void
+    {
+        $accessCheckerId = $security['access_checker'] ?? null;
+        if (is_string($accessCheckerId) && $accessCheckerId !== '') {
+            $container->setAlias(MaintenanceModeAccessCheckerInterface::class, $accessCheckerId)->setPublic(false);
+
+            return;
+        }
+
+        if ((bool) ($security['allow_unauthenticated'] ?? false)) {
+            $accessCheckerId = 'nowo_maintenance_mode.access_checker.allow_all';
+            $container->setDefinition($accessCheckerId, new Definition(AllowAllMaintenanceModeAccessChecker::class));
+        } else {
+            $accessCheckerId = 'nowo_maintenance_mode.access_checker.default';
+            $container->setDefinition($accessCheckerId, (new Definition(ConfigurableMaintenanceModeAccessChecker::class))
+                ->setAutowired(true)
+                ->setArgument('$accessRoles', $security['access_roles']));
+        }
+
+        $container->setAlias(MaintenanceModeAccessCheckerInterface::class, $accessCheckerId)->setPublic(false);
+    }
+
+    /**
+     * Prefer kernel.bundles: ContainerBuilder::hasExtension() can be false while SecurityBundle
+     * is already registered (e.g. during early Flex cache:clear boots).
+     */
+    private function isSecurityBundleAvailable(ContainerBuilder $container): bool
+    {
+        if ($container->hasExtension('security')) {
+            return true;
+        }
+
+        if (!$container->hasParameter('kernel.bundles')) {
+            return false;
+        }
+
+        /** @var array<string, class-string> $bundles */
+        $bundles = $container->getParameter('kernel.bundles');
+
+        return isset($bundles['SecurityBundle']);
+    }
+
     /**
      * @param array<string, mixed> $config
      */
@@ -237,6 +295,8 @@ final class MaintenanceModeExtension extends Extension
             ->setArgument('$templates', $config['templates'])
             ->setArgument('$pathPrefix', $config['panel']['path_prefix'])
             ->setArgument('$csrfTokenManager', new Reference(CsrfTokenManagerInterface::class, ContainerBuilder::IGNORE_ON_INVALID_REFERENCE))
+            ->setArgument('$accessChecker', new Reference(MaintenanceModeAccessCheckerInterface::class))
+            ->setArgument('$allowUnauthenticated', (bool) $config['security']['allow_unauthenticated'])
             ->setPublic(true);
     }
 

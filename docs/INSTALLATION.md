@@ -14,7 +14,7 @@
 - PHP `>=8.2` (<8.6). Symfony **8.0** and **8.1** require **PHP 8.4+**.
 - Symfony **7.4**, **8.0**, or **8.1** (`^7.4 || ^8.0`).
 - `symfony/twig-bundle` (or `twig/twig`) to render the public maintenance page and the admin panel.
-- Optional: `symfony/security-bundle` if you replace `MaintenanceAccessGateInterface` with your own voter / authenticator.
+- `symfony/security-bundle` when the panel is enabled and `security.allow_unauthenticated` is `false` (default). Also used if you replace `MaintenanceAccessGateInterface` / `access_checker` with your own services. For trusted local demos only, set `allow_unauthenticated: true` to skip this requirement.
 
 ## Composer
 

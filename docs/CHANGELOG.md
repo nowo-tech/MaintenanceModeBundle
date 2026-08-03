@@ -8,35 +8,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Table of contents
 
 - [\[Unreleased\]](#unreleased)
-- [\[1.2.2\] - 2026-07-30](#122---2026-07-30)
-  - [Fixed](#fixed)
-  - [Compatibility](#compatibility)
-- [\[1.2.1\] - 2026-07-30](#121---2026-07-30)
+- [\[1.3.0\] - 2026-08-03](#130---2026-08-03)
+  - [Added](#added)
   - [Fixed](#fixed)
   - [Changed](#changed)
   - [Compatibility](#compatibility)
-- [\[1.2.0\] - 2026-07-29](#120---2026-07-29)
-  - [Added](#added)
+- [\[1.2.2\] - 2026-07-30](#122---2026-07-30)
   - [Fixed](#fixed-1)
-  - [Changed](#changed-1)
   - [Compatibility](#compatibility-1)
-- [\[1.1.2\] - 2026-07-27](#112---2026-07-27)
+- [\[1.2.1\] - 2026-07-30](#121---2026-07-30)
   - [Fixed](#fixed-2)
-  - [Changed](#changed-2)
+  - [Changed](#changed-1)
   - [Compatibility](#compatibility-2)
-- [\[1.1.1\] - 2026-07-26](#111---2026-07-26)
-  - [Fixed](#fixed-3)
-  - [Changed](#changed-3)
-  - [Compatibility](#compatibility-3)
-- [\[1.1.0\] - 2026-07-24](#110---2026-07-24)
+- [\[1.2.0\] - 2026-07-29](#120---2026-07-29)
   - [Added](#added-1)
-  - [Changed](#changed-4)
+  - [Fixed](#fixed-3)
+  - [Changed](#changed-2)
+  - [Compatibility](#compatibility-3)
+- [\[1.1.2\] - 2026-07-27](#112---2026-07-27)
+  - [Fixed](#fixed-4)
+  - [Changed](#changed-3)
   - [Compatibility](#compatibility-4)
-- [\[1.0.0\] - 2026-07-24](#100---2026-07-24)
-  - [Added](#added-2)
+- [\[1.1.1\] - 2026-07-26](#111---2026-07-26)
+  - [Fixed](#fixed-5)
+  - [Changed](#changed-4)
   - [Compatibility](#compatibility-5)
+- [\[1.1.0\] - 2026-07-24](#110---2026-07-24)
+  - [Added](#added-2)
+  - [Changed](#changed-5)
+  - [Compatibility](#compatibility-6)
+- [\[1.0.0\] - 2026-07-24](#100---2026-07-24)
+  - [Added](#added-3)
+  - [Compatibility](#compatibility-7)
 
 ## [Unreleased]
+
+## [1.3.0] - 2026-08-03
+
+### Added
+
+- REQ-UI-002 panel access control: `security.access_roles` (default `[ROLE_ADMIN]`), optional `security.access_checker`, and `MaintenanceModeAccessCheckerInterface` (`ConfigurableMaintenanceModeAccessChecker` / `AllowAllMaintenanceModeAccessChecker`).
+- `security.allow_unauthenticated` (default `false`): when `false` and the panel is enabled, `symfony/security-bundle` is required.
+
+### Fixed
+
+- Restore Symfony **8** on core `symfony/*` constraints again (`^7.4 || ^8.0`) after post-release automation had narrowed several packages to `^7.4` only on the published tree.
+
+### Changed
+
+- Ops password gate remains an **additional** layer on top of role / access-checker checks.
+- Demo sets `allow_unauthenticated: true` (password gate only; never copy to production).
+
+### Compatibility
+
+- PHP `>=8.2`, `<8.6`; Symfony `^7.4 || ^8.0` (CI minors **7.4**, **8.0**, **8.1**).
+- Panel with default security settings requires **SecurityBundle** (or set `allow_unauthenticated: true` for trusted local demos).
 
 ## [1.2.2] - 2026-07-30
 
@@ -164,7 +190,9 @@ First stable release.
 - PHP `>=8.2`, `<8.6` (Symfony **8.x** requires PHP **8.4+**)
 - Symfony floor **7.4** (CI / mandatory minors: **7.4**, **8.0**, **8.1**)
 
-[Unreleased]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.2.1...HEAD
+[Unreleased]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.2.2...v1.3.0
+[1.2.2]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.1.2...v1.2.0
 [1.1.2]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.1.1...v1.1.2

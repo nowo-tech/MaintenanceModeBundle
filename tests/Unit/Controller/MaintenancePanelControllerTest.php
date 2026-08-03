@@ -9,6 +9,7 @@ use Nowo\MaintenanceModeBundle\Controller\MaintenancePanelController;
 use Nowo\MaintenanceModeBundle\Model\MaintenanceHistoryEntry;
 use Nowo\MaintenanceModeBundle\Model\MaintenanceState;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceAccessGateInterface;
+use Nowo\MaintenanceModeBundle\Security\MaintenanceModeAccessCheckerInterface;
 use Nowo\MaintenanceModeBundle\Service\MaintenanceManager;
 use Nowo\MaintenanceModeBundle\Tests\Unit\Service\InMemoryHistoryStorage;
 use Nowo\MaintenanceModeBundle\Tests\Unit\Service\InMemoryStateStorage;
@@ -466,6 +467,90 @@ final class MaintenancePanelControllerTest extends TestCase
         $this->createController()->enable(
             Request::create('/_maintenance/enable', 'POST', ['_token' => 'tok']),
         );
+    }
+
+    public function testIndexReturnsForbiddenWhenRoleAccessDenied(): void
+    {
+        $checker = $this->createMock(MaintenanceModeAccessCheckerInterface::class);
+        $checker->method('canAccess')->willReturn(false);
+
+        $controller = new MaintenancePanelController(
+            $this->manager,
+            $this->accessGate,
+            $this->twig,
+            self::TEMPLATES,
+            '/_maintenance',
+            $this->csrfTokenManager,
+            $checker,
+            false,
+        );
+
+        $response = $controller->index(Request::create('/_maintenance'));
+
+        self::assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+    }
+
+    public function testIndexReturnsForbiddenWhenAccessCheckerMissingAndUnauthenticatedDisallowed(): void
+    {
+        $controller = new MaintenancePanelController(
+            $this->manager,
+            $this->accessGate,
+            $this->twig,
+            self::TEMPLATES,
+            '/_maintenance',
+            $this->csrfTokenManager,
+            null,
+            false,
+        );
+
+        $response = $controller->index(Request::create('/_maintenance'));
+
+        self::assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+    }
+
+    public function testLoginReturnsForbiddenWhenRoleAccessDenied(): void
+    {
+        $checker = $this->createMock(MaintenanceModeAccessCheckerInterface::class);
+        $checker->method('canAccess')->willReturn(false);
+
+        $controller = new MaintenancePanelController(
+            $this->manager,
+            $this->accessGate,
+            $this->twig,
+            self::TEMPLATES,
+            '/_maintenance',
+            $this->csrfTokenManager,
+            $checker,
+            false,
+        );
+
+        $response = $controller->login(Request::create('/_maintenance/login'));
+
+        self::assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+    }
+
+    public function testIndexAllowsWhenRoleAccessGranted(): void
+    {
+        $checker = $this->createMock(MaintenanceModeAccessCheckerInterface::class);
+        $checker->method('canAccess')->willReturn(true);
+        $this->accessGate->method('isGranted')->willReturn(true);
+        $this->twig->method('render')->willReturn('<html>ok</html>');
+
+        $controller = new MaintenancePanelController(
+            $this->manager,
+            $this->accessGate,
+            $this->twig,
+            self::TEMPLATES,
+            '/_maintenance',
+            $this->csrfTokenManager,
+            $checker,
+            false,
+        );
+
+        $response = $controller->index(Request::create('/_maintenance'));
+
+        self::assertSame(Response::HTTP_OK, $response->getStatusCode());
+        self::assertSame('<html>ok</html>', $response->getContent());
     }
 
     private function createController(?string $defaultMessage = null): MaintenancePanelController

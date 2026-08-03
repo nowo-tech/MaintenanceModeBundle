@@ -9,3 +9,9 @@ nowo_maintenance_mode:
     panel:
         enabled: true
         path_prefix: '/_maintenance'
+    security:
+        # access_roles: [ROLE_ADMIN]
+        # access_checker: null
+        # allow_unauthenticated: false   # default; panel needs SecurityBundle unless true (demos only)
+        # password_protection: true
+        # password_hash: '%env(MAINTENANCE_PASSWORD_HASH)%'
