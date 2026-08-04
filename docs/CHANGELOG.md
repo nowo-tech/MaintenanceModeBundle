@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Table of contents
 
 - [\[Unreleased\]](#unreleased)
+- [\[1.4.0\] - 2026-08-04](#140---2026-08-04)
+  - [Added](#added)
+  - [Changed](#changed)
 - [\[1.3.0\] - 2026-08-03](#130---2026-08-03)
   - [Added](#added)
   - [Fixed](#fixed)
@@ -42,6 +45,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - [Compatibility](#compatibility-7)
 
 ## [Unreleased]
+
+## [1.4.0] - 2026-08-04
+
+### Added
+- **REQ-TWIG-004:** require `twig/extra-bundle` + `twig/string-extra`; `make check-twig-extra` in `release-check`; demos register `TwigExtraBundle`.
+- **Twig-CS-Fixer:** `vincentlanglet/twig-cs-fixer`, `.twig-cs-fixer.php`, `composer twig:lint` / `twig:fix`.
+
+### Changed
+
+- **REQ-UI-001-kit:** Requires **[UiKitBundle](https://github.com/nowo-tech/UiKitBundle)** (`nowo-tech/ui-kit-bundle` `^1.4`). Panel pages extend `panel/base.html.twig`, which loads `asset('css/nowo-ui.css', 'nowo_ui_kit')` and imports `@NowoUiKitBundle/macros/ui.html.twig` (panel index flashes via `ui.flash`). Extension implements `PrependExtensionInterface` and seeds `nowo_ui_kit` from `web_ui.css_framework` / `icon_set` when the host has not configured UiKit.
+- **UiKit:** Panel templates use `ui.btn` / `ui.row_actions` macros with `nowo_maintenance_mode_css_framework` instead of hand-rolled `nowo-ui-btn` / Bootstrap button classes.
+
+[1.4.0]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.4.0
 
 ## [1.3.0] - 2026-08-03
 

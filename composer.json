@@ -31,6 +31,7 @@
         }
     ],
     "require": {
+        "nowo-tech/ui-kit-bundle": "^1.4",
         "php": ">=8.2 <8.6",
         "symfony/config": "^7.4",
         "symfony/console": "^7.4 || ^8.0",
@@ -41,7 +42,9 @@
         "symfony/routing": "^7.4 || ^8.0",
         "symfony/security-core": "^7.4",
         "symfony/security-csrf": "^7.4 || ^8.0",
-        "symfony/yaml": "^7.4 || ^8.0"
+        "symfony/yaml": "^7.4 || ^8.0",
+        "twig/extra-bundle": "^3.12",
+        "twig/string-extra": "^3.12"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.0",
@@ -54,7 +57,8 @@
         "rector/rector": "^2.0",
         "symfony/framework-bundle": "^7.4 || ^8.0",
         "symfony/twig-bundle": "^7.4 || ^8.0",
-        "twig/twig": "^3.12"
+        "twig/twig": "^3.12",
+        "vincentlanglet/twig-cs-fixer": "^3.0"
     },
     "suggest": {
         "symfony/twig-bundle": "Required to render maintenance and panel templates",
@@ -100,6 +104,9 @@
         "qa": [
             "@cs-check",
             "@test"
-        ]
+        ],
+        "twig:lint": "twig-cs-fixer lint --config=.twig-cs-fixer.php",
+        "twig:fix": "twig-cs-fixer fix --config=.twig-cs-fixer.php",
+        "twig:fix:check": "twig-cs-fixer lint --config=.twig-cs-fixer.php --fix"
     }
 }

@@ -2,6 +2,8 @@
 
 ## Table of contents
 
+- [Unreleased](#unreleased)
+- [To 1.4.0](#to-140)
 - [To 1.3.0](#to-130)
   - [Requirements](#requirements)
   - [Install / update](#install--update)
@@ -48,6 +50,40 @@
   - [Breaking changes](#breaking-changes-5)
   - [Storage backends](#storage-backends)
   - [After upgrading](#after-upgrading-1)
+
+## Unreleased
+
+## To 1.4.0
+
+From **1.3.0** — Adds UiKit composition, Twig Extra (REQ-TWIG-004), and Twig-CS-Fixer. Register TwigExtraBundle and NowoUiKitBundle if Flex did not. See CHANGELOG.
+
+```bash
+composer update nowo-tech/maintenance-mode-bundle
+php bin/console cache:clear
+```
+
+Panel UI now depends on **[UiKitBundle](https://github.com/nowo-tech/UiKitBundle)** (`nowo-tech/ui-kit-bundle` `^1.4`).
+
+1. Require the package (pulled transitively once you update this bundle) and run `assets:install`.
+2. Panel pages extend `panel/base.html.twig`, which stacks `asset('css/nowo-ui.css', 'nowo_ui_kit')` via `parent()`.
+3. Optional: set `nowo_ui_kit.css_framework` / `icon_set` in the host. If unset, MaintenanceMode seeds those keys from `web_ui` (defaults `custom` / `none`).
+4. Frozen overrides of `panel/index.html.twig` / `history` / `login` that extended the layout directly should switch to `@NowoMaintenanceModeBundle/panel/base.html.twig`.
+5. Panel flash markup uses `ui.flash()` from `@NowoUiKitBundle/macros/ui.html.twig` (import in `panel/base.html.twig`).
+
+### Twig Extra Bundle (REQ-TWIG-004)
+
+Hosts that render this bundle's Twig templates must install:
+
+```bash
+composer require twig/extra-bundle twig/string-extra
+```
+
+and enable `Twig\Extra\TwigExtraBundle\TwigExtraBundle`. Flex recipes usually register it automatically.
+
+### Twig-CS-Fixer (maintainers)
+
+Package maintainers: `composer twig:lint` / `composer twig:fix` use `.twig-cs-fixer.php` over `src/` (and `templates/` when present).
+
 
 ## To 1.3.0
 

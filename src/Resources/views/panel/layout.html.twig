@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}{{ 'panel.title'|trans({}, 'NowoMaintenanceModeBundle') }}{% endblock %}</title>
-    {# Demo root layout: no parent() (full HTML). Pages do not reopen stylesheets/javascripts. #}
+    {# Demo root layout: no parent() (full HTML). Bundle pages stack via panel/base.html.twig. #}
     {% block stylesheets %}
     <style>
         :root { color-scheme: light; --bg: #f6f4ef; --ink: #1a1a1a; --accent: #0b5fff; --muted: #5c5c5c; }
