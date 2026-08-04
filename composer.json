@@ -31,8 +31,8 @@
         }
     ],
     "require": {
-        "nowo-tech/ui-kit-bundle": "^1.4",
         "php": ">=8.2 <8.6",
+        "nowo-tech/ui-kit-bundle": "^1.4",
         "symfony/config": "^7.4",
         "symfony/console": "^7.4 || ^8.0",
         "symfony/dependency-injection": "^7.4",
