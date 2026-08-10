@@ -58,7 +58,7 @@
         "symfony/framework-bundle": "^7.4 || ^8.0",
         "symfony/twig-bundle": "^7.4 || ^8.0",
         "twig/twig": "^3.12",
-        "vincentlanglet/twig-cs-fixer": "^3.0"
+        "vincentlanglet/twig-cs-fixer": "^4.0"
     },
     "suggest": {
         "symfony/twig-bundle": "Required to render maintenance and panel templates",
