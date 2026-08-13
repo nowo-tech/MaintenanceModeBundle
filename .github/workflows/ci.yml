@@ -114,6 +114,11 @@ jobs:
       - name: Fix code style
         run: composer cs-fix
 
+      # Matrix install pins Symfony 7.4 only for the job; never commit those
+      # narrowed composer.json / composer.lock constraints back to main.
+      - name: Restore Composer manifests
+        run: git checkout -- composer.json composer.lock
+
       - name: Check for changes
         id: verify-changed-files
         run: |

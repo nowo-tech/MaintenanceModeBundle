@@ -8,52 +8,75 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Table of contents
 
 - [\[Unreleased\]](#unreleased)
+- [\[1.5.2\] - 2026-08-13](#152---2026-08-13)
+  - [Fixed](#fixed)
+  - [Changed](#changed)
+  - [Compatibility](#compatibility)
 - [\[1.5.1\] - 2026-08-13](#151---2026-08-13)
-  - [Fixed](#fixed)
-  - [Compatibility](#compatibility)
-- [\[1.5.0\] - 2026-08-13](#150---2026-08-13)
-  - [Changed](#changed)
-  - [Compatibility](#compatibility)
-- [\[1.4.1\] - 2026-08-13](#141---2026-08-13)
-  - [Fixed](#fixed)
-  - [Compatibility](#compatibility-1)
-- [\[1.4.0\] - 2026-08-04](#140---2026-08-04)
-  - [Added](#added)
-  - [Changed](#changed)
-- [\[1.3.0\] - 2026-08-03](#130---2026-08-03)
-  - [Added](#added)
-  - [Fixed](#fixed)
-  - [Changed](#changed)
-  - [Compatibility](#compatibility)
-- [\[1.2.2\] - 2026-07-30](#122---2026-07-30)
   - [Fixed](#fixed-1)
   - [Compatibility](#compatibility-1)
-- [\[1.2.1\] - 2026-07-30](#121---2026-07-30)
-  - [Fixed](#fixed-2)
+- [\[1.5.0\] - 2026-08-13](#150---2026-08-13)
   - [Changed](#changed-1)
   - [Compatibility](#compatibility-2)
-- [\[1.2.0\] - 2026-07-29](#120---2026-07-29)
+- [\[1.4.1\] - 2026-08-13](#141---2026-08-13)
+  - [Fixed](#fixed-2)
+  - [Compatibility](#compatibility-3)
+- [\[1.4.0\] - 2026-08-04](#140---2026-08-04)
+  - [Added](#added)
+  - [Changed](#changed-2)
+- [\[1.3.0\] - 2026-08-03](#130---2026-08-03)
   - [Added](#added-1)
   - [Fixed](#fixed-3)
-  - [Changed](#changed-2)
-  - [Compatibility](#compatibility-3)
-- [\[1.1.2\] - 2026-07-27](#112---2026-07-27)
-  - [Fixed](#fixed-4)
   - [Changed](#changed-3)
   - [Compatibility](#compatibility-4)
-- [\[1.1.1\] - 2026-07-26](#111---2026-07-26)
+- [\[1.2.2\] - 2026-07-30](#122---2026-07-30)
+  - [Fixed](#fixed-4)
+  - [Compatibility](#compatibility-5)
+- [\[1.2.1\] - 2026-07-30](#121---2026-07-30)
   - [Fixed](#fixed-5)
   - [Changed](#changed-4)
-  - [Compatibility](#compatibility-5)
-- [\[1.1.0\] - 2026-07-24](#110---2026-07-24)
-  - [Added](#added-2)
-  - [Changed](#changed-5)
   - [Compatibility](#compatibility-6)
-- [\[1.0.0\] - 2026-07-24](#100---2026-07-24)
-  - [Added](#added-3)
+- [\[1.2.0\] - 2026-07-29](#120---2026-07-29)
+  - [Added](#added-2)
+  - [Fixed](#fixed-6)
+  - [Changed](#changed-5)
   - [Compatibility](#compatibility-7)
+- [\[1.1.2\] - 2026-07-27](#112---2026-07-27)
+  - [Fixed](#fixed-7)
+  - [Changed](#changed-6)
+  - [Compatibility](#compatibility-8)
+- [\[1.1.1\] - 2026-07-26](#111---2026-07-26)
+  - [Fixed](#fixed-8)
+  - [Changed](#changed-7)
+  - [Compatibility](#compatibility-9)
+- [\[1.1.0\] - 2026-07-24](#110---2026-07-24)
+  - [Added](#added-3)
+  - [Changed](#changed-8)
+  - [Compatibility](#compatibility-10)
+- [\[1.0.0\] - 2026-07-24](#100---2026-07-24)
+  - [Added](#added-4)
+  - [Compatibility](#compatibility-11)
 
 ## [Unreleased]
+
+## [1.5.2] - 2026-08-13
+
+### Fixed
+
+- CI **Code Style** job restores `composer.json` / `composer.lock` after the Symfony **7.4** matrix install so the auto-commit no longer republishes `^7.4`-only pins for `config`, `dependency-injection`, `http-foundation`, `http-kernel`, and `security-core` (root cause of the 1.2.1 / 1.3.0 / 1.4.1 / 1.5.1 constraint regressions).
+- Tests for `MaintenanceModeExtension::prepend` / UiKit seeding (restores **100%** line coverage).
+
+### Changed
+
+- **INSTALLATION:** document runtime deps `symfony/form` and `nowo-tech/ui-kit-bundle`.
+- **USAGE:** document panel Symfony Forms + `_form_fields.html.twig` unrendered-field loop for host overrides.
+- Demo Symfony 8: Flex recipes for `symfony/form` CSRF + `property_info` (needed after panel Forms / UiKit).
+
+### Compatibility
+
+- Unchanged: PHP `>=8.2`, `<8.6`; Symfony `^7.4 || ^8.0`.
+
+[1.5.2]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.5.2
 
 ## [1.5.1] - 2026-08-13
 
@@ -253,7 +276,7 @@ First stable release.
 - PHP `>=8.2`, `<8.6` (Symfony **8.x** requires PHP **8.4+**)
 - Symfony floor **7.4** (CI / mandatory minors: **7.4**, **8.0**, **8.1**)
 
-[Unreleased]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.1...HEAD
+[Unreleased]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.2...HEAD
 [1.3.0]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.2.2...v1.3.0
 [1.2.2]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.2.0...v1.2.1

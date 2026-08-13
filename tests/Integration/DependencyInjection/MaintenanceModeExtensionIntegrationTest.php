@@ -22,9 +22,12 @@ use Nowo\MaintenanceModeBundle\Storage\MaintenanceStateStorageInterface;
 use Nowo\MaintenanceModeBundle\Twig\MaintenanceExtension as TwigMaintenanceExtension;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
+use ReflectionProperty;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Extension\Extension;
+
+use function is_array;
 
 final class MaintenanceModeExtensionIntegrationTest extends TestCase
 {
@@ -384,8 +387,172 @@ final class MaintenanceModeExtensionIntegrationTest extends TestCase
         self::assertFalse($container->hasDefinition(TwigMaintenanceExtension::class));
     }
 
+    public function testPrependSkipsUiKitWhenExtensionMissing(): void
+    {
+        $container = new ContainerBuilder();
+        (new MaintenanceModeExtension())->prepend($container);
+
+        self::assertSame([], $container->getExtensionConfig('nowo_ui_kit'));
+    }
+
+    public function testPrependAlignsUiKitDefaultsFromWebUiWhenHostUnset(): void
+    {
+        $container = new ContainerBuilder();
+        $this->registerUiKitStub($container);
+        $container->prependExtensionConfig('nowo_maintenance_mode', [
+            'web_ui' => [
+                'css_framework' => 'tailwind',
+                'icon_set'      => 'tabler-icons',
+            ],
+        ]);
+
+        (new MaintenanceModeExtension())->prepend($container);
+
+        $found = false;
+        foreach ($container->getExtensionConfig('nowo_ui_kit') as $cfg) {
+            if (($cfg['css_framework'] ?? null) === 'tailwind'
+                && ($cfg['icon_set'] ?? null) === 'tabler-icons'
+            ) {
+                $found = true;
+                break;
+            }
+        }
+        self::assertTrue($found, 'Expected nowo_ui_kit defaults from web_ui config.');
+    }
+
+    public function testPrependNormalizesBootstrapAliasForUiKit(): void
+    {
+        $container = new ContainerBuilder();
+        $this->registerUiKitStub($container);
+        $container->prependExtensionConfig('nowo_maintenance_mode', [
+            'web_ui' => [
+                'css_framework' => 'bootstrap',
+            ],
+        ]);
+
+        (new MaintenanceModeExtension())->prepend($container);
+
+        $found = false;
+        foreach ($container->getExtensionConfig('nowo_ui_kit') as $cfg) {
+            if (($cfg['css_framework'] ?? null) === 'bootstrap5') {
+                $found = true;
+                break;
+            }
+        }
+        self::assertTrue($found);
+    }
+
+    public function testPrependDoesNotOverrideExplicitUiKitHostConfig(): void
+    {
+        $container = new ContainerBuilder();
+        $this->registerUiKitStub($container);
+        $container->prependExtensionConfig('nowo_ui_kit', [
+            'css_framework' => 'custom',
+            'icon_set'      => 'ux_icon',
+        ]);
+        $container->prependExtensionConfig('nowo_maintenance_mode', [
+            'web_ui' => [
+                'css_framework' => 'tailwind',
+                'icon_set'      => 'tabler-icons',
+            ],
+        ]);
+
+        (new MaintenanceModeExtension())->prepend($container);
+
+        foreach ($container->getExtensionConfig('nowo_ui_kit') as $cfg) {
+            if (($cfg['css_framework'] ?? null) === 'tailwind'
+                || ($cfg['icon_set'] ?? null) === 'tabler-icons'
+            ) {
+                self::fail('web_ui must not prepend UiKit defaults when host set nowo_ui_kit explicitly.');
+            }
+        }
+        $uiKitConfigs = $container->getExtensionConfig('nowo_ui_kit');
+        self::assertSame('custom', $uiKitConfigs[0]['css_framework'] ?? null);
+        self::assertSame('ux_icon', $uiKitConfigs[0]['icon_set'] ?? null);
+    }
+
+    public function testPrependSeedsOnlyMissingUiKitKeys(): void
+    {
+        $container = new ContainerBuilder();
+        $this->registerUiKitStub($container);
+        $container->prependExtensionConfig('nowo_ui_kit', [
+            'css_framework' => 'foundation',
+        ]);
+        $container->prependExtensionConfig('nowo_maintenance_mode', [
+            'web_ui' => [
+                'css_framework' => 'tailwind',
+                'icon_set'      => 'bootstrap-icons',
+            ],
+        ]);
+
+        (new MaintenanceModeExtension())->prepend($container);
+
+        $seededIcon  = false;
+        $hostCssSeen = false;
+        foreach ($container->getExtensionConfig('nowo_ui_kit') as $cfg) {
+            if (!is_array($cfg)) {
+                continue;
+            }
+            if (($cfg['css_framework'] ?? null) === 'tailwind') {
+                self::fail('Must not override host css_framework.');
+            }
+            if (($cfg['css_framework'] ?? null) === 'foundation') {
+                $hostCssSeen = true;
+            }
+            if (($cfg['icon_set'] ?? null) === 'bootstrap-icons') {
+                $seededIcon = true;
+            }
+        }
+        self::assertTrue($hostCssSeen);
+        self::assertTrue($seededIcon);
+    }
+
+    public function testPrependIgnoresNonArrayUiKitConfigFragments(): void
+    {
+        $container = new ContainerBuilder();
+        $this->registerUiKitStub($container);
+        $container->prependExtensionConfig('nowo_ui_kit', ['css_framework' => 'tailwind']);
+
+        $property = new ReflectionProperty(ContainerBuilder::class, 'extensionConfigs');
+        $property->setAccessible(true);
+        /** @var array<string, list<mixed>> $configs */
+        $configs                  = $property->getValue($container);
+        $configs['nowo_ui_kit'][] = 'invalid';
+        $property->setValue($container, $configs);
+
+        $container->prependExtensionConfig('nowo_maintenance_mode', [
+            'web_ui' => [
+                'icon_set' => 'none',
+            ],
+        ]);
+
+        (new MaintenanceModeExtension())->prepend($container);
+
+        $seededIcon = false;
+        foreach ($container->getExtensionConfig('nowo_ui_kit') as $cfg) {
+            if (is_array($cfg) && ($cfg['icon_set'] ?? null) === 'none') {
+                $seededIcon = true;
+            }
+        }
+        self::assertTrue($seededIcon);
+    }
+
     public function testGetAlias(): void
     {
         self::assertSame('nowo_maintenance_mode', (new MaintenanceModeExtension())->getAlias());
+    }
+
+    private function registerUiKitStub(ContainerBuilder $container): void
+    {
+        $container->registerExtension(new class extends Extension {
+            public function getAlias(): string
+            {
+                return 'nowo_ui_kit';
+            }
+
+            public function load(array $configs, ContainerBuilder $container): void
+            {
+            }
+        });
     }
 }

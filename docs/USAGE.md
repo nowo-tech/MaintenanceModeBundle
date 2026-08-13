@@ -123,6 +123,8 @@ Default URL prefix: `/_maintenance`.
 
 If `security.password_protection` is `false`, or `security.password_hash` is empty, the panel does **not** show a login form — enable/disable is available immediately under the panel prefix.
 
+Panel mutations use Symfony Forms (`Nowo\MaintenanceModeBundle\Form\*`). Bundle Twig calls `form_start` / `form_end` and includes `@NowoMaintenanceModeBundle/panel/_form_fields.html.twig`, which loops `form_row` for every child that is **not** already rendered. Host overrides of `panel/index.html.twig` / `panel/login.html.twig` should prefer the FormView variables (`enable_form`, `disable_form`, `schedule_form`, `clear_schedule_form`, `logout_form`, `login_form`) or keep posting the same flat field names + `_token` (and `confirmed=1` on CSRF-only actions). See [UPGRADING](UPGRADING.md#to-150).
+
 ### Look-and-feel (REQ-UI-001)
 
 Point the panel at your project chrome and CSS stack:

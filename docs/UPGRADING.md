@@ -2,6 +2,7 @@
 
 ## Table of contents
 
+- [To 1.5.2](#to-152)
 - [To 1.5.1](#to-151)
 - [To 1.5.0](#to-150)
   - [Panel Symfony Forms](#panel-symfony-forms)
@@ -54,6 +55,17 @@
   - [Breaking changes](#breaking-changes-5)
   - [Storage backends](#storage-backends)
   - [After upgrading](#after-upgrading-1)
+
+## To 1.5.2
+
+From **1.5.1** — maintainer / CI fix only: the Code Style GitHub Action restores `composer.json` and `composer.lock` after installing Symfony 7.4 for the job, so auto-commits no longer strip `|| ^8.0` from core constraints. Docs: INSTALLATION lists `symfony/form` + UiKit; USAGE documents panel FormViews.
+
+```bash
+composer require nowo-tech/maintenance-mode-bundle:^1.5.2
+php bin/console cache:clear
+```
+
+No application config changes.
 
 ## To 1.5.1
 
