@@ -2,6 +2,7 @@
 
 ## Table of contents
 
+- [To 1.5.3](#to-153)
 - [To 1.5.2](#to-152)
 - [To 1.5.1](#to-151)
 - [To 1.5.0](#to-150)
@@ -55,6 +56,15 @@
   - [Breaking changes](#breaking-changes-5)
   - [Storage backends](#storage-backends)
   - [After upgrading](#after-upgrading-1)
+
+## To 1.5.3
+
+From **1.5.2** — Composer-only patch restoring `^7.4 || ^8.0` on core `symfony/*` packages that a Code Style auto-commit had narrowed again on `main` between 1.5.1 and 1.5.2. Prefer **1.5.3+** on Symfony **8**.
+
+```bash
+composer require nowo-tech/maintenance-mode-bundle:^1.5.3
+php bin/console cache:clear
+```
 
 ## To 1.5.2
 
