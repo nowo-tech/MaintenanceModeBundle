@@ -5,20 +5,30 @@ declare(strict_types=1);
 namespace Nowo\MaintenanceModeBundle\Controller;
 
 use DateTimeImmutable;
+use Nowo\MaintenanceModeBundle\Form\ClearScheduleType;
+use Nowo\MaintenanceModeBundle\Form\DisableMaintenanceType;
+use Nowo\MaintenanceModeBundle\Form\EnableMaintenanceType;
+use Nowo\MaintenanceModeBundle\Form\LoginMaintenanceType;
+use Nowo\MaintenanceModeBundle\Form\LogoutMaintenanceType;
+use Nowo\MaintenanceModeBundle\Form\ScheduleMaintenanceType;
+use Nowo\MaintenanceModeBundle\Model\MaintenanceState;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceAccessGateInterface;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceModeAccessCheckerInterface;
 use Nowo\MaintenanceModeBundle\Service\MaintenanceManager;
+use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\FlashBagAwareSessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Twig\Environment;
 
+use function is_string;
+
 /**
- * Simple Twig CRUD panel to enable / disable maintenance and view history.
+ * Twig panel to enable / disable maintenance and view history (Symfony Forms + CSRF).
  */
 final class MaintenancePanelController
 {
@@ -35,6 +45,7 @@ final class MaintenancePanelController
     public function __construct(
         private readonly MaintenanceManager $manager,
         private readonly MaintenanceAccessGateInterface $accessGate,
+        private readonly FormFactoryInterface $formFactory,
         private readonly Environment $twig,
         private readonly array $templates,
         private readonly string $pathPrefix = '/_maintenance',
@@ -59,12 +70,19 @@ final class MaintenancePanelController
             }
         }
 
+        $state = $this->manager->getState();
+
         return new Response($this->twig->render($this->templates['panel_index'], [
-            'state'             => $this->manager->getState(),
-            'path_prefix'       => $this->pathPrefix,
-            'layout'            => $this->templates['panel_layout'],
-            'flashes'           => $flashes,
-            'password_required' => $this->accessGate->isPasswordRequired(),
+            'state'               => $state,
+            'path_prefix'         => $this->pathPrefix,
+            'layout'              => $this->templates['panel_layout'],
+            'flashes'             => $flashes,
+            'password_required'   => $this->accessGate->isPasswordRequired(),
+            'enable_form'         => $this->createEnableForm($state)->createView(),
+            'disable_form'        => $this->createDisableForm()->createView(),
+            'schedule_form'       => $this->createScheduleForm($state)->createView(),
+            'clear_schedule_form' => $this->createClearScheduleForm()->createView(),
+            'logout_form'         => $this->createLogoutForm()->createView(),
         ]));
     }
 
@@ -74,11 +92,15 @@ final class MaintenancePanelController
         if (($response = $this->denyUnlessGranted($request)) instanceof Response) {
             return $response;
         }
-        if (!$this->isCsrfValid($request, self::CSRF_ENABLE)) {
+
+        $form = $this->createEnableForm($this->manager->getState());
+        if (!$this->handleValidForm($form, $request)) {
             return new Response('Invalid CSRF token.', Response::HTTP_FORBIDDEN);
         }
 
-        $message = $request->request->getString('message');
+        /** @var array{message?: string|null} $data */
+        $data    = $form->getData() ?? [];
+        $message = isset($data['message']) && is_string($data['message']) ? $data['message'] : '';
         $this->manager->enable($message !== '' ? $message : null, 'panel');
         $this->flash($request, 'success', 'panel.flash.enabled');
 
@@ -91,7 +113,9 @@ final class MaintenancePanelController
         if (($response = $this->denyUnlessGranted($request)) instanceof Response) {
             return $response;
         }
-        if (!$this->isCsrfValid($request, self::CSRF_DISABLE)) {
+
+        $form = $this->createDisableForm();
+        if (!$this->handleValidForm($form, $request)) {
             return new Response('Invalid CSRF token.', Response::HTTP_FORBIDDEN);
         }
 
@@ -107,17 +131,19 @@ final class MaintenancePanelController
         if (($response = $this->denyUnlessGranted($request)) instanceof Response) {
             return $response;
         }
-        if (!$this->isCsrfValid($request, self::CSRF_SCHEDULE)) {
+
+        $form = $this->createScheduleForm($this->manager->getState());
+        if (!$this->handleValidForm($form, $request)) {
             return new Response('Invalid CSRF token.', Response::HTTP_FORBIDDEN);
         }
 
-        $enableRaw  = $request->request->getString('scheduled_enable_at');
-        $disableRaw = $request->request->getString('scheduled_disable_at');
-        $message    = $request->request->getString('message');
+        /** @var array{scheduled_enable_at?: DateTimeImmutable|null, scheduled_disable_at?: DateTimeImmutable|null, message?: string|null} $data */
+        $data    = $form->getData() ?? [];
+        $message = isset($data['message']) && is_string($data['message']) ? $data['message'] : '';
 
         $this->manager->schedule(
-            enableAt: $enableRaw !== '' ? new DateTimeImmutable($enableRaw) : null,
-            disableAt: $disableRaw !== '' ? new DateTimeImmutable($disableRaw) : null,
+            enableAt: $data['scheduled_enable_at'] ?? null,
+            disableAt: $data['scheduled_disable_at'] ?? null,
             message: $message !== '' ? $message : null,
             updatedBy: 'panel',
             clearMissing: true,
@@ -133,7 +159,9 @@ final class MaintenancePanelController
         if (($response = $this->denyUnlessGranted($request)) instanceof Response) {
             return $response;
         }
-        if (!$this->isCsrfValid($request, self::CSRF_CLEAR_SCHEDULE)) {
+
+        $form = $this->createClearScheduleForm();
+        if (!$this->handleValidForm($form, $request)) {
             return new Response('Invalid CSRF token.', Response::HTTP_FORBIDDEN);
         }
 
@@ -168,12 +196,15 @@ final class MaintenancePanelController
             return new RedirectResponse($this->pathPrefix);
         }
 
+        $form  = $this->createLoginForm();
         $error = null;
         if ($request->isMethod('POST')) {
-            if (!$this->isCsrfValid($request, self::CSRF_LOGIN)) {
+            if (!$this->handleValidForm($form, $request)) {
                 return new Response('Invalid CSRF token.', Response::HTTP_FORBIDDEN);
             }
-            $password = $request->request->getString('password');
+            /** @var array{password?: string|null} $data */
+            $data     = $form->getData() ?? [];
+            $password = isset($data['password']) && is_string($data['password']) ? $data['password'] : '';
             if ($this->accessGate->authenticate($request, $password)) {
                 return new RedirectResponse($this->pathPrefix);
             }
@@ -184,13 +215,15 @@ final class MaintenancePanelController
             'error'       => $error,
             'path_prefix' => $this->pathPrefix,
             'layout'      => $this->templates['panel_layout'],
+            'login_form'  => $form->createView(),
         ]), $error !== null ? Response::HTTP_UNAUTHORIZED : Response::HTTP_OK);
     }
 
     #[Route(path: '/logout', name: 'nowo_maintenance_mode_panel_logout', methods: ['POST'])]
     public function logout(Request $request): Response
     {
-        if (!$this->isCsrfValid($request, self::CSRF_LOGOUT)) {
+        $form = $this->createLogoutForm();
+        if (!$this->handleValidForm($form, $request)) {
             return new Response('Invalid CSRF token.', Response::HTTP_FORBIDDEN);
         }
         $this->accessGate->revoke($request);
@@ -224,16 +257,97 @@ final class MaintenancePanelController
         return null;
     }
 
-    private function isCsrfValid(Request $request, string $tokenId): bool
+    /**
+     * @param FormInterface<array<string, mixed>|null> $form
+     */
+    private function handleValidForm(FormInterface $form, Request $request): bool
     {
         // Fail-closed (REQ-SEC-005): deny mutations when CSRF cannot be validated.
         if (!$this->csrfTokenManager instanceof CsrfTokenManagerInterface) {
             return false;
         }
 
-        $token = $request->request->getString('_token');
+        $form->handleRequest($request);
 
-        return $this->csrfTokenManager->isTokenValid(new CsrfToken($tokenId, $token));
+        return $form->isSubmitted() && $form->isValid();
+    }
+
+    /**
+     * @return FormInterface<array<string, mixed>|null>
+     */
+    private function createEnableForm(MaintenanceState $state): FormInterface
+    {
+        return $this->formFactory->createNamed('', EnableMaintenanceType::class, [
+            'message' => $state->getMessage(),
+        ], $this->formOptions([
+            'action' => $this->pathPrefix . '/enable',
+        ]));
+    }
+
+    /**
+     * @return FormInterface<array<string, mixed>|null>
+     */
+    private function createDisableForm(): FormInterface
+    {
+        return $this->formFactory->createNamed('', DisableMaintenanceType::class, null, $this->formOptions([
+            'action' => $this->pathPrefix . '/disable',
+        ]));
+    }
+
+    /**
+     * @return FormInterface<array<string, mixed>|null>
+     */
+    private function createScheduleForm(MaintenanceState $state): FormInterface
+    {
+        return $this->formFactory->createNamed('', ScheduleMaintenanceType::class, [
+            'scheduled_enable_at'  => $state->getScheduledEnableAt(),
+            'scheduled_disable_at' => $state->getScheduledDisableAt(),
+            'message'              => $state->getMessage(),
+        ], $this->formOptions([
+            'action' => $this->pathPrefix . '/schedule',
+        ]));
+    }
+
+    /**
+     * @return FormInterface<array<string, mixed>|null>
+     */
+    private function createClearScheduleForm(): FormInterface
+    {
+        return $this->formFactory->createNamed('', ClearScheduleType::class, null, $this->formOptions([
+            'action' => $this->pathPrefix . '/clear-schedule',
+        ]));
+    }
+
+    /**
+     * @return FormInterface<array<string, mixed>|null>
+     */
+    private function createLoginForm(): FormInterface
+    {
+        return $this->formFactory->createNamed('', LoginMaintenanceType::class, null, $this->formOptions([
+            'action' => $this->pathPrefix . '/login',
+        ]));
+    }
+
+    /**
+     * @return FormInterface<array<string, mixed>|null>
+     */
+    private function createLogoutForm(): FormInterface
+    {
+        return $this->formFactory->createNamed('', LogoutMaintenanceType::class, null, $this->formOptions([
+            'action' => $this->pathPrefix . '/logout',
+        ]));
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     *
+     * @return array<string, mixed>
+     */
+    private function formOptions(array $options = []): array
+    {
+        return array_merge([
+            'csrf_protection' => $this->csrfTokenManager instanceof CsrfTokenManagerInterface,
+        ], $options);
     }
 
     private function flash(Request $request, string $type, string $message): void

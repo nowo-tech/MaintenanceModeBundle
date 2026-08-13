@@ -15,6 +15,10 @@ use Nowo\MaintenanceModeBundle\Tests\Unit\Service\InMemoryHistoryStorage;
 use Nowo\MaintenanceModeBundle\Tests\Unit\Service\InMemoryStateStorage;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Form\Extension\Csrf\CsrfExtension;
+use Symfony\Component\Form\Extension\HttpFoundation\HttpFoundationExtension;
+use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Form\Forms;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -48,6 +52,8 @@ final class MaintenancePanelControllerTest extends TestCase
 
     private CsrfTokenManagerInterface&MockObject $csrfTokenManager;
 
+    private FormFactoryInterface $formFactory;
+
     protected function setUp(): void
     {
         $this->stateStorage     = new InMemoryStateStorage();
@@ -56,6 +62,13 @@ final class MaintenancePanelControllerTest extends TestCase
         $this->accessGate       = $this->createMock(MaintenanceAccessGateInterface::class);
         $this->twig             = $this->createMock(Environment::class);
         $this->csrfTokenManager = $this->createMock(CsrfTokenManagerInterface::class);
+        $this->csrfTokenManager->method('getToken')->willReturnCallback(
+            static fn (string $tokenId): CsrfToken => new CsrfToken($tokenId, 'valid'),
+        );
+        $this->formFactory = Forms::createFormFactoryBuilder()
+            ->addExtension(new HttpFoundationExtension())
+            ->addExtension(new CsrfExtension($this->csrfTokenManager))
+            ->getFormFactory();
     }
 
     public function testIndexRendersPanelWhenGranted(): void
@@ -64,7 +77,7 @@ final class MaintenancePanelControllerTest extends TestCase
         $this->twig->expects(self::once())
             ->method('render')
             ->with(self::TEMPLATES['panel_index'], self::callback(static function (array $context): bool {
-                return isset($context['state'], $context['path_prefix'], $context['layout'])
+                return isset($context['state'], $context['path_prefix'], $context['layout'], $context['enable_form'], $context['schedule_form'])
                     && $context['path_prefix'] === '/_maintenance';
             }))
             ->willReturn('<html>index</html>');
@@ -139,7 +152,10 @@ final class MaintenancePanelControllerTest extends TestCase
         $this->accessGate->method('isGranted')->willReturn(true);
         $this->csrfTokenManager->method('isTokenValid')->willReturn(true);
 
-        $request  = Request::create('/_maintenance/disable', 'POST', ['_token' => 'valid']);
+        $request = Request::create('/_maintenance/disable', 'POST', [
+            'confirmed' => '1',
+            '_token'    => 'valid',
+        ]);
         $response = $this->createController()->disable($request);
 
         self::assertInstanceOf(RedirectResponse::class, $response);
@@ -210,8 +226,8 @@ final class MaintenancePanelControllerTest extends TestCase
         $this->csrfTokenManager->method('isTokenValid')->willReturn(true);
 
         $request = Request::create('/_maintenance/schedule', 'POST', [
-            'scheduled_enable_at'  => '2026-07-25T08:00:00+00:00',
-            'scheduled_disable_at' => '2026-07-25T18:00:00+00:00',
+            'scheduled_enable_at'  => '2026-07-25T08:00',
+            'scheduled_disable_at' => '2026-07-25T18:00',
             'message'              => 'Planned',
             '_token'               => 'valid',
         ]);
@@ -246,7 +262,10 @@ final class MaintenancePanelControllerTest extends TestCase
         $this->accessGate->method('isGranted')->willReturn(true);
         $this->csrfTokenManager->method('isTokenValid')->willReturn(true);
 
-        $request  = Request::create('/_maintenance/clear-schedule', 'POST', ['_token' => 'valid']);
+        $request = Request::create('/_maintenance/clear-schedule', 'POST', [
+            'confirmed' => '1',
+            '_token'    => 'valid',
+        ]);
         $response = $this->createController()->clearSchedule($request);
 
         self::assertInstanceOf(RedirectResponse::class, $response);
@@ -346,7 +365,7 @@ final class MaintenancePanelControllerTest extends TestCase
 
         $this->twig->expects(self::once())
             ->method('render')
-            ->with(self::TEMPLATES['panel_login'], self::callback(static fn (array $c): bool => $c['error'] === null))
+            ->with(self::TEMPLATES['panel_login'], self::callback(static fn (array $c): bool => $c['error'] === null && isset($c['login_form'])))
             ->willReturn('<html>login</html>');
 
         $response = $this->createController()->login(Request::create('/_maintenance/login', 'GET'));
@@ -413,7 +432,10 @@ final class MaintenancePanelControllerTest extends TestCase
         $this->csrfTokenManager->method('isTokenValid')->willReturn(true);
         $this->accessGate->expects(self::once())->method('revoke');
 
-        $request  = Request::create('/_maintenance/logout', 'POST', ['_token' => 'valid']);
+        $request = Request::create('/_maintenance/logout', 'POST', [
+            'confirmed' => '1',
+            '_token'    => 'valid',
+        ]);
         $response = $this->createController()->logout($request);
 
         self::assertInstanceOf(RedirectResponse::class, $response);
@@ -438,6 +460,7 @@ final class MaintenancePanelControllerTest extends TestCase
         $controller = new MaintenancePanelController(
             $this->manager,
             $this->accessGate,
+            $this->formFactory,
             $this->twig,
             self::TEMPLATES,
             '/_maintenance',
@@ -465,7 +488,10 @@ final class MaintenancePanelControllerTest extends TestCase
             ->willReturn(true);
 
         $this->createController()->enable(
-            Request::create('/_maintenance/enable', 'POST', ['_token' => 'tok']),
+            Request::create('/_maintenance/enable', 'POST', [
+                'message' => '',
+                '_token'  => 'tok',
+            ]),
         );
     }
 
@@ -477,6 +503,7 @@ final class MaintenancePanelControllerTest extends TestCase
         $controller = new MaintenancePanelController(
             $this->manager,
             $this->accessGate,
+            $this->formFactory,
             $this->twig,
             self::TEMPLATES,
             '/_maintenance',
@@ -495,6 +522,7 @@ final class MaintenancePanelControllerTest extends TestCase
         $controller = new MaintenancePanelController(
             $this->manager,
             $this->accessGate,
+            $this->formFactory,
             $this->twig,
             self::TEMPLATES,
             '/_maintenance',
@@ -516,6 +544,7 @@ final class MaintenancePanelControllerTest extends TestCase
         $controller = new MaintenancePanelController(
             $this->manager,
             $this->accessGate,
+            $this->formFactory,
             $this->twig,
             self::TEMPLATES,
             '/_maintenance',
@@ -539,6 +568,7 @@ final class MaintenancePanelControllerTest extends TestCase
         $controller = new MaintenancePanelController(
             $this->manager,
             $this->accessGate,
+            $this->formFactory,
             $this->twig,
             self::TEMPLATES,
             '/_maintenance',
@@ -562,6 +592,7 @@ final class MaintenancePanelControllerTest extends TestCase
         return new MaintenancePanelController(
             $manager,
             $this->accessGate,
+            $this->formFactory,
             $this->twig,
             self::TEMPLATES,
             '/_maintenance',

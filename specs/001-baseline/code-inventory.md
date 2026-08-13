@@ -47,8 +47,20 @@ requirements.
 
 | Path | Responsibility | Spec FR-* IDs |
 | --- | --- | --- |
-| `Controller/MaintenancePanelController.php` | Provides panel status, mutations, scheduling, history, login/logout, and CSRF handling. | FR-08, FR-09 |
+| `Controller/MaintenancePanelController.php` | Provides panel status, mutations, scheduling, history, login/logout via Symfony Forms + CSRF. | FR-08, FR-09 |
 | `Controller/MaintenancePreviewController.php` | Renders the configured public page for development preview without enabling maintenance. | FR-14 |
+
+## Forms
+
+| Path | Responsibility | Spec FR-* IDs |
+| --- | --- | --- |
+| `Form/AbstractMaintenanceFormType.php` | Shared CSRF / translation defaults for panel forms (empty block prefix). | FR-08 |
+| `Form/EnableMaintenanceType.php` | Enable form (message). | FR-08 |
+| `Form/DisableMaintenanceType.php` | Disable form (CSRF only). | FR-08 |
+| `Form/ScheduleMaintenanceType.php` | Schedule form (windows + message). | FR-08, FR-10 |
+| `Form/ClearScheduleType.php` | Clear-schedule form (CSRF only). | FR-08, FR-10 |
+| `Form/LoginMaintenanceType.php` | Panel password login form. | FR-08, FR-09 |
+| `Form/LogoutMaintenanceType.php` | Panel logout form (CSRF only). | FR-08, FR-09 |
 
 ## Events
 
@@ -111,7 +123,8 @@ requirements.
 | `Resources/views/maintenance/examples/idea_countdown.html.twig` | Scheduled-end countdown maintenance theme. | FR-10, FR-11, FR-18 |
 | `Resources/views/maintenance/examples/idea_updates.html.twig` | Status-update maintenance theme. | FR-11, FR-18 |
 | `Resources/views/panel/layout.html.twig` | Shared panel layout. | FR-08, FR-11 |
-| `Resources/views/panel/index.html.twig` | Panel dashboard and mutation forms. | FR-08, FR-11 |
+| `Resources/views/panel/index.html.twig` | Panel dashboard and mutation forms (`form_start` + unrendered `form_row` loop). | FR-08, FR-11 |
+| `Resources/views/panel/_form_fields.html.twig` | Shared unrendered-field `form_row` loop for panel forms. | FR-08, FR-11 |
 | `Resources/views/panel/history.html.twig` | Panel history page. | FR-08, FR-11 |
 | `Resources/views/panel/login.html.twig` | Panel password-login page. | FR-08, FR-09, FR-11 |
 
