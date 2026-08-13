@@ -348,6 +348,7 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
         $container->getDefinition(MaintenancePanelController::class)
             ->setArgument('$manager', new Reference(MaintenanceManager::class))
             ->setArgument('$accessGate', new Reference(MaintenanceAccessGateInterface::class))
+            ->setArgument('$formFactory', new Reference('form.factory'))
             ->setArgument('$templates', $config['templates'])
             ->setArgument('$pathPrefix', $config['panel']['path_prefix'])
             ->setArgument('$csrfTokenManager', new Reference(CsrfTokenManagerInterface::class, ContainerBuilder::IGNORE_ON_INVALID_REFERENCE))

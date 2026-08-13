@@ -1,0 +1,9 @@
+{#
+  Render every form child that has not already been painted, in Form Type order.
+  Use after any intentional manual form_row/form_widget calls so new Type fields appear automatically.
+#}
+{% for field in form %}
+    {% if not field.rendered %}
+        {{ form_row(field) }}
+    {% endif %}
+{% endfor %}

@@ -3,6 +3,8 @@
 ## Table of contents
 
 - [Unreleased](#unreleased)
+  - [Panel Symfony Forms](#panel-symfony-forms)
+  - [Breaking changes](#breaking-changes)
 - [To 1.4.1](#to-141)
 - [To 1.4.0](#to-140)
 - [To 1.3.0](#to-130)
@@ -53,6 +55,27 @@
   - [After upgrading](#after-upgrading-1)
 
 ## Unreleased
+
+### Panel Symfony Forms
+
+From **1.4.1** — panel mutations use Symfony Forms (`symfony/form`) instead of hand-rolled HTML + manual CSRF checks.
+
+```bash
+composer update nowo-tech/maintenance-mode-bundle
+# ensure Form is available (usually already present via FrameworkBundle)
+composer require "symfony/form:^7.4 || ^8.0"
+php bin/console cache:clear
+```
+
+1. Bundle templates call `form_start` / `form_row` loop / `form_end` with FormViews: `enable_form`, `disable_form`, `schedule_form`, `clear_schedule_form`, `logout_form`, `login_form`.
+2. CSRF token ids are unchanged (`nowo_maintenance_enable`, …). Field names stay flat (empty form block prefix).
+3. Frozen host overrides of `panel/index.html.twig` / `panel/login.html.twig` that still use raw `<form>` + `csrf_token()` continue to work for POST as long as field names match; preferred upgrade is to copy the bundle Twig pattern (or include `@NowoMaintenanceModeBundle/panel/_form_fields.html.twig`).
+4. CSRF-only actions (`disable`, `clear-schedule`, `logout`) now include a hidden `confirmed=1` field so Symfony treats the unnamed form as submitted. Raw overrides must post that field (or switch to `form_start` / FormViews).
+
+### Breaking changes
+
+- Runtime dependency on **`symfony/form`**.
+- Twig context for the panel index/login now expects FormView variables (raw-only overrides that ignore them still render if you keep your own markup).
 
 ## To 1.4.1
 

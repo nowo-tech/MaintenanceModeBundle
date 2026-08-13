@@ -12,6 +12,8 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 final class NowoMaintenanceModeBundle extends Bundle
 {
+    public const TRANSLATION_DOMAIN = 'NowoMaintenanceModeBundle';
+
     public function build(ContainerBuilder $container): void
     {
         parent::build($container);
