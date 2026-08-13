@@ -2,7 +2,7 @@
 
 ## Table of contents
 
-- [Unreleased](#unreleased)
+- [To 1.5.0](#to-150)
   - [Panel Symfony Forms](#panel-symfony-forms)
   - [Breaking changes](#breaking-changes)
 - [To 1.4.1](#to-141)
@@ -54,7 +54,7 @@
   - [Storage backends](#storage-backends)
   - [After upgrading](#after-upgrading-1)
 
-## Unreleased
+## To 1.5.0
 
 ### Panel Symfony Forms
 
