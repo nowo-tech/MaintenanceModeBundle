@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Table of contents
 
 - [\[Unreleased\]](#unreleased)
+- [\[1.4.1\] - 2026-08-13](#141---2026-08-13)
+  - [Fixed](#fixed)
+  - [Compatibility](#compatibility)
 - [\[1.4.0\] - 2026-08-04](#140---2026-08-04)
   - [Added](#added)
   - [Changed](#changed)
@@ -45,6 +48,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - [Compatibility](#compatibility-7)
 
 ## [Unreleased]
+
+## [1.4.1] - 2026-08-13
+
+### Fixed
+
+- Restore Symfony **8** on core `symfony/*` constraints (`config`, `dependency-injection`, `http-foundation`, `http-kernel`, `security-core`) after `v1.4.0` published them as `^7.4` only and blocked installs on Symfony **8.0** / **8.1**.
+
+### Compatibility
+
+- Unchanged intent: PHP `>=8.2`, `<8.6`; Symfony `^7.4 || ^8.0` (CI minors **7.4**, **8.0**, **8.1**).
+
+[1.4.1]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.4.1
 
 ## [1.4.0] - 2026-08-04
 

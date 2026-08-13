@@ -3,6 +3,7 @@
 ## Table of contents
 
 - [Unreleased](#unreleased)
+- [To 1.4.1](#to-141)
 - [To 1.4.0](#to-140)
 - [To 1.3.0](#to-130)
   - [Requirements](#requirements)
@@ -53,9 +54,20 @@
 
 ## Unreleased
 
+## To 1.4.1
+
+From **1.4.0** — Composer-only patch: restore `^7.4 || ^8.0` on core `symfony/*` packages that `v1.4.0` had narrowed to `^7.4` only (`config`, `dependency-injection`, `http-foundation`, `http-kernel`, `security-core`). No code or config changes.
+
+```bash
+composer require nowo-tech/maintenance-mode-bundle:^1.4.1
+php bin/console cache:clear
+```
+
+If you stayed on **1.3.0** because Composer rejected `1.4.0` on Symfony **8.1**, jump straight to **1.4.1** (still includes UiKit / Twig Extra from 1.4.0 — see [To 1.4.0](#to-140)).
+
 ## To 1.4.0
 
-From **1.3.0** — Adds UiKit composition, Twig Extra (REQ-TWIG-004), and Twig-CS-Fixer. Register TwigExtraBundle and NowoUiKitBundle if Flex did not. See CHANGELOG.
+From **1.3.0** — Adds UiKit composition, Twig Extra (REQ-TWIG-004), and Twig-CS-Fixer. Register TwigExtraBundle and NowoUiKitBundle if Flex did not. See CHANGELOG. **Note:** published `v1.4.0` was not installable on Symfony 8 — use **1.4.1+**.
 
 ```bash
 composer update nowo-tech/maintenance-mode-bundle
