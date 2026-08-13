@@ -2,6 +2,7 @@
 
 ## Table of contents
 
+- [To 1.5.1](#to-151)
 - [To 1.5.0](#to-150)
   - [Panel Symfony Forms](#panel-symfony-forms)
   - [Breaking changes](#breaking-changes)
@@ -53,6 +54,15 @@
   - [Breaking changes](#breaking-changes-5)
   - [Storage backends](#storage-backends)
   - [After upgrading](#after-upgrading-1)
+
+## To 1.5.1
+
+From **1.5.0** — Composer-only patch restoring `^7.4 || ^8.0` on core `symfony/*` packages that a CS Fixer bot commit had narrowed to `^7.4` only.
+
+```bash
+composer require nowo-tech/maintenance-mode-bundle:^1.5.1
+php bin/console cache:clear
+```
 
 ## To 1.5.0
 
