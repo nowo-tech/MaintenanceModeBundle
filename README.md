@@ -15,7 +15,7 @@ This bundle is **FrankenPHP worker mode friendly**.
 - **503 listener** — Configurable-priority `kernel.request` interceptor (default after router), HTML or JSON, dynamic `Retry-After`, `Cache-Control: no-store`.
 - **Exclusions** — Exact paths, prefixes, route names, globs, `#regex#` / `~regex~`, **IPs/CIDR**, `#[ExcludeFromMaintenance]`, soft bypass token.
 - **Admin panel** — Enable / disable / schedule / clear schedule / history under a configurable prefix (default `/_maintenance`).
-- **CLI** — `enable` / `disable` / `status` / `hash-password` for deploys and ops scripts.
+- **CLI** — `nowo:maintenance-mode:enable` (`--until`, `--message`, `--actor`), `nowo:maintenance-mode:disable`, `nowo:maintenance-mode:status`, `nowo:maintenance-mode:hash-password`.
 - **Events & Twig** — Domain events on state changes; `nowo_maintenance_is_enabled()` / `nowo_maintenance_state()`.
 - **Password gate** — Optional `password_hash` (bcrypt / argon2id); replaceable via `MaintenanceAccessGateInterface`.
 - **Pluggable storage** — Filesystem JSON/JSONL by default; swap for Doctrine or anything else via DI.
