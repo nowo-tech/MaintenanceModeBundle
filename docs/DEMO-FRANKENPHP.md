@@ -40,6 +40,7 @@ The demos use:
 ## What the demos include
 
 - **Symfony Web Profiler** and **DebugBundle** (dev/test).
+- **Nowo Twig Inspector** (`nowo-tech/twig-inspector-bundle`) and **Nowo Hot Reload** (`nowo-tech/hot-reload-bundle`) — required together on FrankenPHP demos (dev/test only; Caddyfile Mercure + `hot_reload`, plus `worker { watch }` in worker mode). Do not enable Hot Reload in production.
 - **Nowo Twig Inspector** for template debugging.
 - **Maintenance Mode Bundle** under test (path repository + volume).
 - Home, panel (`/_maintenance`), examples gallery, bypass guide, and preview route.
