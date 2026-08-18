@@ -2,6 +2,7 @@
 
 ## Table of contents
 
+- [To 1.5.4](#to-154)
 - [To 1.5.3](#to-153)
 - [To 1.5.2](#to-152)
 - [To 1.5.1](#to-151)
@@ -56,6 +57,15 @@
   - [Breaking changes](#breaking-changes-5)
   - [Storage backends](#storage-backends)
   - [After upgrading](#after-upgrading-1)
+
+## To 1.5.4
+
+No application upgrade steps. **Demos only:** Hot Reload Bundle `^1.4` (FrankenPHP Mercure/`hot_reload`, `dev`/`test`).
+
+```bash
+composer update nowo-tech/maintenance-mode-bundle
+php bin/console cache:clear
+```
 
 ## To 1.5.3
 

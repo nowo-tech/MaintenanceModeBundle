@@ -62,6 +62,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.4] - 2026-08-18
+
+### Changed
+
+- **Demos:** pin `nowo-tech/hot-reload-bundle` to `^1.4` with FrankenPHP Mercure/`hot_reload` (`dev`/`test` only).
+
+[1.5.4]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.5.4
+
 ## [1.5.3] - 2026-08-13
 
 ### Fixed
@@ -291,7 +299,7 @@ First stable release.
 - PHP `>=8.2`, `<8.6` (Symfony **8.x** requires PHP **8.4+**)
 - Symfony floor **7.4** (CI / mandatory minors: **7.4**, **8.0**, **8.1**)
 
-[Unreleased]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.3...HEAD
+[Unreleased]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.4...HEAD
 [1.3.0]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.2.2...v1.3.0
 [1.2.2]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.2.0...v1.2.1
