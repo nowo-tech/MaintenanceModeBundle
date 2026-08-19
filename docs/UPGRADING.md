@@ -58,6 +58,15 @@
   - [Storage backends](#storage-backends)
   - [After upgrading](#after-upgrading-1)
 
+## To 1.5.5
+
+No application upgrade steps.
+
+```bash
+composer update nowo-tech/maintenance-mode-bundle
+php bin/console cache:clear
+```
+
 ## To 1.5.4
 
 No application upgrade steps. **Demos only:** Hot Reload Bundle `^1.4` (FrankenPHP Mercure/`hot_reload`, `dev`/`test`).
