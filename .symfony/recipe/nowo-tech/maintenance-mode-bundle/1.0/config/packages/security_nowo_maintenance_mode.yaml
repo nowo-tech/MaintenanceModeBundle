@@ -1,0 +1,5 @@
+# Merged into security.access_control by Symfony (REQ-SEC-004).
+security:
+    access_control:
+        - { path: ^/_maintenance, roles: ROLE_ADMIN }
+        - { path: ^/_maintenance_preview, roles: ROLE_ADMIN }
