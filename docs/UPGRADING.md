@@ -2,6 +2,8 @@
 
 ## Table of contents
 
+- [To 1.5.6](#to-156)
+- [To 1.5.5](#to-155)
 - [To 1.5.4](#to-154)
 - [To 1.5.3](#to-153)
 - [To 1.5.2](#to-152)
@@ -57,6 +59,15 @@
   - [Breaking changes](#breaking-changes-5)
   - [Storage backends](#storage-backends)
   - [After upgrading](#after-upgrading-1)
+
+## To 1.5.6
+
+Review Flex `when@prod` (preview off, `ROLE_ADMIN`) and `security_nowo_maintenance_mode.yaml`. Prefer **`^1.5.6`**.
+
+```bash
+composer update nowo-tech/maintenance-mode-bundle
+php bin/console cache:clear
+```
 
 ## To 1.5.5
 

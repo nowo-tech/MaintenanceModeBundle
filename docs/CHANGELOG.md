@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Table of contents
 
 - [\[Unreleased\]](#unreleased)
+- [\[1.5.6\] - 2026-08-20](#156---2026-08-20)
 - [\[1.5.3\] - 2026-08-13](#153---2026-08-13)
   - [Fixed](#fixed)
   - [Compatibility](#compatibility)
@@ -61,6 +62,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - [Compatibility](#compatibility-12)
 
 ## [Unreleased]
+
+## [1.5.6] - 2026-08-20
+
+### Security
+
+- **Flex recipe:** default `security.access_roles: [ROLE_ADMIN]`; `when@prod` disables preview and keeps `allow_unauthenticated: false`; ship `security_nowo_maintenance_mode.yaml`. Prefer **`^1.5.6`**.
+
+[1.5.6]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.5.6
 
 ## [1.5.5] - 2026-08-19
 
