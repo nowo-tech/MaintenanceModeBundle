@@ -2,6 +2,8 @@
 
 ## Table of contents
 
+
+- [From 1.5.6 to 1.5.7](#from-156-to-157)
 - [To 1.5.6](#to-156)
 - [To 1.5.5](#to-155)
 - [To 1.5.4](#to-154)
