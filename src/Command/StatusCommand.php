@@ -40,13 +40,13 @@ final class StatusCommand extends Command
         $io->title('Maintenance mode status');
         $io->definitionList(
             ['Manual enabled' => $state->isEnabled() ? 'yes' : 'no'],
-            ['Effectively on'    => $state->isEffectivelyEnabled() ? 'yes' : 'no'],
-            ['Message'           => $state->getMessage() ?? '—'],
-            ['Activated at'      => $state->getActivatedAt()?->format(DATE_ATOM) ?? '—'],
-            ['Deactivated at'    => $state->getDeactivatedAt()?->format(DATE_ATOM) ?? '—'],
-            ['Scheduled enable'  => $state->getScheduledEnableAt()?->format(DATE_ATOM) ?? '—'],
+            ['Effectively on' => $state->isEffectivelyEnabled() ? 'yes' : 'no'],
+            ['Message' => $state->getMessage() ?? '—'],
+            ['Activated at' => $state->getActivatedAt()?->format(DATE_ATOM) ?? '—'],
+            ['Deactivated at' => $state->getDeactivatedAt()?->format(DATE_ATOM) ?? '—'],
+            ['Scheduled enable' => $state->getScheduledEnableAt()?->format(DATE_ATOM) ?? '—'],
             ['Scheduled disable' => $state->getScheduledDisableAt()?->format(DATE_ATOM) ?? '—'],
-            ['Updated by'        => $state->getUpdatedBy() ?? '—'],
+            ['Updated by' => $state->getUpdatedBy() ?? '—'],
         );
 
         if ($output->isVerbose()) {
