@@ -3,6 +3,7 @@
 ## Table of contents
 
 
+- [To 1.5.8 (FrankenPHP worker / reset_kernel false)](#to-158-frankenphp-worker--reset_kernel-false)
 - [From 1.5.6 to 1.5.7](#from-156-to-157)
 - [To 1.5.6](#to-156)
 - [To 1.5.5](#to-155)
@@ -61,6 +62,26 @@
   - [Breaking changes](#breaking-changes-5)
   - [Storage backends](#storage-backends)
   - [After upgrading](#after-upgrading-1)
+
+## To 1.5.8 (FrankenPHP worker / reset_kernel false)
+
+Docs + regression tests confirming the bundle is **safe when the kernel is not reset** between FrankenPHP worker requests. **No application configuration or API changes.**
+
+```bash
+composer update nowo-tech/maintenance-mode-bundle
+php bin/console cache:clear
+```
+
+See [FRANKENPHP-WORKER-AUDIT.md](FRANKENPHP-WORKER-AUDIT.md). Custom storage / access-gate / access-checker services must stay stateless (or implement `ResetInterface` if they memoize).
+
+## From 1.5.6 to 1.5.7
+
+No application upgrade steps (docs / style only).
+
+```bash
+composer update nowo-tech/maintenance-mode-bundle
+php bin/console cache:clear
+```
 
 ## To 1.5.6
 

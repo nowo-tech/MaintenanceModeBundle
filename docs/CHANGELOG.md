@@ -8,7 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Table of contents
 
 - [\[Unreleased\]](#unreleased)
+- [\[1.5.8\] - 2026-09-24](#158---2026-09-24)
+- [\[1.5.7\] - 2026-08-24](#157---2026-08-24)
 - [\[1.5.6\] - 2026-08-20](#156---2026-08-20)
+- [\[1.5.5\] - 2026-08-19](#155---2026-08-19)
+- [\[1.5.4\] - 2026-08-18](#154---2026-08-18)
 - [\[1.5.3\] - 2026-08-13](#153---2026-08-13)
   - [Fixed](#fixed)
   - [Compatibility](#compatibility)
@@ -63,6 +67,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.8] - 2026-09-24
+
+### Added
+
+- **Docs:** [FrankenPHP worker audit](FRANKENPHP-WORKER-AUDIT.md) — scenario A vs B (`reset_kernel false`); verdict **100% compatible under B** (stateless services, state re-read from storage every request).
+- **Tests:** `WorkerModeNoKernelResetTest` — consecutive requests on the same subscriber / gate instances without `services_resetter`.
+
+### Changed
+
+- Spec baseline: FR-19 FrankenPHP worker safety (`reset_kernel false`).
+- README / DEMO links to the worker audit.
+
+### Compatibility
+
+- Unchanged: PHP `>=8.2`, `<8.6`; Symfony `^7.4 || ^8.0`. No application configuration changes.
+
+[1.5.8]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.5.8
 
 ## [1.5.7] - 2026-08-24
 
@@ -328,7 +349,18 @@ First stable release.
 - PHP `>=8.2`, `<8.6` (Symfony **8.x** requires PHP **8.4+**)
 - Symfony floor **7.4** (CI / mandatory minors: **7.4**, **8.0**, **8.1**)
 
-[Unreleased]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.4...HEAD
+[Unreleased]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.8...HEAD
+[1.5.8]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.7...v1.5.8
+[1.5.7]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.6...v1.5.7
+[1.5.6]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.5...v1.5.6
+[1.5.5]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.4...v1.5.5
+[1.5.4]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.3...v1.5.4
+[1.5.3]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.2...v1.5.3
+[1.5.2]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.1...v1.5.2
+[1.5.1]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.0...v1.5.1
+[1.5.0]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.4.1...v1.5.0
+[1.4.1]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.4.0...v1.4.1
+[1.4.0]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.2.2...v1.3.0
 [1.2.2]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.2.0...v1.2.1

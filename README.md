@@ -8,7 +8,7 @@
 
 ![FrankenPHP Friendly Worker Mode](docs/images/frankenphp-friendly.png)
 
-This bundle is **FrankenPHP worker mode friendly**.
+This bundle is **FrankenPHP worker mode friendly** — including when the kernel is **not** reset between requests (`reset_kernel false`). See [docs/FRANKENPHP-WORKER-AUDIT.md](docs/FRANKENPHP-WORKER-AUDIT.md).
 
 ## Features
 
@@ -112,6 +112,7 @@ make release-check
 ### Additional documentation
 
 - [Demo (FrankenPHP)](docs/DEMO-FRANKENPHP.md)
+- [FrankenPHP worker audit (`reset_kernel false`)](docs/FRANKENPHP-WORKER-AUDIT.md)
 - [Maintenance page examples](docs/MAINTENANCE-PAGE-EXAMPLES.md)
 - [GitHub Actions CI requirements](docs/GITHUB_CI.md)
 

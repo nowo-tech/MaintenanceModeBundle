@@ -11,6 +11,7 @@ This document describes how the Maintenance Mode Bundle demo runs under **Franke
 - [Development configuration](#development-configuration)
 - [Production configuration](#production-configuration)
 - [Switching classic vs worker (`FRANKENPHP_MODE`)](#switching-classic-vs-worker-frankenphp_mode)
+- [Bundle compatibility (`reset_kernel false`)](#bundle-compatibility-reset_kernel-false)
 - [PHP version (Symfony 8)](#php-version-symfony-8)
 - [Bundle sync (REQ-DEMO-007)](#bundle-sync-req-demo-007)
 - [Parent demo Makefile](#parent-demo-makefile)
@@ -101,6 +102,14 @@ docker compose up -d
 ```
 
 A plain `restart` does not reload env substitution.
+
+---
+
+## Bundle compatibility (`reset_kernel false`)
+
+This bundle is **safe under FrankenPHP worker mode even when the Symfony kernel is not reset** between requests (scenario B / `reset_kernel false`): shared services hold only readonly config, maintenance state is re-read from storage on every request, and panel / bypass auth is request- or session-scoped.
+
+Full audit: [FRANKENPHP-WORKER-AUDIT.md](FRANKENPHP-WORKER-AUDIT.md).
 
 ---
 

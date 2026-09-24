@@ -71,6 +71,7 @@ Behaviour changes require tests under `tests/`.
 | REQ-TWIG-001/002 | Overrides + `NowoMaintenanceModeBundle` NS | `TwigPathsPass`, views |
 | REQ-I18N-002/003 | en+es + domain | `Resources/translations/` |
 | REQ-DEMO-002/010 | FrankenPHP demos + worker default | `demo/`, `docs/DEMO-FRANKENPHP.md` |
+| REQ-DEMO-008 / worker B | `reset_kernel false` safe | `docs/FRANKENPHP-WORKER-AUDIT.md`, FR-19 |
 
 ## Contributor workflow
 
