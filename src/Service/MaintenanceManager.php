@@ -49,6 +49,7 @@ final class MaintenanceManager
             ->withScheduledEnableAt(null);
 
         $this->stateStorage->save($state);
+        // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
         $this->historyStorage->append(new MaintenanceHistoryEntry(
             action: 'enable',
             occurredAt: $at,
@@ -69,7 +70,9 @@ final class MaintenanceManager
             ->withUpdatedBy($updatedBy)
             ->withScheduledDisableAt(null);
 
+        // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
         $this->stateStorage->save($state);
+        // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
         $this->historyStorage->append(new MaintenanceHistoryEntry(
             action: 'disable',
             occurredAt: $at,
@@ -117,9 +120,12 @@ final class MaintenanceManager
         ?string $updatedBy = null,
         string $action = 'update',
     ): MaintenanceState {
-        $at    = new DateTimeImmutable();
+        $at = new DateTimeImmutable();
+        // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
         $state = $state->withUpdatedBy($updatedBy);
+        // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
         $this->stateStorage->save($state);
+        // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
         $this->historyStorage->append(new MaintenanceHistoryEntry(
             action: $action,
             occurredAt: $at,

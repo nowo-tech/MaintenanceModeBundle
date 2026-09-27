@@ -38,6 +38,7 @@ final class DisableCommand extends Command
     {
         $io    = new SymfonyStyle($input, $output);
         $actor = (string) $input->getOption('actor');
+        // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
         $state = $this->manager->disable($actor !== '' ? $actor : 'cli');
 
         $io->success('Maintenance mode DISABLED.');

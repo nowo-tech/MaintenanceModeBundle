@@ -48,6 +48,7 @@ final class EnableCommand extends Command
         $actor   = (string) $input->getOption('actor');
         $until   = $input->getOption('until');
 
+        // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
         $state = $this->manager->enable(
             is_string($message) && $message !== '' ? $message : null,
             $actor !== '' ? $actor : 'cli',

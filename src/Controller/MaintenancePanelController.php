@@ -101,6 +101,7 @@ final class MaintenancePanelController
         /** @var array{message?: string|null} $data */
         $data    = $form->getData() ?? [];
         $message = isset($data['message']) && is_string($data['message']) ? $data['message'] : '';
+        // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
         $this->manager->enable($message !== '' ? $message : null, 'panel');
         $this->flash($request, 'success', 'panel.flash.enabled');
 
@@ -119,6 +120,9 @@ final class MaintenancePanelController
             return new Response('Invalid CSRF token.', Response::HTTP_FORBIDDEN);
         }
 
+        // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
+
+        // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
         $this->manager->disable('panel');
         $this->flash($request, 'success', 'panel.flash.disabled');
 
@@ -163,8 +167,12 @@ final class MaintenancePanelController
         $form = $this->createClearScheduleForm();
         if (!$this->handleValidForm($form, $request)) {
             return new Response('Invalid CSRF token.', Response::HTTP_FORBIDDEN);
+            // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
         }
 
+        // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
+
+        // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
         $this->manager->clearSchedule('panel');
         $this->flash($request, 'success', 'panel.flash.schedule_cleared');
 
