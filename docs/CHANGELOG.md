@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Table of contents
 
 - [\[Unreleased\]](#unreleased)
+- [\[1.6.0\] - 2026-09-28](#160---2026-09-28)
+- [\[1.5.9\] - 2026-09-27](#159---2026-09-27)
 - [\[1.5.8\] - 2026-09-24](#158---2026-09-24)
 - [\[1.5.7\] - 2026-08-24](#157---2026-08-24)
 - [\[1.5.6\] - 2026-08-20](#156---2026-08-20)
@@ -67,6 +69,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-09-28
+
+### Security
+
+- Empty `security.access_roles` is fail-closed (deny) unless `allow_unauthenticated` or a custom `access_checker` is set.
+
 ## [1.5.9] - 2026-09-27
 
 ### Added
@@ -77,6 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Worker safety (Igor):** justified `// @igor-ignore` annotations and/or `ResetInterface` / request-scoped fixes so `make igor` passes on package `src/`.
 
+[1.6.0]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.6.0
 [1.5.9]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.5.9
 
 ## [1.5.8] - 2026-09-24

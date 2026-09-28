@@ -3,6 +3,17 @@
 
 ## Unreleased
 
+## To 1.6.0
+
+From **1.5.9** — `access_roles` fail-closed.
+
+```bash
+composer update nowo-tech/maintenance-mode-bundle
+php bin/console cache:clear
+```
+
+- Empty `security.access_roles` denies the manage UI. Set roles / custom checker, or demo-only `allow_unauthenticated`.
+
 ## To 1.5.9
 
 From **1.5.8** — REQ-CS-008 Igor FrankenPHP worker audit (igor-php require-dev, igor.json, make igor).
