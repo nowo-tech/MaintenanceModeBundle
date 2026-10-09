@@ -3,6 +3,16 @@
 
 ## Unreleased
 
+## To 1.6.1
+
+From **1.6.0** — dependency refresh.
+
+```bash
+composer update nowo-tech/maintenance-mode-bundle
+```
+
+- No breaking changes. No application upgrade steps.
+
 ## To 1.6.0
 
 From **1.5.9** — `access_roles` fail-closed.
@@ -28,6 +38,7 @@ php bin/console cache:clear
 ## Table of contents
 
 
+- [To 1.6.1](#to-161)
 - [To 1.5.8 (FrankenPHP worker / reset_kernel false)](#to-158-frankenphp-worker--reset_kernel-false)
 - [From 1.5.6 to 1.5.7](#from-156-to-157)
 - [To 1.5.6](#to-156)

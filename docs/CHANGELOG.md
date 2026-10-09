@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Table of contents
 
 - [\[Unreleased\]](#unreleased)
+- [\[1.6.1\] - 2026-10-09](#161---2026-10-09)
 - [\[1.6.0\] - 2026-09-28](#160---2026-09-28)
 - [\[1.5.9\] - 2026-09-27](#159---2026-09-27)
 - [\[1.5.8\] - 2026-09-24](#158---2026-09-24)
@@ -68,6 +69,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - [Compatibility](#compatibility-12)
 
 ## [Unreleased]
+
+## [1.6.1] - 2026-10-09
+
+### Dependencies
+
+- Lock refreshed: `nowo-tech/ui-kit-bundle` 1.9.1 (Dependabot 1.8.4/1.8.5 + update), Symfony 8.1.8 (`symfony` group), PHPStan 2.3.1, `phpstan/phpstan-symfony` 2.1.0, Rector 2.7.0, `nowo-tech/phpstan-frankenphp` 1.2.3.
+- Demo `symfony8`: regenerated `config/reference.php`.
+
+[1.6.1]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.6.1
 
 ## [1.6.0] - 2026-09-28
 
