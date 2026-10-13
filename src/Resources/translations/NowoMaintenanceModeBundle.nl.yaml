@@ -106,6 +106,7 @@ panel.login.password: Wachtwoord
 panel.login.submit: Inloggen
 panel.logout: Uitloggen
 panel.message: Bericht
+panel.nav.aria_label: Paneel
 panel.nav.history: Geschiedenis
 panel.nav.panel: Paneel
 panel.save_schedule: Planning opslaan

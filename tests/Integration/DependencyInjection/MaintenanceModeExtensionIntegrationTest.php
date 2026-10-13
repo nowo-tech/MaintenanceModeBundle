@@ -20,6 +20,7 @@ use Nowo\MaintenanceModeBundle\Storage\FilesystemMaintenanceStateStorage;
 use Nowo\MaintenanceModeBundle\Storage\MaintenanceHistoryStorageInterface;
 use Nowo\MaintenanceModeBundle\Storage\MaintenanceStateStorageInterface;
 use Nowo\MaintenanceModeBundle\Twig\MaintenanceExtension as TwigMaintenanceExtension;
+use Nowo\MaintenanceModeBundle\Twig\PanelChrome;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 use ReflectionProperty;
@@ -368,6 +369,40 @@ final class MaintenanceModeExtensionIntegrationTest extends TestCase
         self::assertSame($layout, $twigDef->getArgument('$layoutTemplate'));
         self::assertSame('bootstrap5', $twigDef->getArgument('$cssFramework'));
         self::assertSame('bootstrap-icons', $twigDef->getArgument('$iconSet'));
+        self::assertSame(PanelChrome::DEFAULTS, $twigDef->getArgument('$chrome'));
+    }
+
+    public function testLoadPassesAdminChromeHooksToTwigExtension(): void
+    {
+        $container = new ContainerBuilder();
+        $container->setParameter('kernel.project_dir', sys_get_temp_dir());
+
+        (new MaintenanceModeExtension())->load([[
+            'panel'  => ['enabled' => false],
+            'web_ui' => [
+                'show_page_header' => false,
+                'document_title'   => false,
+                'test_ids'         => true,
+                'classes'          => ['table' => 'data-table', 'empty' => null],
+                'partials'         => ['nav' => 'kit/maintenance_nav.html.twig', 'pagination' => 'kit/_pagination.html.twig'],
+            ],
+        ]], $container);
+
+        /** @var array{show_page_header: bool, document_title: bool, test_ids: bool, classes: array<string, string>, partials: array<string, string|null>} $chrome */
+        $chrome = $container->getDefinition(TwigMaintenanceExtension::class)->getArgument('$chrome');
+        self::assertFalse($chrome['show_page_header']);
+        self::assertFalse($chrome['document_title']);
+        self::assertTrue($chrome['test_ids']);
+        self::assertSame('data-table', $chrome['classes']['table']);
+        self::assertSame('', $chrome['classes']['empty']);
+        self::assertSame('nowo-ui-nav', $chrome['classes']['nav']);
+        self::assertSame('kit/maintenance_nav.html.twig', $chrome['partials']['nav']);
+        self::assertSame('kit/_pagination.html.twig', $chrome['partials']['pagination']);
+        self::assertSame(PanelChrome::DEFAULT_PARTIALS['form_fields'], $chrome['partials']['form_fields']);
+
+        /** @var array<string, mixed> $webUi */
+        $webUi = $container->getParameter('nowo.maintenance_mode.web_ui');
+        self::assertTrue($webUi['test_ids']);
     }
 
     public function testConfigureTwigExtensionNoopsWithoutDefinition(): void
@@ -378,9 +413,14 @@ final class MaintenanceModeExtensionIntegrationTest extends TestCase
         $method->setAccessible(true);
         $method->invoke($extension, $container, [
             'web_ui' => [
-                'layout_template' => '@NowoMaintenanceModeBundle/panel/layout.html.twig',
-                'css_framework'   => 'custom',
-                'icon_set'        => 'none',
+                'layout_template'  => '@NowoMaintenanceModeBundle/panel/layout.html.twig',
+                'css_framework'    => 'custom',
+                'icon_set'         => 'none',
+                'show_page_header' => true,
+                'document_title'   => true,
+                'test_ids'         => false,
+                'classes'          => PanelChrome::DEFAULT_CLASSES,
+                'partials'         => PanelChrome::DEFAULT_PARTIALS,
             ],
         ]);
 

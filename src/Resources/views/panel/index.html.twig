@@ -2,41 +2,53 @@
 {% import '@NowoUiKitBundle/macros/ui.html.twig' as ui %}
 {% set _css_fw = nowo_maintenance_mode_css_framework|default('custom') %}
 {% set _td = 'NowoMaintenanceModeBundle' %}
+{# Admin chrome hooks (1.7.0): web_ui.classes / partials / show_page_header / test_ids + maintenance_* blocks. #}
+{% set _chrome = nowo_maintenance_mode_chrome %}
+{% set _cls = _chrome.classes %}
+{% set _partials = _chrome.partials %}
 
-{% block title %}{{ 'panel.title'|trans({}, _td) }}{% endblock %}
+{% block title %}{% if _chrome.document_title %}{{ 'panel.title'|trans({}, _td) }}{% else %}{{ parent() }}{% endif %}{% endblock %}
 
 {% block body %}
-    <nav class="nowo-ui-nav" aria-label="Panel">
-        <a href="{{ path_prefix }}">{{ 'panel.nav.panel'|trans({}, _td) }}</a>
-        <a href="{{ path_prefix }}/history">{{ 'panel.nav.history'|trans({}, _td) }}</a>
-    </nav>
-    <header class="nowo-ui-page-header">
-        <h1>{{ 'panel.title'|trans({}, _td) }}</h1>
+    {% block maintenance_nav %}{{ include(_partials.nav, {active: 'panel', path_prefix: path_prefix}) }}{% endblock %}
+    {%~ block maintenance_page_header %}
+    {%~ if _chrome.show_page_header %}
+    <header{% if _cls.page_header %} class="{{ _cls.page_header }}"{% endif %}>
+        <h1{% if _cls.page_title %} class="{{ _cls.page_title }}"{% endif %}>{% block maintenance_page_title %}{{ 'panel.title'|trans({}, _td) }}{% endblock %}</h1>
+        {%~ block maintenance_page_intro %}{% endblock %}
+        {%~ block maintenance_header_actions %}{% endblock %}
     </header>
+    {%~ endif %}
+    {%~ endblock %}
 
+    {%~ block maintenance_flashes %}
     {% for type, messages in flashes|default({}) %}
         {% for message in messages %}
-            <div class="{{ ui.flash(type, _css_fw) }}" role="alert">{{ message|trans({}, _td) }}</div>
+            <div class="{{ ui.flash(type, _css_fw) }}{{ _cls.flash ? ' ' ~ _cls.flash }}" role="alert">{{ message|trans({}, _td) }}</div>
         {% endfor %}
     {% endfor %}
+    {%~ endblock %}
 
-    <p>
+    {%~ block maintenance_status %}
+    <p{% if _cls.status_line %} class="{{ _cls.status_line }}"{% endif %}{% if _chrome.test_ids %} data-testid="maintenance-status"{% endif %}>
         {{ 'panel.status.manual'|trans({}, _td) }}:
         {% if state.enabled %}
-            <span class="nowo-ui-status nowo-ui-status--on status on">{{ 'panel.status.enabled'|trans({}, _td) }}</span>
+            <span class="{{ _cls.status_on }}">{{ 'panel.status.enabled'|trans({}, _td) }}</span>
         {% else %}
-            <span class="nowo-ui-status nowo-ui-status--off status off">{{ 'panel.status.disabled'|trans({}, _td) }}</span>
+            <span class="{{ _cls.status_off }}">{{ 'panel.status.disabled'|trans({}, _td) }}</span>
         {% endif %}
         ·
         {{ 'panel.status.effective'|trans({}, _td) }}:
         {% if state.effectivelyEnabled %}
-            <span class="nowo-ui-status nowo-ui-status--on status on">{{ 'panel.status.on'|trans({}, _td) }}</span>
+            <span class="{{ _cls.status_on }}">{{ 'panel.status.on'|trans({}, _td) }}</span>
         {% else %}
-            <span class="nowo-ui-status nowo-ui-status--off status off">{{ 'panel.status.off'|trans({}, _td) }}</span>
+            <span class="{{ _cls.status_off }}">{{ 'panel.status.off'|trans({}, _td) }}</span>
         {% endif %}
     </p>
+    {%~ endblock %}
 
-    <div class="nowo-ui-card card">
+    {%~ block maintenance_state_details %}
+    <div{% if _cls.card %} class="{{ _cls.card }}"{% endif %}>
         <p><strong>{{ 'panel.message'|trans({}, _td) }}:</strong> {{ state.message ?? '—' }}</p>
         <p><strong>{{ 'panel.activated'|trans({}, _td) }}:</strong> {{ state.activatedAt ? state.activatedAt|date('Y-m-d H:i:s') : '—' }}</p>
         <p><strong>{{ 'panel.deactivated'|trans({}, _td) }}:</strong> {{ state.deactivatedAt ? state.deactivatedAt|date('Y-m-d H:i:s') : '—' }}</p>
@@ -44,34 +56,49 @@
         <p><strong>{{ 'panel.scheduled_disable'|trans({}, _td) }}:</strong> {{ state.scheduledDisableAt ? state.scheduledDisableAt|date('Y-m-d H:i:s') : '—' }}</p>
         <p><strong>{{ 'panel.updated_by'|trans({}, _td) }}:</strong> {{ state.updatedBy ?? '—' }}</p>
     </div>
+    {%~ endblock %}
 
-    <div class="nowo-ui-card card">
-        {{ form_start(enable_form) }}
-            {{ include('@NowoMaintenanceModeBundle/panel/_form_fields.html.twig', {form: enable_form}, false) }}
+    {%~ block maintenance_manual_forms %}
+    <div{% if _cls.card %} class="{{ _cls.card }}"{% endif %}{% if _chrome.test_ids %} data-testid="maintenance-manual"{% endif %}>
+        {{ form_start(enable_form, _cls.form ? {attr: {class: _cls.form}} : {}) }}
+            {{ include(_partials.form_fields, {form: enable_form}, false) }}
+            {%~ if _cls.form_actions %}<div class="{{ _cls.form_actions }}">{% endif %}
             <button type="submit" class="{{ ui.btn('primary', null, _css_fw) }}">{{ 'panel.enable'|trans({}, _td) }}</button>
+            {%~ if _cls.form_actions %}</div>{% endif %}
         {{ form_end(enable_form) }}
-        {{ form_start(disable_form, {attr: {style: 'margin-top:1rem'}}) }}
-            {{ include('@NowoMaintenanceModeBundle/panel/_form_fields.html.twig', {form: disable_form}, false) }}
+        {{ form_start(disable_form, {attr: {style: 'margin-top:1rem'}|merge(_cls.form ? {class: _cls.form} : {})}) }}
+            {{ include(_partials.form_fields, {form: disable_form}, false) }}
+            {%~ if _cls.form_actions %}<div class="{{ _cls.form_actions }}">{% endif %}
             <button type="submit" class="{{ ui.btn('danger', null, _css_fw) }}">{{ 'panel.disable'|trans({}, _td) }}</button>
+            {%~ if _cls.form_actions %}</div>{% endif %}
         {{ form_end(disable_form) }}
     </div>
+    {%~ endblock %}
 
-    <div class="nowo-ui-card card">
-        <h2>{{ 'panel.schedule'|trans({}, _td) }}</h2>
-        {{ form_start(schedule_form) }}
-            {{ include('@NowoMaintenanceModeBundle/panel/_form_fields.html.twig', {form: schedule_form}, false) }}
+    {%~ block maintenance_schedule_forms %}
+    <div{% if _cls.card %} class="{{ _cls.card }}"{% endif %}{% if _chrome.test_ids %} data-testid="maintenance-schedule"{% endif %}>
+        <h2{% if _cls.section_title %} class="{{ _cls.section_title }}"{% endif %}>{{ 'panel.schedule'|trans({}, _td) }}</h2>
+        {{ form_start(schedule_form, _cls.form ? {attr: {class: _cls.form}} : {}) }}
+            {{ include(_partials.form_fields, {form: schedule_form}, false) }}
+            {%~ if _cls.form_actions %}<div class="{{ _cls.form_actions }}">{% endif %}
             <button type="submit" class="{{ ui.btn('secondary', null, _css_fw) }}">{{ 'panel.save_schedule'|trans({}, _td) }}</button>
+            {%~ if _cls.form_actions %}</div>{% endif %}
         {{ form_end(schedule_form) }}
-        {{ form_start(clear_schedule_form, {attr: {style: 'margin-top:1rem'}}) }}
-            {{ include('@NowoMaintenanceModeBundle/panel/_form_fields.html.twig', {form: clear_schedule_form}, false) }}
+        {{ form_start(clear_schedule_form, {attr: {style: 'margin-top:1rem'}|merge(_cls.form ? {class: _cls.form} : {})}) }}
+            {{ include(_partials.form_fields, {form: clear_schedule_form}, false) }}
+            {%~ if _cls.form_actions %}<div class="{{ _cls.form_actions }}">{% endif %}
             <button type="submit" class="{{ ui.btn('secondary', null, _css_fw) }}">{{ 'panel.clear_schedule'|trans({}, _td) }}</button>
+            {%~ if _cls.form_actions %}</div>{% endif %}
         {{ form_end(clear_schedule_form) }}
     </div>
+    {%~ endblock %}
 
-    {% if password_required|default(true) %}
+    {%~ block maintenance_logout_form %}
+    {% if password_required ?? true %}
         {{ form_start(logout_form, {attr: {style: 'margin-top:1.5rem'}}) }}
-            {{ include('@NowoMaintenanceModeBundle/panel/_form_fields.html.twig', {form: logout_form}, false) }}
+            {{ include(_partials.form_fields, {form: logout_form}, false) }}
             <button type="submit" class="{{ ui.btn('secondary', null, _css_fw) }}">{{ 'panel.logout'|trans({}, _td) }}</button>
         {{ form_end(logout_form) }}
     {% endif %}
+    {%~ endblock %}
 {% endblock %}

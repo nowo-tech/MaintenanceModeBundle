@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Nowo\MaintenanceModeBundle\DependencyInjection;
 
+use Nowo\MaintenanceModeBundle\Twig\PanelChrome;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
@@ -106,6 +107,20 @@ final class Configuration implements ConfigurationInterface
                             ->values(['bootstrap-icons', 'tabler-icons', 'ux_icon', 'svg_inline', 'none'])
                             ->defaultValue('none')
                         ->end()
+                        ->booleanNode('show_page_header')
+                            ->info('Render the bundle <header><h1> on panel pages. Set false when the host layout already prints the page title.')
+                            ->defaultTrue()
+                        ->end()
+                        ->booleanNode('document_title')
+                            ->info('Panel pages set the layout {% block title %}. Set false to keep the host layout title (parent()).')
+                            ->defaultTrue()
+                        ->end()
+                        ->booleanNode('test_ids')
+                            ->info('Emit data-testid hooks (maintenance-status, maintenance-manual, maintenance-schedule, maintenance-history, maintenance-panel-tabs) for E2E suites.')
+                            ->defaultFalse()
+                        ->end()
+                        ->append($this->chromeClassesNode())
+                        ->append($this->chromePartialsNode())
                     ->end()
                 ->end()
                 ->arrayNode('exclusions')
@@ -234,5 +249,54 @@ final class Configuration implements ConfigurationInterface
             ->end();
 
         return $treeBuilder;
+    }
+
+    /**
+     * Admin chrome CSS class map (defaults = classes hard-coded before 1.7.0; empty string = no class attribute).
+     */
+    private function chromeClassesNode(): ArrayNodeDefinition
+    {
+        /** @var ArrayNodeDefinition $node */
+        $node = (new TreeBuilder('classes'))->getRootNode();
+        $node
+            ->info('Admin chrome CSS class map for panel pages (nav, header, cards, table, empty state, …). Empty string = no class attribute.')
+            ->addDefaultsIfNotSet();
+
+        $children = $node->children();
+        foreach (PanelChrome::DEFAULT_CLASSES as $key => $default) {
+            $children->scalarNode($key)->defaultValue($default)->treatNullLike('')->end();
+        }
+
+        return $node;
+    }
+
+    /**
+     * Partial template paths included by panel pages.
+     */
+    private function chromePartialsNode(): ArrayNodeDefinition
+    {
+        /** @var ArrayNodeDefinition $node */
+        $node = (new TreeBuilder('partials'))->getRootNode();
+        $node
+            ->info('Partial templates included by panel pages (nav tabs, form field loop, optional history pagination).')
+            ->addDefaultsIfNotSet()
+            ->children()
+                ->scalarNode('nav')
+                    ->info('Panel / History navigation partial (receives active, path_prefix). Alternative shipped: @NowoMaintenanceModeBundle/panel/_nav_tabs.html.twig (UiKit tabs).')
+                    ->defaultValue(PanelChrome::DEFAULT_PARTIALS['nav'])
+                    ->cannotBeEmpty()
+                ->end()
+                ->scalarNode('form_fields')
+                    ->info('Partial that renders every not-yet-rendered form child (receives form).')
+                    ->defaultValue(PanelChrome::DEFAULT_PARTIALS['form_fields'])
+                    ->cannotBeEmpty()
+                ->end()
+                ->scalarNode('pagination')
+                    ->info('Optional partial included after the history table (receives entries, path_prefix). null = none.')
+                    ->defaultNull()
+                ->end()
+            ->end();
+
+        return $node;
     }
 }

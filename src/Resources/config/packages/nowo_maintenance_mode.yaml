@@ -9,6 +9,15 @@ nowo_maintenance_mode:
     panel:
         enabled: true
         path_prefix: '/_maintenance'
+    # web_ui:
+    #     layout_template: 'base.html.twig'
+    #     css_framework: bootstrap5
+    #     # Admin chrome hooks (1.7.0) — see docs/USAGE.md "Customising the admin chrome"
+    #     show_page_header: true
+    #     document_title: true
+    #     test_ids: false
+    #     classes: { card: 'nowo-ui-card card', table: 'nowo-ui-table' }
+    #     partials: { nav: '@NowoMaintenanceModeBundle/panel/_nav.html.twig', pagination: ~ }
     security:
         password_protection: true
         # password_hash: '%env(MAINTENANCE_PASSWORD_HASH)%'

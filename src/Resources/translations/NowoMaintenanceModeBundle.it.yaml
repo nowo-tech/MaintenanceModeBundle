@@ -106,6 +106,7 @@ panel.login.password: Password
 panel.login.submit: Accedi
 panel.logout: Esci
 panel.message: Messaggio
+panel.nav.aria_label: Pannello
 panel.nav.history: Cronologia
 panel.nav.panel: Pannello
 panel.save_schedule: Salva pianificazione

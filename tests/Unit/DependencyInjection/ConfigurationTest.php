@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Nowo\MaintenanceModeBundle\Tests\Unit\DependencyInjection;
 
 use Nowo\MaintenanceModeBundle\DependencyInjection\Configuration;
+use Nowo\MaintenanceModeBundle\Twig\PanelChrome;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Config\Definition\Processor;
 
 final class ConfigurationTest extends TestCase
@@ -39,6 +41,60 @@ final class ConfigurationTest extends TestCase
         self::assertSame('@NowoMaintenanceModeBundle/panel/layout.html.twig', $config['web_ui']['layout_template']);
         self::assertSame('custom', $config['web_ui']['css_framework']);
         self::assertSame('none', $config['web_ui']['icon_set']);
+        self::assertTrue($config['web_ui']['show_page_header']);
+        self::assertTrue($config['web_ui']['document_title']);
+        self::assertFalse($config['web_ui']['test_ids']);
+        self::assertSame(PanelChrome::DEFAULT_CLASSES, $config['web_ui']['classes']);
+        self::assertSame(PanelChrome::DEFAULT_PARTIALS, $config['web_ui']['partials']);
+    }
+
+    public function testAdminChromeOverrides(): void
+    {
+        $config = (new Processor())->processConfiguration(new Configuration(), [[
+            'web_ui' => [
+                'show_page_header' => false,
+                'document_title'   => false,
+                'test_ids'         => true,
+                'classes'          => [
+                    'card'       => 'panel mb-6',
+                    'table_cell' => 'px-2 py-3',
+                    'status_on'  => null,
+                ],
+                'partials' => [
+                    'nav'        => '@NowoMaintenanceModeBundle/panel/_nav_tabs.html.twig',
+                    'pagination' => 'kit/_pagination.html.twig',
+                ],
+            ],
+        ]]);
+
+        self::assertFalse($config['web_ui']['show_page_header']);
+        self::assertFalse($config['web_ui']['document_title']);
+        self::assertTrue($config['web_ui']['test_ids']);
+        self::assertSame('panel mb-6', $config['web_ui']['classes']['card']);
+        self::assertSame('px-2 py-3', $config['web_ui']['classes']['table_cell']);
+        self::assertSame('', $config['web_ui']['classes']['status_on']);
+        self::assertSame('nowo-ui-table', $config['web_ui']['classes']['table']);
+        self::assertSame('@NowoMaintenanceModeBundle/panel/_nav_tabs.html.twig', $config['web_ui']['partials']['nav']);
+        self::assertSame('kit/_pagination.html.twig', $config['web_ui']['partials']['pagination']);
+        self::assertSame(PanelChrome::DEFAULT_PARTIALS['form_fields'], $config['web_ui']['partials']['form_fields']);
+    }
+
+    public function testAdminChromeRejectsUnknownClassKey(): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+
+        (new Processor())->processConfiguration(new Configuration(), [[
+            'web_ui' => ['classes' => ['not_a_hook' => 'x']],
+        ]]);
+    }
+
+    public function testAdminChromeRejectsEmptyNavPartial(): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+
+        (new Processor())->processConfiguration(new Configuration(), [[
+            'web_ui' => ['partials' => ['nav' => '']],
+        ]]);
     }
 
     public function testCustomExclusionsAndPanelPrefix(): void

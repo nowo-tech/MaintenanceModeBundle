@@ -2,21 +2,38 @@
 {% import '@NowoUiKitBundle/macros/ui.html.twig' as ui %}
 {% set _css_fw = nowo_maintenance_mode_css_framework|default('custom') %}
 {% set _td = 'NowoMaintenanceModeBundle' %}
+{# Admin chrome hooks (1.7.0): web_ui.classes / partials / show_page_header + maintenance_* blocks. #}
+{% set _chrome = nowo_maintenance_mode_chrome %}
+{% set _cls = _chrome.classes %}
+{% set _partials = _chrome.partials %}
 
-{% block title %}{{ 'panel.login.heading'|trans({}, _td) }}{% endblock %}
+{% block title %}{% if _chrome.document_title %}{{ 'panel.login.heading'|trans({}, _td) }}{% else %}{{ parent() }}{% endif %}{% endblock %}
 
 {% block body %}
-    <header class="nowo-ui-page-header">
-        <h1>{{ 'panel.login.heading'|trans({}, _td) }}</h1>
+    {%~ block maintenance_page_header %}
+    {%~ if _chrome.show_page_header %}
+    <header{% if _cls.page_header %} class="{{ _cls.page_header }}"{% endif %}>
+        <h1{% if _cls.page_title %} class="{{ _cls.page_title }}"{% endif %}>{% block maintenance_page_title %}{{ 'panel.login.heading'|trans({}, _td) }}{% endblock %}</h1>
+        {%~ block maintenance_header_actions %}{% endblock %}
     </header>
-    <p>{{ 'panel.login.intro'|trans({}, _td) }}</p>
+    {%~ endif %}
+    {%~ endblock %}
+    {%~ block maintenance_page_intro %}
+    <p{% if _cls.page_intro %} class="{{ _cls.page_intro }}"{% endif %}>{{ 'panel.login.intro'|trans({}, _td) }}</p>
+    {%~ endblock %}
+    {%~ block maintenance_login_error %}
     {% if error %}
-        <p class="nowo-ui-error error">{{ 'panel.login.error'|trans({}, _td) }}</p>
+        <p{% if _cls.login_error %} class="{{ _cls.login_error }}"{% endif %}>{{ 'panel.login.error'|trans({}, _td) }}</p>
     {% endif %}
-    <div class="nowo-ui-card card">
-        {{ form_start(login_form) }}
-            {{ include('@NowoMaintenanceModeBundle/panel/_form_fields.html.twig', {form: login_form}, false) }}
+    {%~ endblock %}
+    {%~ block maintenance_login_form %}
+    <div{% if _cls.card %} class="{{ _cls.card }}"{% endif %}>
+        {{ form_start(login_form, _cls.form ? {attr: {class: _cls.form}} : {}) }}
+            {{ include(_partials.form_fields, {form: login_form}, false) }}
+            {%~ if _cls.form_actions %}<div class="{{ _cls.form_actions }}">{% endif %}
             <button type="submit" class="{{ ui.btn('primary', null, _css_fw) }}">{{ 'panel.login.submit'|trans({}, _td) }}</button>
+            {%~ if _cls.form_actions %}</div>{% endif %}
         {{ form_end(login_form) }}
     </div>
+    {%~ endblock %}
 {% endblock %}

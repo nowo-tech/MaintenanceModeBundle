@@ -3,6 +3,22 @@
 
 ## Unreleased
 
+## To 1.7.0
+
+From **1.6.1** — admin chrome hooks (blocks, class map, partial paths). Opt-in; default output is byte-identical, except the logout bug fix below.
+
+```bash
+composer update nowo-tech/maintenance-mode-bundle
+php bin/console cache:clear
+```
+
+- No breaking changes. Nothing to do unless you want to shrink page forks.
+- **Visible change (bug fix):** the panel's logout button is no longer rendered when password protection is off (`security.password_protection: false` or no `password_hash`). It only cleared a gate session that did not exist. Forks that copied the old `password_required|default(true)` condition should switch to `password_required ?? true`.
+- To drop a page fork, see [USAGE — Customising the admin chrome](USAGE.md#customising-the-admin-chrome): set `web_ui.classes.*`, `web_ui.partials.*`, `web_ui.show_page_header`, `web_ui.document_title`, `web_ui.test_ids`, and move shell-level header actions into your `layout_template` bridge.
+- If you need a different structure for one section, point `templates.panel_*` at a host template **outside** `templates/bundles/NowoMaintenanceModeBundle/` that extends the bundle page and overrides a `maintenance_*` block. Delete the old fork at the bundle path first, otherwise the template extends itself.
+- The bundle now ships `panel/_nav.html.twig`. An existing host file at `templates/bundles/NowoMaintenanceModeBundle/panel/_nav.html.twig` overrides it automatically (it receives `active` and `path_prefix`).
+- New translation key `panel.nav.aria_label`. If you override the bundle catalogue, add it (English: `Panel`).
+
 ## To 1.6.1
 
 From **1.6.0** — dependency refresh.
@@ -38,6 +54,7 @@ php bin/console cache:clear
 ## Table of contents
 
 
+- [To 1.7.0](#to-170)
 - [To 1.6.1](#to-161)
 - [To 1.5.8 (FrankenPHP worker / reset_kernel false)](#to-158-frankenphp-worker--reset_kernel-false)
 - [From 1.5.6 to 1.5.7](#from-156-to-157)

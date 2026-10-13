@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Table of contents
 
 - [\[Unreleased\]](#unreleased)
+- [\[1.7.0\] - 2026-10-13](#170---2026-10-13)
 - [\[1.6.1\] - 2026-10-09](#161---2026-10-09)
 - [\[1.6.0\] - 2026-09-28](#160---2026-09-28)
 - [\[1.5.9\] - 2026-09-27](#159---2026-09-27)
@@ -70,6 +71,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-10-13
+
+### Added
+
+- **Admin chrome hooks** ([spec 002](../specs/002-admin-chrome-hooks/spec.md)) so hosts theme the panel without forking pages:
+  - `maintenance_*` Twig blocks on `panel/index`, `panel/history`, `panel/login` (nav, page header / title / intro / header actions, flashes, status, state details, forms, toolbar, table wrapper / head / row / row actions, empty state, pagination) and on the public `maintenance/page` (html / body attributes, `title`, head, fonts, styles, head extra, brand, heading, message, reassure, footer, scripts).
+  - `web_ui.classes` CSS class map (defaults = previous hard-coded classes; empty / `null` drops the attribute).
+  - `web_ui.partials.nav` / `form_fields` / `pagination`; new `panel/_nav.html.twig` (default) and opt-in `panel/_nav_tabs.html.twig` (UiKit tabs, `aria-current`).
+  - `web_ui.show_page_header`, `web_ui.document_title`, `web_ui.test_ids` flags.
+  - Twig global `nowo_maintenance_mode_chrome`; defaults in `Nowo\MaintenanceModeBundle\Twig\PanelChrome`.
+  - Translation key `panel.nav.aria_label` (7 locales) for the formerly hard-coded nav `aria-label`.
+- **Docs:** USAGE "Customising the admin chrome" (with a per-fork verdict for symfony-beacon); CONFIGURATION class-map table.
+- **Tests:** golden render tests (default output byte-identical to 1.6.1 apart from the logout fix below) and override tests for every hook.
+
+### Fixed
+
+- Panel index: the logout button no longer renders when no password gate is active (`password_protection: false` or no `password_hash`). The template used `password_required|default(true)`, and Twig's `default` treats `false` as empty; it now uses `password_required ?? true`.
+
+### Dependencies
+
+- Dev lock: `nowo-tech/ui-kit-bundle` 1.12.0 (render tests pass on 1.9.2 and 1.12.0). Demo `symfony8`: regenerated `config/reference.php`.
+
 ### Changed
 
 - Development: `composer.json` pins `config.platform.php` to 8.2.0 so the committed lock stays installable on the minimum PHP; CI overrides the platform per matrix cell. Dev lock re-resolved for PHP 8.2 (Symfony components 8.1.x → 7.4.x, `symfony/polyfill-deepclone` dropped).
@@ -81,6 +104,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Lock refreshed: `nowo-tech/ui-kit-bundle` 1.9.1 (Dependabot 1.8.4/1.8.5 + update), Symfony 8.1.8 (`symfony` group), PHPStan 2.3.1, `phpstan/phpstan-symfony` 2.1.0, Rector 2.7.0, `nowo-tech/phpstan-frankenphp` 1.2.3.
 - Demo `symfony8`: regenerated `config/reference.php`.
 
+[1.7.0]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.7.0
 [1.6.1]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.6.1
 
 ## [1.6.0] - 2026-09-28

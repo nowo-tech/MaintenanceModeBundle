@@ -392,6 +392,13 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
         $container->getDefinition(TwigMaintenanceExtension::class)
             ->setArgument('$layoutTemplate', $webUi['layout_template'])
             ->setArgument('$cssFramework', $webUi['css_framework'])
-            ->setArgument('$iconSet', $webUi['icon_set']);
+            ->setArgument('$iconSet', $webUi['icon_set'])
+            ->setArgument('$chrome', [
+                'show_page_header' => (bool) $webUi['show_page_header'],
+                'document_title'   => (bool) $webUi['document_title'],
+                'test_ids'         => (bool) $webUi['test_ids'],
+                'classes'          => $webUi['classes'],
+                'partials'         => $webUi['partials'],
+            ]);
     }
 }

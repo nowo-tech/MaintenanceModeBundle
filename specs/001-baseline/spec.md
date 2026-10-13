@@ -30,6 +30,7 @@ Maintenance Mode Bundle puts a Symfony application into **maintenance mode** (HT
 | FR-16 | `#[ExcludeFromMaintenance]` and its route default exclude marked controllers or actions from maintenance mode. |
 | FR-17 | Twig helpers expose maintenance state for application templates. |
 | FR-18 | The bundle ships selectable example Twig maintenance themes. |
+| FR-20 | Panel pages and the public page expose admin chrome hooks (Twig blocks, `web_ui.classes` map, `web_ui.partials` paths, header/title/test-id flags) with defaults that keep the rendered output unchanged — see [spec 002](../002-admin-chrome-hooks/spec.md). |
 | FR-19 | Bundle HTTP services remain correct under FrankenPHP worker mode when the kernel is **not** reset between requests (`reset_kernel false`): no cross-request memoization of maintenance state, bypass tokens, or panel auth. |
 
 ## User scenarios
@@ -77,7 +78,7 @@ Maintenance Mode Bundle puts a Symfony application into **maintenance mode** (HT
 | SC-01 | PHPUnit covers all PHP under `src/` (interfaces excluded where not executable). |
 | SC-02 | PHPStan level 8 passes with `nowo-tech/phpstan-frankenphp` rulesets. |
 | SC-03 | Demo FrankenPHP apps boot and smoke-test panel + 503 behaviour. |
-| SC-04 | `code-inventory.md` maps 100% of production files under `src/` (53/53) to one or more `FR-*` IDs. |
+| SC-04 | `code-inventory.md` maps 100% of production files under `src/` (68/68) to one or more `FR-*` IDs. |
 | SC-05 | Worker scenario B regression tests pass (`WorkerModeNoKernelResetTest`). |
 
 ## Validation

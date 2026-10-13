@@ -815,6 +815,38 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         layout_template?: scalar|Param|null, // Twig layout that panel pages extend (host apps SHOULD set their project layout). Syncs templates.panel_layout. // Default: "@NowoMaintenanceModeBundle/panel/layout.html.twig"
  *         css_framework?: "bootstrap"|"bootstrap4"|"bootstrap5"|"tailwind"|"foundation"|"custom"|"tabler"|"none"|Param, // Host-chosen CSS stack for semantic nowo-ui-* markup. // Default: "custom"
  *         icon_set?: "bootstrap-icons"|"tabler-icons"|"ux_icon"|"svg_inline"|"none"|Param, // Icon strategy for panel actions (panel uses text buttons by default). // Default: "none"
+ *         show_page_header?: bool|Param, // Render the bundle <header><h1> on panel pages. Set false when the host layout already prints the page title. // Default: true
+ *         document_title?: bool|Param, // Panel pages set the layout {% block title %}. Set false to keep the host layout title (parent()). // Default: true
+ *         test_ids?: bool|Param, // Emit data-testid hooks (maintenance-status, maintenance-manual, maintenance-schedule, maintenance-history, maintenance-panel-tabs) for E2E suites. // Default: false
+ *         classes?: array{ // Admin chrome CSS class map for panel pages (nav, header, cards, table, empty state, …). Empty string = no class attribute.
+ *             nav?: scalar|Param|null, // Default: "nowo-ui-nav"
+ *             nav_link?: scalar|Param|null, // Default: ""
+ *             page_header?: scalar|Param|null, // Default: "nowo-ui-page-header"
+ *             page_title?: scalar|Param|null, // Default: ""
+ *             page_intro?: scalar|Param|null, // Default: ""
+ *             flash?: scalar|Param|null, // Default: ""
+ *             status_line?: scalar|Param|null, // Default: ""
+ *             status_on?: scalar|Param|null, // Default: "nowo-ui-status nowo-ui-status--on status on"
+ *             status_off?: scalar|Param|null, // Default: "nowo-ui-status nowo-ui-status--off status off"
+ *             card?: scalar|Param|null, // Default: "nowo-ui-card card"
+ *             section_title?: scalar|Param|null, // Default: ""
+ *             form?: scalar|Param|null, // Default: ""
+ *             form_actions?: scalar|Param|null, // Default: ""
+ *             table_wrap?: scalar|Param|null, // Default: "nowo-ui-card nowo-ui-table-wrap card"
+ *             table?: scalar|Param|null, // Default: "nowo-ui-table"
+ *             table_head_row?: scalar|Param|null, // Default: ""
+ *             table_head_cell?: scalar|Param|null, // Default: ""
+ *             table_row?: scalar|Param|null, // Default: ""
+ *             table_cell?: scalar|Param|null, // Default: ""
+ *             table_cell_muted?: scalar|Param|null, // Default: ""
+ *             empty?: scalar|Param|null, // Default: "nowo-ui-empty"
+ *             login_error?: scalar|Param|null, // Default: "nowo-ui-error error"
+ *         },
+ *         partials?: array{ // Partial templates included by panel pages (nav tabs, form field loop, optional history pagination).
+ *             nav?: scalar|Param|null, // Panel / History navigation partial (receives active, path_prefix). Alternative shipped: @NowoMaintenanceModeBundle/panel/_nav_tabs.html.twig (UiKit tabs). // Default: "@NowoMaintenanceModeBundle/panel/_nav.html.twig"
+ *             form_fields?: scalar|Param|null, // Partial that renders every not-yet-rendered form child (receives form). // Default: "@NowoMaintenanceModeBundle/panel/_form_fields.html.twig"
+ *             pagination?: scalar|Param|null, // Optional partial included after the history table (receives entries, path_prefix). null = none. // Default: null
+ *         },
  *     },
  *     exclusions?: array{ // Requests matching any rule bypass the maintenance page.
  *         paths?: list<scalar|Param|null>,

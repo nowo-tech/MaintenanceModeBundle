@@ -1,37 +1,64 @@
 {% extends '@NowoMaintenanceModeBundle/panel/base.html.twig' %}
+{# Admin chrome hooks (1.7.0): web_ui.classes / partials / show_page_header / test_ids + maintenance_* blocks. #}
+{% set _td = 'NowoMaintenanceModeBundle' %}
+{% set _chrome = nowo_maintenance_mode_chrome %}
+{% set _cls = _chrome.classes %}
+{% set _partials = _chrome.partials %}
 
-{% block title %}{{ 'panel.history'|trans({}, 'NowoMaintenanceModeBundle') }}{% endblock %}
+{% block title %}{% if _chrome.document_title %}{{ 'panel.history'|trans({}, 'NowoMaintenanceModeBundle') }}{% else %}{{ parent() }}{% endif %}{% endblock %}
 
 {% block body %}
-    <nav class="nowo-ui-nav" aria-label="Panel">
-        <a href="{{ path_prefix }}">{{ 'panel.nav.panel'|trans({}, 'NowoMaintenanceModeBundle') }}</a>
-        <a href="{{ path_prefix }}/history">{{ 'panel.nav.history'|trans({}, 'NowoMaintenanceModeBundle') }}</a>
-    </nav>
-    <header class="nowo-ui-page-header">
-        <h1>{{ 'panel.history'|trans({}, 'NowoMaintenanceModeBundle') }}</h1>
+    {% block maintenance_nav %}{{ include(_partials.nav, {active: 'history', path_prefix: path_prefix}) }}{% endblock %}
+    {%~ block maintenance_page_header %}
+    {%~ if _chrome.show_page_header %}
+    <header{% if _cls.page_header %} class="{{ _cls.page_header }}"{% endif %}>
+        <h1{% if _cls.page_title %} class="{{ _cls.page_title }}"{% endif %}>{% block maintenance_page_title %}{{ 'panel.history'|trans({}, _td) }}{% endblock %}</h1>
+        {%~ block maintenance_page_intro %}{% endblock %}
+        {%~ block maintenance_header_actions %}{% endblock %}
     </header>
-    <div class="nowo-ui-card nowo-ui-table-wrap card">
-        <table class="nowo-ui-table">
+    {%~ endif %}
+    {%~ endblock %}
+    {%~ block maintenance_toolbar %}{% endblock %}
+    {%~ block maintenance_table_wrapper %}
+    <div{% if _cls.table_wrap %} class="{{ _cls.table_wrap }}"{% endif %}{% if _chrome.test_ids %} data-testid="maintenance-history"{% endif %}>
+        {%~ block maintenance_table %}
+        <table{% if _cls.table %} class="{{ _cls.table }}"{% endif %}>
+            {%~ block maintenance_table_head %}
             <thead>
-            <tr>
-                <th>{{ 'panel.history.when'|trans({}, 'NowoMaintenanceModeBundle') }}</th>
-                <th>{{ 'panel.history.action'|trans({}, 'NowoMaintenanceModeBundle') }}</th>
-                <th>{{ 'panel.history.actor'|trans({}, 'NowoMaintenanceModeBundle') }}</th>
-                <th>{{ 'panel.history.message'|trans({}, 'NowoMaintenanceModeBundle') }}</th>
+            <tr{% if _cls.table_head_row %} class="{{ _cls.table_head_row }}"{% endif %}>
+                <th{% if _cls.table_head_cell %} class="{{ _cls.table_head_cell }}"{% endif %}>{{ 'panel.history.when'|trans({}, _td) }}</th>
+                <th{% if _cls.table_head_cell %} class="{{ _cls.table_head_cell }}"{% endif %}>{{ 'panel.history.action'|trans({}, _td) }}</th>
+                <th{% if _cls.table_head_cell %} class="{{ _cls.table_head_cell }}"{% endif %}>{{ 'panel.history.actor'|trans({}, _td) }}</th>
+                <th{% if _cls.table_head_cell %} class="{{ _cls.table_head_cell }}"{% endif %}>{{ 'panel.history.message'|trans({}, _td) }}</th>
+                {%~ block maintenance_table_head_actions %}{% endblock %}
             </tr>
             </thead>
+            {%~ endblock %}
             <tbody>
             {% for entry in entries %}
-                <tr>
-                    <td>{{ entry.occurredAt|date('Y-m-d H:i:s') }}</td>
-                    <td>{{ entry.action }}</td>
-                    <td>{{ entry.actor ?? '—' }}</td>
-                    <td>{{ entry.message ?? '—' }}</td>
+                {%~ block maintenance_table_row %}
+                <tr{% if _cls.table_row %} class="{{ _cls.table_row }}"{% endif %}>
+                    <td{% if _cls.table_cell %} class="{{ _cls.table_cell }}"{% endif %}>{{ entry.occurredAt|date('Y-m-d H:i:s') }}</td>
+                    <td{% if _cls.table_cell %} class="{{ _cls.table_cell }}"{% endif %}>{{ entry.action }}</td>
+                    <td{% if _cls.table_cell %} class="{{ _cls.table_cell }}"{% endif %}>{{ entry.actor ?? '—' }}</td>
+                    {%~ set _muted_cell = [_cls.table_cell, _cls.table_cell_muted]|filter(c => c != '')|join(' ') %}
+                    <td{% if _muted_cell %} class="{{ _muted_cell }}"{% endif %}>{{ entry.message ?? '—' }}</td>
+                    {%~ block maintenance_table_row_actions %}{% endblock %}
                 </tr>
+                {%~ endblock %}
             {% else %}
-                <tr><td class="nowo-ui-empty" colspan="4">{{ 'panel.history.empty'|trans({}, 'NowoMaintenanceModeBundle') }}</td></tr>
+                {%~ block maintenance_empty_state %}
+                <tr><td{% if _cls.empty %} class="{{ _cls.empty }}"{% endif %} colspan="4">{{ 'panel.history.empty'|trans({}, _td) }}</td></tr>
+                {%~ endblock %}
             {% endfor %}
             </tbody>
         </table>
+        {%~ endblock %}
     </div>
+    {%~ endblock %}
+    {%~ block maintenance_pagination %}
+    {%~ if _partials.pagination %}
+    {{ include(_partials.pagination, {entries: entries, path_prefix: path_prefix}) }}
+    {%~ endif %}
+    {%~ endblock %}
 {% endblock %}

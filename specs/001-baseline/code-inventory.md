@@ -2,7 +2,7 @@
 
 **Baseline spec**: [`spec.md`](spec.md)  
 **Package**: `nowo-tech/maintenance-mode-bundle`  
-**Last audited**: 2026-07-26
+**Last audited**: 2026-10-13
 
 This is a 100% inventory of production files under `src/`: PHP, YAML configuration,
 Twig views, and translations. Every file maps to one or more baseline `FR-*`
@@ -17,12 +17,13 @@ requirements.
 | Controllers | 2 |
 | Events | 3 |
 | Attribute and exclusion | 2 |
-| Models, service, security, and storage | 9 |
-| Twig extension | 1 |
+| Forms | 7 |
+| Models, service, security, and storage | 12 |
+| Twig extension and chrome defaults | 2 |
 | YAML configuration | 3 |
-| Twig views | 17 |
+| Twig views | 21 |
 | Translations | 7 |
-| **Total production files under `src/`** | **53/53** |
+| **Total production files under `src/`** | **68/68** |
 
 ## Bundle, dependency injection, and subscriber
 
@@ -86,16 +87,20 @@ requirements.
 | `Service/MaintenanceManager.php` | Enables, disables, updates, reads state, records history, and dispatches events. | FR-05, FR-15 |
 | `Security/MaintenanceAccessGateInterface.php` | Defines the replaceable panel authorization contract. | FR-09 |
 | `Security/PasswordMaintenanceAccessGate.php` | Implements the default password and session gate. | FR-09 |
+| `Security/MaintenanceModeAccessCheckerInterface.php` | Role / custom access-checker contract for the panel (REQ-UI-002). | FR-08, FR-09 |
+| `Security/ConfigurableMaintenanceModeAccessChecker.php` | Default role-based checker (`security.access_roles`, fail-closed when empty). | FR-08, FR-09 |
+| `Security/AllowAllMaintenanceModeAccessChecker.php` | Demo-only checker used when `allow_unauthenticated` is true. | FR-08 |
 | `Storage/MaintenanceStateStorageInterface.php` | Defines state persistence. | FR-06, FR-07 |
 | `Storage/MaintenanceHistoryStorageInterface.php` | Defines history persistence. | FR-06, FR-07 |
 | `Storage/FilesystemMaintenanceStateStorage.php` | Persists state to JSON/YAML on the filesystem. | FR-06 |
 | `Storage/FilesystemMaintenanceHistoryStorage.php` | Appends history as JSONL on the filesystem. | FR-06 |
 
-## Twig extension
+## Twig extension and chrome defaults
 
 | Path | Responsibility | Spec FR-* IDs |
 | --- | --- | --- |
-| `Twig/MaintenanceExtension.php` | Exposes maintenance-state helpers to Twig templates. | FR-17 |
+| `Twig/MaintenanceExtension.php` | Exposes maintenance-state helpers and panel globals (incl. `nowo_maintenance_mode_chrome`) to Twig templates. | FR-17, FR-20 |
+| `Twig/PanelChrome.php` | Defaults for the admin chrome class map, partial paths and flags ([spec 002](../002-admin-chrome-hooks/spec.md)). | FR-20 |
 
 ## YAML configuration
 
@@ -109,7 +114,7 @@ requirements.
 
 | Path | Responsibility | Spec FR-* IDs |
 | --- | --- | --- |
-| `Resources/views/maintenance/page.html.twig` | Default public HTTP 503 page. | FR-02, FR-11 |
+| `Resources/views/maintenance/page.html.twig` | Default public HTTP 503 page (`maintenance_*` blocks). | FR-02, FR-11, FR-20 |
 | `Resources/views/maintenance/examples/bootstrap_calm.html.twig` | Bootstrap calm maintenance theme. | FR-11, FR-18 |
 | `Resources/views/maintenance/examples/bootstrap_sunset.html.twig` | Bootstrap sunset maintenance theme. | FR-11, FR-18 |
 | `Resources/views/maintenance/examples/foundation_garden.html.twig` | Foundation garden maintenance theme. | FR-11, FR-18 |
@@ -123,10 +128,13 @@ requirements.
 | `Resources/views/maintenance/examples/idea_countdown.html.twig` | Scheduled-end countdown maintenance theme. | FR-10, FR-11, FR-18 |
 | `Resources/views/maintenance/examples/idea_updates.html.twig` | Status-update maintenance theme. | FR-11, FR-18 |
 | `Resources/views/panel/layout.html.twig` | Shared panel layout. | FR-08, FR-11 |
-| `Resources/views/panel/index.html.twig` | Panel dashboard and mutation forms (`form_start` + unrendered `form_row` loop). | FR-08, FR-11 |
+| `Resources/views/panel/base.html.twig` | Panel page shell extending `web_ui.layout_template` (UiKit CSS). | FR-08, FR-11 |
+| `Resources/views/panel/index.html.twig` | Panel dashboard and mutation forms (`form_start` + unrendered `form_row` loop; chrome blocks / class map). | FR-08, FR-11, FR-20 |
+| `Resources/views/panel/_nav.html.twig` | Default Panel / History navigation partial (`web_ui.partials.nav`). | FR-08, FR-20 |
+| `Resources/views/panel/_nav_tabs.html.twig` | Opt-in UiKit tabs navigation partial. | FR-08, FR-20 |
 | `Resources/views/panel/_form_fields.html.twig` | Shared unrendered-field `form_row` loop for panel forms. | FR-08, FR-11 |
-| `Resources/views/panel/history.html.twig` | Panel history page. | FR-08, FR-11 |
-| `Resources/views/panel/login.html.twig` | Panel password-login page. | FR-08, FR-09, FR-11 |
+| `Resources/views/panel/history.html.twig` | Panel history page (table / row / empty-state / pagination hooks). | FR-08, FR-11, FR-20 |
+| `Resources/views/panel/login.html.twig` | Panel password-login page (chrome blocks / class map). | FR-08, FR-09, FR-11, FR-20 |
 
 ## Translations
 
@@ -144,5 +152,5 @@ requirements.
 
 ```bash
 find src -type f | wc -l
-# Expected: 53
+# Expected: 68
 ```

@@ -1,13 +1,19 @@
+{# Public maintenance page. Hooks (1.7.0): extend this template from a host file set in templates.page and
+   override maintenance_* blocks (head, fonts, styles, head_extra, body attributes, brand, heading, message, …). #}
 <!DOCTYPE html>
-<html lang="{{ app.request.locale|default('en')|slice(0, 2) }}">
+<html lang="{{ app.request.locale|default('en')|slice(0, 2) }}"{% block maintenance_html_attributes %}{% endblock %}>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex">
-    <title>{{ 'maintenance.page.title'|trans({}, 'NowoMaintenanceModeBundle') }}</title>
+    <title>{% block title %}{{ 'maintenance.page.title'|trans({}, 'NowoMaintenanceModeBundle') }}{% endblock %}</title>
+    {%~ block maintenance_head %}
+    {%~ block maintenance_fonts %}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+    {%~ endblock %}
+    {%~ block maintenance_styles %}
     <style>
         :root {
             --ink: #1c2430;
@@ -70,14 +76,30 @@
         }
         .thanks { margin-top: 0.75rem; color: var(--accent); font-weight: 600; }
     </style>
+    {%~ endblock %}
+    {%~ endblock %}
+    {%~ block maintenance_head_extra %}{% endblock %}
 </head>
-<body>
+<body{% block maintenance_body_attributes %}{% endblock %}>
+{%~ block maintenance_body %}
 <main>
+    {%~ block maintenance_brand %}
     <p class="badge">{{ 'maintenance.page.badge'|trans({}, 'NowoMaintenanceModeBundle') }}</p>
+    {%~ endblock %}
+    {%~ block maintenance_heading %}
     <h1>{{ 'maintenance.page.heading'|trans({}, 'NowoMaintenanceModeBundle') }}</h1>
+    {%~ endblock %}
+    {%~ block maintenance_message %}
     <p class="message">{{ message|default('maintenance.page.message'|trans({}, 'NowoMaintenanceModeBundle')) }}</p>
+    {%~ endblock %}
+    {%~ block maintenance_reassure %}
     <p class="reassure">{{ 'maintenance.page.reassure'|trans({}, 'NowoMaintenanceModeBundle') }}</p>
+    {%~ endblock %}
+    {%~ block maintenance_footer %}
     <p class="thanks">{{ 'maintenance.page.thanks'|trans({}, 'NowoMaintenanceModeBundle') }}</p>
+    {%~ endblock %}
 </main>
+{%~ endblock %}
+{%~ block maintenance_scripts %}{% endblock %}
 </body>
 </html>

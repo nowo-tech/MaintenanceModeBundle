@@ -106,6 +106,7 @@ panel.login.password: Palavra-passe
 panel.login.submit: Entrar
 panel.logout: Terminar sessão
 panel.message: Mensagem
+panel.nav.aria_label: Painel
 panel.nav.history: Histórico
 panel.nav.panel: Painel
 panel.save_schedule: Guardar agendamento

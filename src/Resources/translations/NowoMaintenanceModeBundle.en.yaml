@@ -106,6 +106,7 @@ panel.login.password: Password
 panel.login.submit: Sign in
 panel.logout: Logout
 panel.message: Message
+panel.nav.aria_label: Panel
 panel.nav.history: History
 panel.nav.panel: Panel
 panel.save_schedule: Save schedule
