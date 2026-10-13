@@ -861,6 +861,8 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         allow_unauthenticated?: bool|Param, // DEV/DEMO only: skip Symfony Security role check (password gate may still apply). Never true in production. // Default: false
  *         password_protection?: bool|Param, // When false, the panel login section is disabled even if a hash is set (trusted networks only). // Default: true
  *         password_hash?: scalar|Param|null, // password_hash() output (bcrypt / argon2id / sodium). Prefer env: MAINTENANCE_PASSWORD_HASH. // Default: null
+ *         login_max_attempts?: int|Param, // Failed panel password attempts allowed per session / client IP within login_lockout_seconds (0 = unlimited). // Default: 5
+ *         login_lockout_seconds?: int|Param, // Window (seconds) for counting failed panel password attempts. // Default: 900
  *         access_gate?: scalar|Param|null, // FQCN or service id implementing MaintenanceAccessGateInterface. null = default password gate. // Default: null
  *         bypass_token?: scalar|Param|null, // Optional shared secret: ?maintenance_bypass=TOKEN (or cookie) skips the 503 for QA without opening the panel. // Default: null
  *         bypass_query_parameter?: scalar|Param|null, // Query parameter name for the soft bypass token. // Default: "maintenance_bypass"
@@ -886,6 +888,14 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     icon_set?: "bootstrap-icons"|"tabler-icons"|"ux_icon"|"svg_inline"|"none"|Param, // Icon rendering: bootstrap-icons|tabler-icons|ux_icon|svg_inline|none. // Default: "bootstrap-icons"
  *     row_actions_display?: "icon"|"text"|"icon_text"|Param, // Table/list row actions: icon (glyph only) | text (label only) | icon_text (both). // Default: "icon"
  *     panel_path_rewrites?: array<string, scalar|Param|null>,
+ *     release_check?: array{ // Optional GitHub release-version checker (footer dialog + JSON endpoint). Off by default.
+ *         enabled?: bool|Param, // Register the checker service + controller. Also import @NowoUiKitBundle/Resources/config/routes/release_check.yaml. // Default: false
+ *         github_repo?: scalar|Param|null, // Public GitHub repository "owner/name" whose releases are compared (e.g. nowo-tech/my-app). // Default: ""
+ *         current_version?: scalar|Param|null, // Installed version label, clean semver x.y.z with optional "v" (e.g. "%app.version%"). Non-semver values skip the check. // Default: ""
+ *         cache_ttl?: int|Param, // Seconds to cache the GitHub answer (cache.app). Default 12h. // Default: 43200
+ *         default_branch?: scalar|Param|null, // Branch used as compare target when the installed version is already the latest. // Default: "main"
+ *         user_agent?: scalar|Param|null, // User-Agent sent to api.github.com. // Default: "nowo-ui-kit-release-check"
+ *     },
  * }
  * @psalm-type NowoHotReloadConfig = array{
  *     enabled?: bool|Param, // Master switch. When false, nothing is injected even if FRANKENPHP_HOT_RELOAD is set. // Default: true
