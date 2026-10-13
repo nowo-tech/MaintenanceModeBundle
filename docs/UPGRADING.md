@@ -1,7 +1,16 @@
 # Upgrading
 
-
 ## Unreleased
+
+## To 1.7.1
+
+From **1.7.0** — dependency refresh and repository maintenance.
+
+```bash
+composer update nowo-tech/maintenance-mode-bundle
+```
+
+- No breaking changes. No application upgrade steps.
 
 ## To 1.7.0
 
@@ -53,7 +62,7 @@ php bin/console cache:clear
 
 ## Table of contents
 
-
+- [To 1.7.1](#to-171)
 - [To 1.7.0](#to-170)
 - [To 1.6.1](#to-161)
 - [To 1.5.8 (FrankenPHP worker / reset_kernel false)](#to-158-frankenphp-worker--reset_kernel-false)
@@ -257,7 +266,6 @@ and enable `Twig\Extra\TwigExtraBundle\TwigExtraBundle`. Flex recipes usually re
 
 Package maintainers: `composer twig:lint` / `composer twig:fix` use `.twig-cs-fixer.php` over `src/` (and `templates/` when present).
 
-
 ## To 1.3.0
 
 Minor release: REQ-UI-002 role-based panel access (`access_roles` / `access_checker`) plus restore of Symfony **8** Composer constraints. Default panel security is stricter.
@@ -313,7 +321,6 @@ Apps that enabled the panel without SecurityBundle (or without a matching `acces
 Patch release: panel CSRF **fail-closed** (REQ-SEC-005).
 
 ### Behaviour change (panel CSRF)
-
 
 Panel mutations are **fail-closed** when CSRF cannot be validated (REQ-SEC-005):
 

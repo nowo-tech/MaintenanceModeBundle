@@ -71,6 +71,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.1] - 2026-10-13
+
+### Changed
+
+- Repository: `.twig-cs-fixer.cache` is now git-ignored.
+
+### Dependencies
+
+- `igor-php/igor-php` 0.9.7 → 0.10.1 (require-dev constraint + development lock; #19).
+
 ## [1.7.0] - 2026-10-13
 
 ### Added
@@ -104,6 +114,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Lock refreshed: `nowo-tech/ui-kit-bundle` 1.9.1 (Dependabot 1.8.4/1.8.5 + update), Symfony 8.1.8 (`symfony` group), PHPStan 2.3.1, `phpstan/phpstan-symfony` 2.1.0, Rector 2.7.0, `nowo-tech/phpstan-frankenphp` 1.2.3.
 - Demo `symfony8`: regenerated `config/reference.php`.
 
+[1.7.1]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.7.1
 [1.7.0]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.7.0
 [1.6.1]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.6.1
 
