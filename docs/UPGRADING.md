@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Behaviour change:** `exclusions.path_prefixes` entries now match whole path segments: `/api` exempts `/api` and `/api/…`, but `/apix` / `/api-docs` are now served the maintenance page. If you relied on raw prefix matching, append `*` to the entry (e.g. `/api*`) or add the extra prefixes explicitly.
+
 ## To 1.8.0
 
 From **1.7.1** — security - panel login hardened (session migrate, throttling), HMAC bypass cookie, segment-aware panel prefix.

@@ -24,6 +24,36 @@ final class MaintenanceExclusionMatcherTest extends TestCase
         self::assertFalse($matcher->matches(Request::create('/site')));
     }
 
+    public function testPathPrefixIsSegmentAware(): void
+    {
+        $matcher = new MaintenanceExclusionMatcher(pathPrefixes: ['/api']);
+        self::assertTrue($matcher->matches(Request::create('/api')));
+        self::assertTrue($matcher->matches(Request::create('/api/')));
+        self::assertTrue($matcher->matches(Request::create('/api/health')));
+        self::assertFalse($matcher->matches(Request::create('/apix')));
+        self::assertFalse($matcher->matches(Request::create('/api-docs')));
+    }
+
+    public function testPathPrefixWithTrailingSlashMatchesSubpathsOnly(): void
+    {
+        $matcher = new MaintenanceExclusionMatcher(pathPrefixes: ['/api/']);
+        self::assertTrue($matcher->matches(Request::create('/api/health')));
+        self::assertFalse($matcher->matches(Request::create('/api')));
+        self::assertFalse($matcher->matches(Request::create('/apix')));
+    }
+
+    public function testPathPrefixWithTrailingStarIsRawPrefix(): void
+    {
+        $matcher = new MaintenanceExclusionMatcher(pathPrefixes: ['/api*']);
+        self::assertTrue($matcher->matches(Request::create('/api')));
+        self::assertTrue($matcher->matches(Request::create('/apix')));
+        self::assertTrue($matcher->matches(Request::create('/api/health')));
+        self::assertFalse($matcher->matches(Request::create('/site')));
+
+        // A lone "*" is ignored (would otherwise exclude every path).
+        self::assertFalse((new MaintenanceExclusionMatcher(pathPrefixes: ['*']))->matches(Request::create('/site')));
+    }
+
     public function testRouteName(): void
     {
         $matcher = new MaintenanceExclusionMatcher(routes: ['app_health']);

@@ -71,6 +71,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- `exclusions.path_prefixes` are now segment-aware, like the panel prefix in 1.8.0: `/api` exempts `/api` and `/api/…` but no longer unrelated paths such as `/apix` or `/api-docs`. Append `*` (e.g. `/api*`) to keep a raw string-prefix match; a prefix ending in `/` is matched as-is.
+
 ## [1.8.0] - 2026-10-13
 
 ### Security

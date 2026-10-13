@@ -133,7 +133,7 @@ final class Configuration implements ConfigurationInterface
                             ->defaultValue([])
                         ->end()
                         ->arrayNode('path_prefixes')
-                            ->info('Path prefixes (e.g. /api/health). Panel prefix is always added.')
+                            ->info('Segment-aware path prefixes: /api matches /api and /api/… but not /apix. Append * (e.g. /api*) for a raw string prefix. Panel prefix is always added.')
                             ->scalarPrototype()->end()
                             ->defaultValue([])
                         ->end()

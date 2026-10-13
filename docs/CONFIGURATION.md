@@ -37,7 +37,7 @@ Root alias: `nowo_maintenance_mode`.
 | `security.bypass_cookie_name` | `nowo_maintenance_bypass` | Cookie set after a successful query bypass |
 | `security.bypass_set_cookie` | `true` | Persist bypass in an HttpOnly cookie after a successful query hit |
 | `exclusions.paths` | `[]` | Exact paths that bypass 503 (never put panel-login links on the public page — use exclusions instead) |
-| `exclusions.path_prefixes` | `[]` | Path prefixes that bypass 503 |
+| `exclusions.path_prefixes` | `[]` | Path prefixes that bypass 503. Segment-aware: `/api` matches `/api` and `/api/…`, not `/apix`. Append `*` (`/api*`) for a raw string prefix |
 | `exclusions.routes` | `[]` | Symfony route names that bypass 503 |
 | `exclusions.patterns` | `[]` | Glob (`fnmatch`) or regex delimited with `#…#` / `~…~` |
 | `exclusions.ips` | `[]` | Client IPs or CIDR ranges (set `framework.trusted_proxies` behind a proxy) |

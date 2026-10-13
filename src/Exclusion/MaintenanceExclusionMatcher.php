@@ -11,7 +11,9 @@ use function fnmatch;
 use function in_array;
 use function is_string;
 use function preg_match;
+use function str_ends_with;
 use function str_starts_with;
+use function substr;
 
 /**
  * Matches requests against configured path / route / pattern / IP exclusions.
@@ -20,7 +22,8 @@ final class MaintenanceExclusionMatcher
 {
     /**
      * @param list<string> $paths Exact paths
-     * @param list<string> $pathPrefixes Path prefixes (e.g. /_maintenance)
+     * @param list<string> $pathPrefixes Segment-aware path prefixes (e.g. /api matches /api and /api/…, not /apix);
+     *                                   a trailing "*" (e.g. /api*) or "/" keeps a raw string-prefix match
      * @param list<string> $routes Route names
      * @param list<string> $patterns Glob or #regex# patterns against the path
      * @param list<string> $ips Client IPs or CIDR ranges (see trusted_proxies)
@@ -43,7 +46,7 @@ final class MaintenanceExclusionMatcher
         }
 
         foreach ($this->pathPrefixes as $prefix) {
-            if ($prefix !== '' && str_starts_with($path, $prefix)) {
+            if ($this->matchesPrefix($path, $prefix)) {
                 return true;
             }
         }
@@ -79,6 +82,29 @@ final class MaintenanceExclusionMatcher
         }
 
         return false;
+    }
+
+    /**
+     * "/api" matches "/api" and "/api/…" but not "/apix" (segment-aware).
+     * "/api*" is a raw prefix (also matches "/apix"); a prefix ending in "/" is matched as-is.
+     */
+    private function matchesPrefix(string $path, string $prefix): bool
+    {
+        if ($prefix === '') {
+            return false;
+        }
+
+        if (str_ends_with($prefix, '*')) {
+            $raw = substr($prefix, 0, -1);
+
+            return $raw !== '' && str_starts_with($path, $raw);
+        }
+
+        if (str_ends_with($prefix, '/')) {
+            return str_starts_with($path, $prefix);
+        }
+
+        return $path === $prefix || str_starts_with($path, $prefix . '/');
     }
 
     private function isRegex(string $pattern): bool
