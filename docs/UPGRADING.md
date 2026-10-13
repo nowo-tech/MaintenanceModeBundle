@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## To 1.9.0
+
+From **1.8.0** — security - segment-aware exclusions.path_prefixes.
+
+```bash
+composer update nowo-tech/maintenance-mode-bundle
+```
+
 - **Behaviour change:** `exclusions.path_prefixes` entries now match whole path segments: `/api` exempts `/api` and `/api/…`, but `/apix` / `/api-docs` are now served the maintenance page. If you relied on raw prefix matching, append `*` to the entry (e.g. `/api*`) or add the extra prefixes explicitly.
 
 ## To 1.8.0
@@ -76,6 +84,7 @@ php bin/console cache:clear
 
 ## Table of contents
 
+- [To 1.9.0](#to-190)
 - [To 1.8.0](#to-180)
 - [To 1.7.1](#to-171)
 - [To 1.7.0](#to-170)

@@ -71,6 +71,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-10-13
+
 ### Security
 
 - `exclusions.path_prefixes` are now segment-aware, like the panel prefix in 1.8.0: `/api` exempts `/api` and `/api/…` but no longer unrelated paths such as `/apix` or `/api-docs`. Append `*` (e.g. `/api*`) to keep a raw string-prefix match; a prefix ending in `/` is matched as-is.
@@ -131,6 +133,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Lock refreshed: `nowo-tech/ui-kit-bundle` 1.9.1 (Dependabot 1.8.4/1.8.5 + update), Symfony 8.1.8 (`symfony` group), PHPStan 2.3.1, `phpstan/phpstan-symfony` 2.1.0, Rector 2.7.0, `nowo-tech/phpstan-frankenphp` 1.2.3.
 - Demo `symfony8`: regenerated `config/reference.php`.
 
+[1.9.0]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.9.0
 [1.8.0]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.8.0
 [1.7.1]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.7.1
 [1.7.0]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.7.0
