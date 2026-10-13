@@ -48,7 +48,7 @@ The bundle does **not** spawn subprocesses or perform third-party HTTP calls (RE
 | **Session fixation / hijack** | Session flag treated as sole auth | Password gate |
 | **Information disclosure** | Panel URL or bypass token leaked on public 503 page | Public templates |
 | **Path traversal / file write** | Malicious storage paths | Integrator-configured storage directories |
-| **DoS** | High volume against public 503 or panel login | Lightweight handlers; rate limiting is the host's responsibility |
+| **DoS / brute force** | High volume against public 503 or panel login | Lightweight handlers; panel password attempts are throttled (per session + client IP); global HTTP rate limiting is the host's responsibility |
 | **SSRF / subprocess** | Outbound HTTP or process spawn | Not applicable |
 
 ## Mitigations
@@ -57,6 +57,9 @@ The bundle does **not** spawn subprocesses or perform third-party HTTP calls (RE
 | --- | --- |
 | **Panel auth** | REQ-UI-002 `security.access_roles` / `MaintenanceModeAccessCheckerInterface` (default `ROLE_ADMIN`) unless `allow_unauthenticated`; plus optional ops password gate |
 | **Plaintext passwords** | Store only `password_hash` (env); generate with `nowo:maintenance-mode:hash-password` |
+| **Session fixation** | Session id is migrated (`migrate(true)`) after a successful panel password login |
+| **Password brute force** | `security.login_max_attempts` / `login_lockout_seconds` (default 5 per 15 min, per session and per client IP through `cache.app`); locked-out attempts get 429 without verifying the password |
+| **Bypass cookie** | Cookie holds `HMAC-SHA256(bypass_token)`, never the raw token; HttpOnly, Secure on HTTPS |
 | **CSRF** | Panel POSTs require CSRF (**fail-closed**, REQ-SEC-005): if `CsrfTokenManagerInterface` is missing, mutations are denied. Needs `symfony/security-csrf` (FrameworkBundle CSRF) |
 | **Bypass token** | Soft QA escape hatch via shared secret; rotate often; prefer IP allowlists + trusted proxies |
 | **Public page leakage** | Do not advertise panel URL or login on the public 503 page; use `exclusions.*` for ops endpoints |
@@ -71,7 +74,7 @@ The bundle does **not** spawn subprocesses or perform third-party HTTP calls (RE
 - Never commit real production password hashes, bypass tokens, or `.env` secrets.
 - Password hashing uses Symfony hasher / `password_hash` — no custom crypto.
 - Demo/recipe configs use **placeholders** only.
-- `security.bypass_token` is a shared secret (env var); not a substitute for panel auth.
+- `security.bypass_token` is a shared secret (env var); not a substitute for panel auth. The bypass cookie only carries a value derived from it.
 
 ## Logging
 

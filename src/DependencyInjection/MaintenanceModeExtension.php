@@ -35,6 +35,7 @@ use function in_array;
 use function is_array;
 use function is_bool;
 use function is_string;
+use function rtrim;
 
 final class MaintenanceModeExtension extends Extension implements PrependExtensionInterface
 {
@@ -202,8 +203,15 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
         $paths       = array_values($exclusions['paths'] ?? []);
         $prefixes    = array_values($exclusions['path_prefixes'] ?? []);
         $panelPrefix = is_string($config['panel']['path_prefix'] ?? null) ? $config['panel']['path_prefix'] : '/_maintenance';
-        if ($panelPrefix !== '' && !in_array($panelPrefix, $prefixes, true)) {
-            $prefixes[] = $panelPrefix;
+        // Segment-aware: exclude "/_maintenance" and "/_maintenance/…", never "/_maintenance-public".
+        $panelBase = rtrim($panelPrefix, '/');
+        if ($panelBase !== '') {
+            if (!in_array($panelBase, $paths, true)) {
+                $paths[] = $panelBase;
+            }
+            if (!in_array($panelBase . '/', $prefixes, true)) {
+                $prefixes[] = $panelBase . '/';
+            }
         }
 
         $previewPath = is_string($config['preview']['path'] ?? null) ? $config['preview']['path'] : '/_maintenance_preview';
@@ -234,7 +242,10 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
         $hash = $security['password_hash'] ?? null;
         $container->getDefinition(PasswordMaintenanceAccessGate::class)
             ->setArgument('$passwordHash', is_string($hash) ? $hash : null)
-            ->setArgument('$enabled', (bool) ($security['password_protection'] ?? true));
+            ->setArgument('$enabled', (bool) ($security['password_protection'] ?? true))
+            ->setArgument('$maxAttempts', (int) ($security['login_max_attempts'] ?? 5))
+            ->setArgument('$lockoutSeconds', (int) ($security['login_lockout_seconds'] ?? 900))
+            ->setArgument('$cache', new Reference('cache.app', ContainerBuilder::IGNORE_ON_INVALID_REFERENCE));
 
         $container->setAlias(MaintenanceAccessGateInterface::class, PasswordMaintenanceAccessGate::class)->setPublic(false);
     }

@@ -102,6 +102,7 @@ panel.history.when: Cuándo
 panel.login.error: Contraseña incorrecta.
 panel.login.heading: Panel de mantenimiento
 panel.login.intro: Introduce la contraseña de mantenimiento para gestionar el sitio.
+panel.login.locked: 'Demasiados intentos fallidos. Inténtalo de nuevo más tarde.'
 panel.login.password: Contraseña
 panel.login.submit: Entrar
 panel.logout: Cerrar sesión

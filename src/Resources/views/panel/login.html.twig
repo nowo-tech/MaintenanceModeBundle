@@ -23,7 +23,7 @@
     {%~ endblock %}
     {%~ block maintenance_login_error %}
     {% if error %}
-        <p{% if _cls.login_error %} class="{{ _cls.login_error }}"{% endif %}>{{ 'panel.login.error'|trans({}, _td) }}</p>
+        <p{% if _cls.login_error %} class="{{ _cls.login_error }}"{% endif %}>{{ (locked|default(false) ? 'panel.login.locked' : 'panel.login.error')|trans({}, _td) }}</p>
     {% endif %}
     {%~ endblock %}
     {%~ block maintenance_login_form %}

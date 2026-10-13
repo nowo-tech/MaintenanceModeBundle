@@ -102,6 +102,7 @@ panel.history.when: Quando
 panel.login.error: Palavra-passe inválida.
 panel.login.heading: Painel de manutenção
 panel.login.intro: Introduza a palavra-passe de manutenção para gerir o site.
+panel.login.locked: 'Demasiadas tentativas falhadas. Tente novamente mais tarde.'
 panel.login.password: Palavra-passe
 panel.login.submit: Entrar
 panel.logout: Terminar sessão

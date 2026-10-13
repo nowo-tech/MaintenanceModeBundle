@@ -10,6 +10,7 @@ use Nowo\MaintenanceModeBundle\Model\MaintenanceHistoryEntry;
 use Nowo\MaintenanceModeBundle\Model\MaintenanceState;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceAccessGateInterface;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceModeAccessCheckerInterface;
+use Nowo\MaintenanceModeBundle\Security\PasswordMaintenanceAccessGate;
 use Nowo\MaintenanceModeBundle\Service\MaintenanceManager;
 use Nowo\MaintenanceModeBundle\Tests\Unit\Service\InMemoryHistoryStorage;
 use Nowo\MaintenanceModeBundle\Tests\Unit\Service\InMemoryStateStorage;
@@ -29,6 +30,8 @@ use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Twig\Environment;
 
 use function count;
+
+use const PASSWORD_BCRYPT;
 
 final class MaintenancePanelControllerTest extends TestCase
 {
@@ -412,6 +415,41 @@ final class MaintenancePanelControllerTest extends TestCase
         $response = $this->createController()->login($request);
 
         self::assertSame(Response::HTTP_UNAUTHORIZED, $response->getStatusCode());
+    }
+
+    public function testLoginPostReturns429WhenLockedOutAndDoesNotCheckPassword(): void
+    {
+        $gate = new PasswordMaintenanceAccessGate(password_hash('secret', PASSWORD_BCRYPT), true, 2, 900);
+        $this->csrfTokenManager->method('isTokenValid')->willReturn(true);
+        $contexts = [];
+        $this->twig->method('render')->willReturnCallback(static function (string $name, array $context) use (&$contexts): string {
+            $contexts[] = $context;
+
+            return '<html>login</html>';
+        });
+
+        $controller = new MaintenancePanelController(
+            $this->manager,
+            $gate,
+            $this->formFactory,
+            $this->twig,
+            self::TEMPLATES,
+            '/_maintenance',
+            $this->csrfTokenManager,
+        );
+        $session = new Session(new MockArraySessionStorage());
+
+        $statuses = [];
+        foreach (['a', 'b', 'secret'] as $password) {
+            $request = Request::create('/_maintenance/login', 'POST', ['password' => $password, '_token' => 'valid']);
+            $request->setSession($session);
+            $statuses[] = $controller->login($request)->getStatusCode();
+        }
+
+        self::assertSame([Response::HTTP_UNAUTHORIZED, Response::HTTP_UNAUTHORIZED, Response::HTTP_TOO_MANY_REQUESTS], $statuses);
+        self::assertFalse($contexts[0]['locked']);
+        self::assertTrue($contexts[2]['locked']);
+        self::assertFalse($session->has(PasswordMaintenanceAccessGate::SESSION_KEY));
     }
 
     public function testLoginPostReturns403OnInvalidCsrf(): void

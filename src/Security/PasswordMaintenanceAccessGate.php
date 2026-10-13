@@ -4,22 +4,40 @@ declare(strict_types=1);
 
 namespace Nowo\MaintenanceModeBundle\Security;
 
+use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Throwable;
 
+use function array_filter;
+use function array_values;
+use function count;
+use function hash;
+use function is_array;
+use function is_int;
 use function password_verify;
+use function time;
 
 /**
  * Default gate: optional password hash (bcrypt / argon2id / sodium) from config.
  * When no hash is configured (or protection is disabled), access is open.
+ *
+ * Failed attempts are throttled per session and, when a cache pool is available, per client IP:
+ * after `maxAttempts` failures within `lockoutSeconds` the password is not even checked.
+ * A successful login migrates the session id (session fixation).
  */
 final class PasswordMaintenanceAccessGate implements MaintenanceAccessGateInterface
 {
     public const SESSION_KEY = '_nowo_maintenance_mode_authorized';
 
+    public const SESSION_FAILURES_KEY = '_nowo_maintenance_mode_login_failures';
+
     public function __construct(
         private readonly ?string $passwordHash,
         private readonly bool $enabled = true,
+        private readonly int $maxAttempts = 5,
+        private readonly int $lockoutSeconds = 900,
+        private readonly ?CacheItemPoolInterface $cache = null,
     ) {
     }
 
@@ -42,21 +60,44 @@ final class PasswordMaintenanceAccessGate implements MaintenanceAccessGateInterf
         return $session->get(self::SESSION_KEY) === true;
     }
 
+    /**
+     * Whether too many failed attempts were recorded for this session or client IP.
+     */
+    public function isLockedOut(Request $request): bool
+    {
+        if (!$this->isPasswordRequired() || $this->maxAttempts < 1) {
+            return false;
+        }
+
+        return count($this->sessionFailures($request)) >= $this->maxAttempts
+            || count($this->cacheFailures($request)) >= $this->maxAttempts;
+    }
+
     public function authenticate(Request $request, string $password): bool
     {
         if (!$this->isPasswordRequired()) {
             return true;
         }
 
+        if ($this->isLockedOut($request)) {
+            return false;
+        }
+
         /** @var non-empty-string $hash */
         $hash = $this->passwordHash;
         if (!password_verify($password, $hash)) {
+            $this->recordFailure($request);
+
             return false;
         }
 
         if ($request->hasSession()) {
-            $request->getSession()->set(self::SESSION_KEY, true);
+            $session = $request->getSession();
+            $session->migrate(true);
+            $session->remove(self::SESSION_FAILURES_KEY);
+            $session->set(self::SESSION_KEY, true);
         }
+        $this->clearCacheFailures($request);
 
         return true;
     }
@@ -66,5 +107,84 @@ final class PasswordMaintenanceAccessGate implements MaintenanceAccessGateInterf
         if ($request->hasSession()) {
             $request->getSession()->remove(self::SESSION_KEY);
         }
+    }
+
+    private function recordFailure(Request $request): void
+    {
+        $now = time();
+        if ($request->hasSession()) {
+            $failures   = $this->sessionFailures($request);
+            $failures[] = $now;
+            $request->getSession()->set(self::SESSION_FAILURES_KEY, $failures);
+        }
+
+        if (!$this->cache instanceof CacheItemPoolInterface) {
+            return;
+        }
+
+        try {
+            $item       = $this->cache->getItem($this->cacheKey($request));
+            $failures   = $this->cacheFailures($request);
+            $failures[] = $now;
+            $this->cache->save($item->set($failures)->expiresAfter($this->lockoutSeconds));
+        } catch (Throwable) {
+            // Cache failures must not break the login form; the session counter still applies.
+        }
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function sessionFailures(Request $request): array
+    {
+        if (!$request->hasSession()) {
+            return [];
+        }
+
+        return $this->recent($request->getSession()->get(self::SESSION_FAILURES_KEY, []));
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function cacheFailures(Request $request): array
+    {
+        if (!$this->cache instanceof CacheItemPoolInterface) {
+            return [];
+        }
+
+        try {
+            $item = $this->cache->getItem($this->cacheKey($request));
+
+            return $item->isHit() ? $this->recent($item->get()) : [];
+        } catch (Throwable) {
+            return [];
+        }
+    }
+
+    private function clearCacheFailures(Request $request): void
+    {
+        try {
+            $this->cache?->deleteItem($this->cacheKey($request));
+        } catch (Throwable) {
+        }
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function recent(mixed $failures): array
+    {
+        if (!is_array($failures)) {
+            return [];
+        }
+        $cutoff = time() - $this->lockoutSeconds;
+
+        return array_values(array_filter($failures, static fn (mixed $ts): bool => is_int($ts) && $ts > $cutoff));
+    }
+
+    private function cacheKey(Request $request): string
+    {
+        return 'nowo_maintenance_login_' . hash('sha256', (string) $request->getClientIp());
     }
 }

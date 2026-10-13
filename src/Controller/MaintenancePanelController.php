@@ -14,6 +14,7 @@ use Nowo\MaintenanceModeBundle\Form\ScheduleMaintenanceType;
 use Nowo\MaintenanceModeBundle\Model\MaintenanceState;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceAccessGateInterface;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceModeAccessCheckerInterface;
+use Nowo\MaintenanceModeBundle\Security\PasswordMaintenanceAccessGate;
 use Nowo\MaintenanceModeBundle\Service\MaintenanceManager;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
@@ -204,8 +205,9 @@ final class MaintenancePanelController
             return new RedirectResponse($this->pathPrefix);
         }
 
-        $form  = $this->createLoginForm();
-        $error = null;
+        $form   = $this->createLoginForm();
+        $error  = null;
+        $status = null;
         if ($request->isMethod('POST')) {
             if (!$this->handleValidForm($form, $request)) {
                 return new Response('Invalid CSRF token.', Response::HTTP_FORBIDDEN);
@@ -213,18 +215,23 @@ final class MaintenancePanelController
             /** @var array{password?: string|null} $data */
             $data     = $form->getData() ?? [];
             $password = isset($data['password']) && is_string($data['password']) ? $data['password'] : '';
-            if ($this->accessGate->authenticate($request, $password)) {
+            if ($this->accessGate instanceof PasswordMaintenanceAccessGate && $this->accessGate->isLockedOut($request)) {
+                $error  = 'Too many failed attempts. Try again later.';
+                $status = Response::HTTP_TOO_MANY_REQUESTS;
+            } elseif ($this->accessGate->authenticate($request, $password)) {
                 return new RedirectResponse($this->pathPrefix);
+            } else {
+                $error = 'Invalid password.';
             }
-            $error = 'Invalid password.';
         }
 
         return new Response($this->twig->render($this->templates['panel_login'], [
             'error'       => $error,
+            'locked'      => $status === Response::HTTP_TOO_MANY_REQUESTS,
             'path_prefix' => $this->pathPrefix,
             'layout'      => $this->templates['panel_layout'],
             'login_form'  => $form->createView(),
-        ]), $error !== null ? Response::HTTP_UNAUTHORIZED : Response::HTTP_OK);
+        ]), $status ?? ($error !== null ? Response::HTTP_UNAUTHORIZED : Response::HTTP_OK));
     }
 
     #[Route(path: '/logout', name: 'nowo_maintenance_mode_panel_logout', methods: ['POST'])]

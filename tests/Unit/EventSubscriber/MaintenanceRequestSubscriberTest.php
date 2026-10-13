@@ -234,7 +234,8 @@ final class MaintenanceRequestSubscriberTest extends TestCase
         );
         $subscriber->onKernelResponse($responseEvent);
         self::assertCount(1, $response->headers->getCookies());
-        self::assertSame('secret-token', $response->headers->getCookies()[0]->getValue());
+        self::assertSame(hash_hmac('sha256', 'nowo_maintenance_mode.bypass_cookie.v1', 'secret-token'), $response->headers->getCookies()[0]->getValue());
+        self::assertStringNotContainsString('secret-token', (string) $response->headers->getCookies()[0]);
     }
 
     public function testRouteDefaultExclude(): void
@@ -353,10 +354,73 @@ final class MaintenanceRequestSubscriberTest extends TestCase
         );
 
         $request = Request::create('/page');
-        $request->cookies->set('nowo_maintenance_bypass', 'secret-token');
+        $request->cookies->set('nowo_maintenance_bypass', hash_hmac('sha256', 'nowo_maintenance_mode.bypass_cookie.v1', 'secret-token'));
         $event = new RequestEvent($this->createMock(HttpKernelInterface::class), $request, HttpKernelInterface::MAIN_REQUEST);
         $subscriber->onKernelRequest($event);
         self::assertNull($event->getResponse());
+    }
+
+    public function testBypassCookieWithRawTokenIsRejected(): void
+    {
+        $subscriber = new MaintenanceRequestSubscriber(
+            enabled: true,
+            manager: $this->createManager((new MaintenanceState())->withEnabled(true)),
+            exclusionMatcher: new MaintenanceExclusionMatcher(),
+            twig: null,
+            template: 'x',
+            bypassToken: 'secret-token',
+        );
+
+        $request = Request::create('/page');
+        $request->cookies->set('nowo_maintenance_bypass', 'secret-token');
+        $event = new RequestEvent($this->createMock(HttpKernelInterface::class), $request, HttpKernelInterface::MAIN_REQUEST);
+        $subscriber->onKernelRequest($event);
+        self::assertInstanceOf(Response::class, $event->getResponse());
+        self::assertSame(503, $event->getResponse()->getStatusCode());
+    }
+
+    public function testPanelPrefixIsSegmentAware(): void
+    {
+        foreach (['/_maintenance' => null, '/_maintenance/' => null, '/_maintenance/login' => null, '/_maintenance-public' => 503, '/_maintenanceX/a' => 503] as $path => $expected) {
+            $subscriber = new MaintenanceRequestSubscriber(
+                enabled: true,
+                manager: $this->createManager((new MaintenanceState())->withEnabled(true)),
+                exclusionMatcher: new MaintenanceExclusionMatcher(),
+                twig: null,
+                template: 'x',
+                panelPathPrefix: '/_maintenance/',
+            );
+            $event = $this->createMainRequestEvent($path);
+            $subscriber->onKernelRequest($event);
+            self::assertSame($expected, $event->getResponse()?->getStatusCode(), $path);
+        }
+    }
+
+    public function testRootPanelPrefixMatchesEverything(): void
+    {
+        $subscriber = new MaintenanceRequestSubscriber(
+            enabled: true,
+            manager: $this->createManager((new MaintenanceState())->withEnabled(true)),
+            exclusionMatcher: new MaintenanceExclusionMatcher(),
+            twig: null,
+            template: 'x',
+            panelPathPrefix: '/',
+        );
+        $event = $this->createMainRequestEvent('/anything');
+        $subscriber->onKernelRequest($event);
+        self::assertNull($event->getResponse());
+
+        $subscriber = new MaintenanceRequestSubscriber(
+            enabled: true,
+            manager: $this->createManager((new MaintenanceState())->withEnabled(true)),
+            exclusionMatcher: new MaintenanceExclusionMatcher(),
+            twig: null,
+            template: 'x',
+            panelPathPrefix: '',
+        );
+        $event = $this->createMainRequestEvent('/_maintenance');
+        $subscriber->onKernelRequest($event);
+        self::assertSame(503, $event->getResponse()?->getStatusCode());
     }
 
     public function testBypassDoesNotSetCookieWhenDisabled(): void

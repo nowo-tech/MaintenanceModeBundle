@@ -71,6 +71,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- Panel password login now migrates the session id on success (`$session->migrate(true)`), preventing session fixation.
+- Panel password attempts are throttled: after `security.login_max_attempts` (default **5**) failures within `security.login_lockout_seconds` (default **900**) per session and per client IP (via `cache.app` when available), the password is not checked and the login form answers **429**.
+- The bypass cookie no longer stores the raw `security.bypass_token`; it holds an HMAC-SHA256 value derived from it. The `?maintenance_bypass=TOKEN` query parameter keeps working.
+- Panel path prefix matching is now segment-aware: `/_maintenance` no longer exempts unrelated paths such as `/_maintenance-public` from the maintenance page (subscriber and auto-added exclusion).
+
+### Changed
+
+- New options `security.login_max_attempts` (`0` disables throttling) and `security.login_lockout_seconds`; new translation key `panel.login.locked`.
+
 ## [1.7.1] - 2026-10-13
 
 ### Changed

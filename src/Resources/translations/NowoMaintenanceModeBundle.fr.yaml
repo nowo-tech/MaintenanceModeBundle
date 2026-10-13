@@ -102,6 +102,7 @@ panel.history.when: Quand
 panel.login.error: Mot de passe invalide.
 panel.login.heading: Panneau de maintenance
 panel.login.intro: Saisissez le mot de passe de maintenance pour gérer le site.
+panel.login.locked: 'Trop de tentatives échouées. Veuillez réessayer plus tard.'
 panel.login.password: Mot de passe
 panel.login.submit: Connexion
 panel.logout: Déconnexion

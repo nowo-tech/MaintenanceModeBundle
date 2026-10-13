@@ -102,6 +102,7 @@ panel.history.when: Quando
 panel.login.error: Password non valida.
 panel.login.heading: Pannello manutenzione
 panel.login.intro: Inserisci la password di manutenzione per gestire il sito.
+panel.login.locked: 'Troppi tentativi falliti. Riprova più tardi.'
 panel.login.password: Password
 panel.login.submit: Accedi
 panel.logout: Esci

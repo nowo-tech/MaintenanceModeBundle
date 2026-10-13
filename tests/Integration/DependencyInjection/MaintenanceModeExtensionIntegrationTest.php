@@ -27,6 +27,7 @@ use ReflectionProperty;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Extension\Extension;
+use Symfony\Component\HttpFoundation\Request;
 
 use function is_array;
 
@@ -273,8 +274,39 @@ final class MaintenanceModeExtensionIntegrationTest extends TestCase
         ]], $container);
 
         $matcherDef = $container->getDefinition(MaintenanceExclusionMatcher::class);
-        self::assertContains('/custom-panel', $matcherDef->getArgument('$pathPrefixes'));
+        self::assertContains('/custom-panel/', $matcherDef->getArgument('$pathPrefixes'));
+        self::assertNotContains('/custom-panel', $matcherDef->getArgument('$pathPrefixes'));
+        self::assertContains('/custom-panel', $matcherDef->getArgument('$paths'));
         self::assertContains('/_maintenance_preview', $matcherDef->getArgument('$paths'));
+
+        /** @var list<string> $paths */
+        $paths = $matcherDef->getArgument('$paths');
+        /** @var list<string> $prefixes */
+        $prefixes = $matcherDef->getArgument('$pathPrefixes');
+        $matcher  = new MaintenanceExclusionMatcher(paths: $paths, pathPrefixes: $prefixes);
+        self::assertTrue($matcher->matches(Request::create('/custom-panel')));
+        self::assertTrue($matcher->matches(Request::create('/custom-panel/login')));
+        self::assertFalse($matcher->matches(Request::create('/custom-panel-public')));
+    }
+
+    public function testLoadNormalizesTrailingSlashPanelPrefixAndWiresLoginThrottling(): void
+    {
+        $container = new ContainerBuilder();
+        $container->setParameter('kernel.project_dir', sys_get_temp_dir());
+
+        (new MaintenanceModeExtension())->load([[
+            'panel'    => ['enabled' => false, 'path_prefix' => '/ops/'],
+            'security' => ['login_max_attempts' => 3, 'login_lockout_seconds' => 60],
+        ]], $container);
+
+        $matcherDef = $container->getDefinition(MaintenanceExclusionMatcher::class);
+        self::assertContains('/ops/', $matcherDef->getArgument('$pathPrefixes'));
+        self::assertContains('/ops', $matcherDef->getArgument('$paths'));
+
+        $gate = $container->getDefinition(PasswordMaintenanceAccessGate::class);
+        self::assertSame(3, $gate->getArgument('$maxAttempts'));
+        self::assertSame(60, $gate->getArgument('$lockoutSeconds'));
+        self::assertSame('cache.app', (string) $gate->getArgument('$cache'));
     }
 
     public function testLoadEnablesPreviewFromKernelDebug(): void

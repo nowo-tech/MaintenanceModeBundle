@@ -102,6 +102,7 @@ panel.history.when: Wanneer
 panel.login.error: Ongeldig wachtwoord.
 panel.login.heading: Onderhoudspaneel
 panel.login.intro: Voer het onderhoudswachtwoord in om de site te beheren.
+panel.login.locked: 'Te veel mislukte pogingen. Probeer het later opnieuw.'
 panel.login.password: Wachtwoord
 panel.login.submit: Inloggen
 panel.logout: Uitloggen

@@ -22,8 +22,10 @@ use Twig\Environment;
 
 use function explode;
 use function hash_equals;
+use function hash_hmac;
 use function htmlspecialchars;
 use function is_string;
+use function rtrim;
 use function str_contains;
 use function str_starts_with;
 
@@ -39,6 +41,12 @@ use const ENT_SUBSTITUTE;
  */
 final class MaintenanceRequestSubscriber
 {
+    /**
+     * HMAC label used to derive the bypass cookie value from the bypass token
+     * (the cookie never carries the raw shared secret).
+     */
+    private const BYPASS_COOKIE_CONTEXT = 'nowo_maintenance_mode.bypass_cookie.v1';
+
     public function __construct(
         private readonly bool $enabled,
         private readonly MaintenanceManager $manager,
@@ -64,13 +72,13 @@ final class MaintenanceRequestSubscriber
         $request = $event->getRequest();
         $path    = $request->getPathInfo();
 
-        if ($this->panelPathPrefix !== '' && str_starts_with($path, $this->panelPathPrefix)) {
+        if ($this->isPanelPath($path)) {
             return;
         }
 
         if ($this->hasValidBypass($request)) {
-            if ($this->bypassSetCookie && $this->bypassToken !== null && $this->bypassToken !== '') {
-                $event->getRequest()->attributes->set('_nowo_maintenance_bypass_cookie', $this->bypassToken);
+            if ($this->bypassSetCookie) {
+                $event->getRequest()->attributes->set('_nowo_maintenance_bypass_cookie', $this->bypassCookieValue());
             }
 
             return;
@@ -116,6 +124,20 @@ final class MaintenanceRequestSubscriber
         );
     }
 
+    /**
+     * Segment-aware prefix match: "/_maintenance" matches "/_maintenance" and "/_maintenance/…",
+     * but not "/_maintenance-public".
+     */
+    private function isPanelPath(string $path): bool
+    {
+        $prefix = rtrim($this->panelPathPrefix, '/');
+        if ($prefix === '') {
+            return $this->panelPathPrefix === '/';
+        }
+
+        return $path === $prefix || str_starts_with($path, $prefix . '/');
+    }
+
     private function hasValidBypass(Request $request): bool
     {
         if ($this->bypassToken === null || $this->bypassToken === '') {
@@ -126,7 +148,15 @@ final class MaintenanceRequestSubscriber
         $cookieToken = (string) $request->cookies->get($this->bypassCookieName, '');
 
         return ($queryToken !== '' && hash_equals($this->bypassToken, $queryToken))
-            || ($cookieToken !== '' && hash_equals($this->bypassToken, $cookieToken));
+            || ($cookieToken !== '' && hash_equals($this->bypassCookieValue(), $cookieToken));
+    }
+
+    /**
+     * Cookie value derived from the bypass token; rotating the token invalidates existing cookies.
+     */
+    private function bypassCookieValue(): string
+    {
+        return hash_hmac('sha256', self::BYPASS_COOKIE_CONTEXT, (string) $this->bypassToken);
     }
 
     private function controllerExcluded(Request $request): bool

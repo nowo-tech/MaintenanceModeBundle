@@ -102,6 +102,7 @@ panel.history.when: When
 panel.login.error: Invalid password.
 panel.login.heading: Maintenance panel
 panel.login.intro: Enter the maintenance password to manage the site.
+panel.login.locked: 'Too many failed attempts. Please try again later.'
 panel.login.password: Password
 panel.login.submit: Sign in
 panel.logout: Logout
