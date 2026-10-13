@@ -63,6 +63,7 @@ The bundle does **not** spawn subprocesses or perform third-party HTTP calls (RE
 | **CSRF** | Panel POSTs require CSRF (**fail-closed**, REQ-SEC-005): if `CsrfTokenManagerInterface` is missing, mutations are denied. Needs `symfony/security-csrf` (FrameworkBundle CSRF) |
 | **Bypass token** | Soft QA escape hatch via shared secret; rotate often; prefer IP allowlists + trusted proxies |
 | **Public page leakage** | Do not advertise panel URL or login on the public 503 page; use `exclusions.*` for ops endpoints |
+| **Over-broad exclusions** | Panel prefix and `exclusions.path_prefixes` match whole path segments (`/api` exempts `/api` and `/api/…`, not `/apix` or `/api-docs`); a trailing `*` (`/api*`) opts into a raw string prefix |
 | **XSS** | Prefer Twig auto-escaping; treat custom maintenance HTML as **trusted admin content** |
 | **Storage exposure** | `var/maintenance/` must not be web-accessible; document in host runbooks |
 | **Disable password gate** | `security.password_protection: false` only when panel is otherwise protected (VPN, IP firewall, SecurityBundle roles) |
