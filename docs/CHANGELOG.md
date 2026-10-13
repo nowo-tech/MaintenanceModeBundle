@@ -71,6 +71,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-10-13
+
 ### Security
 
 - Panel password login now migrates the session id on success (`$session->migrate(true)`), preventing session fixation.
@@ -125,6 +127,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Lock refreshed: `nowo-tech/ui-kit-bundle` 1.9.1 (Dependabot 1.8.4/1.8.5 + update), Symfony 8.1.8 (`symfony` group), PHPStan 2.3.1, `phpstan/phpstan-symfony` 2.1.0, Rector 2.7.0, `nowo-tech/phpstan-frankenphp` 1.2.3.
 - Demo `symfony8`: regenerated `config/reference.php`.
 
+[1.8.0]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.8.0
 [1.7.1]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.7.1
 [1.7.0]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.7.0
 [1.6.1]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.6.1

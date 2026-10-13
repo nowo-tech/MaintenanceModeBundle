@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+## To 1.8.0
+
+From **1.7.1** — security - panel login hardened (session migrate, throttling), HMAC bypass cookie, segment-aware panel prefix.
+
+```bash
+composer update nowo-tech/maintenance-mode-bundle
+```
+
+- Existing bypass cookies stop working (the cookie now stores an HMAC); visit once more with `?maintenance_bypass=TOKEN`.
+- After `security.login_max_attempts` (default 5) wrong passwords within `security.login_lockout_seconds` (default 900) the panel login is locked for that session/IP (429). Set `login_max_attempts: 0` to disable.
+- Paths such as `/_maintenance-foo` are no longer exempt from the 503.
+
 ## To 1.7.1
 
 From **1.7.0** — dependency refresh and repository maintenance.
@@ -62,6 +74,7 @@ php bin/console cache:clear
 
 ## Table of contents
 
+- [To 1.8.0](#to-180)
 - [To 1.7.1](#to-171)
 - [To 1.7.0](#to-170)
 - [To 1.6.1](#to-161)
