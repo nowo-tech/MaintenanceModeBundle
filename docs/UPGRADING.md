@@ -3,6 +3,7 @@
 ## Table of contents
 
 - [Unreleased](#unreleased)
+- [To 1.10.0](#to-1100)
   - [Template contract (1.10)](#template-contract-110)
 - [To 1.9.0](#to-190)
 - [To 1.8.0](#to-180)
@@ -74,6 +75,14 @@
   - [After upgrading](#after-upgrading-1)
 
 ## Unreleased
+
+## To 1.10.0
+
+From **1.9.0**:
+
+```bash
+composer update nowo-tech/maintenance-mode-bundle
+```
 
 From **1.9.0** — panel and public page on the UiKit 2.1 page contract (REQ-UI-003). Backward compatible for
 configuration (deprecated keys keep working); hosts that **forked panel templates** must move to the UiKit theme or

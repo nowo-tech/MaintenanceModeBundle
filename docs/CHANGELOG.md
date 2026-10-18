@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Table of contents
 
 - [[Unreleased]](#unreleased)
+- [[1.10.0] - 2026-10-18](#1100---2026-10-18)
 - [[1.9.0] - 2026-10-13](#190---2026-10-13)
 - [[1.8.0] - 2026-10-13](#180---2026-10-13)
 - [[1.7.1] - 2026-10-13](#171---2026-10-13)
@@ -36,6 +37,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [[1.0.0] - 2026-07-24](#100---2026-07-24)
 
 ## [Unreleased]
+
+## [1.10.0] - 2026-10-18
+
+Panel pages and the public 503 on the UiKit 2.1 standard page contract (REQ-UI-003): settings, list and auth scaffolds, JS-free public page on the guest layout, area nav; deprecated panel/templates keys bridged. See [UPGRADING](UPGRADING.md#to-1100).
 
 ### Added
 
@@ -68,6 +73,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Local chrome: `panel/base.html.twig`, `panel/layout.html.twig` (standalone HTML page with inline CSS), `panel/_nav.html.twig`, `panel/_nav_tabs.html.twig`, `panel/_form_fields.html.twig`, the panel `maintenance_*` blocks and the inline `style=""` margins.
+
+[1.10.0]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.10.0
 
 ## [1.9.0] - 2026-10-13
 
@@ -131,6 +138,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Lock refreshed: `nowo-tech/ui-kit-bundle` 1.9.1 (Dependabot 1.8.4/1.8.5 + update), Symfony 8.1.8 (`symfony` group), PHPStan 2.3.1, `phpstan/phpstan-symfony` 2.1.0, Rector 2.7.0, `nowo-tech/phpstan-frankenphp` 1.2.3.
 - Demo `symfony8`: regenerated `config/reference.php`.
 
+[1.10.0]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.9.0...v1.10.0
 [1.9.0]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.9.0
 [1.8.0]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.8.0
 [1.7.1]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.7.1
@@ -438,7 +446,7 @@ First stable release.
 - PHP `>=8.2`, `<8.6` (Symfony **8.x** requires PHP **8.4+**)
 - Symfony floor **7.4** (CI / mandatory minors: **7.4**, **8.0**, **8.1**)
 
-[Unreleased]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.8...HEAD
+[Unreleased]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.10.0...HEAD
 [1.5.8]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.7...v1.5.8
 [1.5.7]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.6...v1.5.7
 [1.5.6]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.5...v1.5.6
