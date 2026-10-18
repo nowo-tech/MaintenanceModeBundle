@@ -1,5 +1,8 @@
 {# Idea 1 — Short & sweet (inspired by concise brand pauses)
    Config: templates.page: '@NowoMaintenanceModeBundle/maintenance/examples/idea_short.html.twig'
+   SAMPLE, opt-in, not a default: a standalone document (not on the UiKit page contract) that loads its CSS
+   framework / fonts from public CDNs. Copy it into your app and serve the assets yourself for production
+   (the default templates.page uses the UiKit guest layout and theme tokens, no CDN). See docs/TEMPLATES.md.
 #}
 <!DOCTYPE html>
 <html lang="{{ app.request.locale|default('en')|slice(0, 2) }}">

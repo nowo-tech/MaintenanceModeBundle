@@ -37,6 +37,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Panel pages on the **UiKit 2.1 page contract** (REQ-UI-003): the panel renders `@NowoUiKit/page/settings` (sections status, manual control, schedule), the history `@NowoUiKit/page/list` (in-memory pagination, `web_ui.history_limit` 100 / `web_ui.history_per_page` 25, empty state) and the password login `@NowoUiKit/page/auth` on the guest layout. View models built by `Nowo\MaintenanceModeBundle\View\MaintenancePages`; pages rendered by `Nowo\MaintenanceModeBundle\Panel\PanelView`.
+- Area navigation Panel | History as `PageHeader::tabs`, published to the UiKit area-nav registry as area `maintenance_mode` (`PanelView` implements `AreaNavProviderInterface`).
+- Canonical keys `web_ui.path_prefix`, `web_ui.templates.<page>` (`index`, `history`, `login`), `web_ui.history_limit`, `web_ui.history_per_page`.
+- The public page and the preview receive `page` (`View\AuthPage`), so a `templates.page` host template can extend `@NowoUiKit/page/auth.html.twig`.
+- `docs/TEMPLATES.md`; page contract test (`tests/Integration/Contract/PageContractTest.php`) and functional kernel tests of the 503 and the panel.
+- Translations `panel.intro`, `panel.manual`, `panel.manual.intro`, `panel.schedule.intro`, `panel.history.intro` (7 locales).
+
+### Changed
+
+- **Template contract**: the public maintenance page renders on the UiKit guest layout (`nowo_ui_kit.layouts.guest`) with the theme slots and `--nowo-ui-*` tokens: no Google Fonts / CDN, no inline `<style>`, no JavaScript (no UiKit scripts, no theme-boot script), no flashes (never starts the session). The 1.7 `maintenance_*` blocks are kept (except `maintenance_html_attributes` / `maintenance_body_attributes`, no longer rendered).
+- The 503 subscriber falls back to the built-in minimal page when the configured template throws (the preview route still shows the error).
+- `web_ui.layout_template` defaults to `null` (UiKit admin layout); a 1.x layout that renders `body` is wrapped in the deprecated `panel/_legacy_layout.html.twig` bridge. `web_ui.enabled` now controls the panel routes (it replaces `panel.enabled`).
+- Panel flashes render through the UiKit `flashes` partial (translated with the bundle domain); the 1.x `flashes` variable is peeked, not consumed.
+- The CDN example templates under `maintenance/examples/` are documented as opt-in samples (not defaults).
+- Requires `nowo-tech/ui-kit-bundle` ^2.1; dev: PHPUnit ^11.
+
+### Deprecated
+
+- `panel.enabled`, `panel.path_prefix` → `web_ui.enabled`, `web_ui.path_prefix`.
+- `templates.panel_layout` → `web_ui.layout_template`; `templates.panel_index|panel_history|panel_login` → `web_ui.templates.index|history|login`.
+- `web_ui.css_framework`, `web_ui.icon_set` → `nowo_ui_kit.css_framework`, `nowo_ui_kit.icon_set` (seeded when set).
+- `web_ui.classes` (and `Twig\PanelChrome`) → `nowo_ui_kit.theme.bundles.NowoMaintenanceModeBundle.classes` (bridged).
+- `web_ui.partials`, `web_ui.show_page_header`, `web_ui.document_title`, `web_ui.test_ids` (no effect).
+- Twig globals `nowo_maintenance_mode_layout_template`, `nowo_maintenance_mode_css_framework`, `nowo_maintenance_mode_icon_set`, `nowo_maintenance_mode_chrome`.
+- 1.x body layouts as `web_ui.layout_template` (bridged with a runtime deprecation).
+
+### Removed
+
+- Local chrome: `panel/base.html.twig`, `panel/layout.html.twig` (standalone HTML page with inline CSS), `panel/_nav.html.twig`, `panel/_nav_tabs.html.twig`, `panel/_form_fields.html.twig`, the panel `maintenance_*` blocks and the inline `style=""` margins.
+
 ## [1.9.0] - 2026-10-13
 
 ### Security

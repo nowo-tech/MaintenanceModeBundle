@@ -3,6 +3,7 @@
 ## Table of contents
 
 - [Unreleased](#unreleased)
+  - [Template contract (1.10)](#template-contract-110)
 - [To 1.9.0](#to-190)
 - [To 1.8.0](#to-180)
 - [To 1.7.1](#to-171)
@@ -73,6 +74,75 @@
   - [After upgrading](#after-upgrading-1)
 
 ## Unreleased
+
+From **1.9.0** — panel and public page on the UiKit 2.1 page contract (REQ-UI-003). Backward compatible for
+configuration (deprecated keys keep working); hosts that **forked panel templates** must move to the UiKit theme or
+to thin `web_ui.templates.<page>` overrides.
+
+```bash
+composer update nowo-tech/maintenance-mode-bundle nowo-tech/ui-kit-bundle
+```
+
+### Template contract (1.10)
+
+What hosts may notice:
+
+| Page | Before | After |
+| --- | --- | --- |
+| Panel `panel/index.html.twig` | own markup on `panel/base.html.twig`, `maintenance_*` blocks, `web_ui.classes` map | `@NowoUiKit/page/settings` (sections `status`, `manual`, `schedule`; Disable / Clear schedule as UiKit actions under their form; Logout as a header action); data block `nowo_ui_settings_section` |
+| History `panel/history.html.twig` | own table, optional `web_ui.partials.pagination` | `@NowoUiKit/page/list` with UiKit pagination and empty state; data block `nowo_ui_list_row` |
+| Login `panel/login.html.twig` | panel layout | `@NowoUiKit/page/auth` on `nowo_ui_kit.layouts.guest` (never `web_ui.layout_template`) |
+| Public page `maintenance/page.html.twig` | standalone HTML + Google Fonts + inline CSS | unique page on `nowo_ui_kit.layouts.guest`, UiKit slots and tokens, no CDN / JS / session |
+
+Layouts:
+
+- `web_ui.layout_template: null` (new default) uses `nowo_ui_kit.layouts.admin`. Point that UiKit key at your layout
+  or bridge once (it must render `nowo_ui_document_title`, `nowo_ui_head`, `nowo_ui_styles`, `nowo_ui_page_header`,
+  `nowo_ui_flashes`, `nowo_ui_content`, `nowo_ui_modals`, `nowo_ui_scripts`; see UiKit `docs/PAGE_CONTRACT.md`).
+- A 1.x layout set in `web_ui.layout_template` / `templates.panel_layout` that renders `{% block body %}` keeps
+  working through `panel/_legacy_layout.html.twig` (runtime deprecation). The 1.x default
+  `@NowoMaintenanceModeBundle/panel/layout.html.twig` is removed and maps to `null`.
+- The public 503 uses `nowo_ui_kit.layouts.guest`. A host guest layout must stay cheap: no database, session or
+  security calls (the page renders on `kernel.request` before the firewall). If rendering fails, the 503 serves the
+  built-in minimal page.
+
+Configuration (deprecated keys still work in 1.x, removed in 2.0; the canonical key wins when both are set):
+
+| Deprecated | Replacement |
+| --- | --- |
+| `panel.enabled` / `panel.path_prefix` | `web_ui.enabled` / `web_ui.path_prefix` |
+| `templates.panel_layout` | `web_ui.layout_template` |
+| `templates.panel_index` / `panel_history` / `panel_login` | `web_ui.templates.index` / `history` / `login` |
+| `web_ui.css_framework` / `web_ui.icon_set` | `nowo_ui_kit.css_framework` / `nowo_ui_kit.icon_set` |
+| `web_ui.classes.<key>` | `nowo_ui_kit.theme.bundles.NowoMaintenanceModeBundle.classes.<slot>` (bridged, see below) |
+| `web_ui.partials.*`, `show_page_header`, `document_title`, `test_ids` | no effect (UiKit partials / page header / titles; test ids always rendered) |
+
+Note: `web_ui.enabled` used to have no effect; it now removes the panel routes when `false`.
+
+`web_ui.classes` bridge (1.x key → UiKit slot; the value replaces the slot's framework defaults; values equal to
+the 1.x default, empty values and `status_line` are dropped): `nav` → `tabs`, `nav_link` → `tab`, `page_header`,
+`page_title`, `page_intro` → same, `flash` → `flash`, `status_on` → `badge_warning`, `status_off` → `badge_success`,
+`card` → `card`, `section_title` → `card_title`, `form`, `form_actions`, `table_wrap`, `table`, `table_head_row`,
+`table_head_cell`, `table_row`, `table_cell`, `table_cell_muted`, `empty` → same, `login_error` → `flash_error`.
+
+Template overrides:
+
+- Removed templates: `panel/base.html.twig`, `panel/layout.html.twig`, `panel/_nav.html.twig`,
+  `panel/_nav_tabs.html.twig`, `panel/_form_fields.html.twig`. Forks of `panel/*.html.twig` under
+  `templates/bundles/NowoMaintenanceModeBundle/` and their `maintenance_*` block overrides no longer apply: delete
+  them, theme UiKit once, and use `web_ui.templates.<page>` with a template that extends
+  `@NowoMaintenanceModeBundle/panel/<page>.html.twig` and overrides a data block for what is left.
+- Panel context: `page` (view model) is new; `layout` is gone; `state`, `path_prefix`, `password_required`, the
+  form views, `entries`, `error`, `locked`, `login_form` and `flashes` are kept.
+- Public page overrides that extend `@NowoMaintenanceModeBundle/maintenance/page.html.twig` keep working; the
+  `maintenance_head` / `maintenance_fonts` / `maintenance_styles` / `maintenance_head_extra` blocks render in
+  `nowo_ui_head`, `maintenance_scripts` in `nowo_ui_scripts`. `maintenance_html_attributes` /
+  `maintenance_body_attributes` are no longer rendered (use `nowo_ui_kit.theme.attributes.document` / `body`). The
+  default no longer loads Google Fonts: set fonts through your theme tokens or `maintenance_fonts`.
+- Test ids: `maintenance-panel-tabs`, `maintenance-status`, `maintenance-manual`, `maintenance-schedule`,
+  `maintenance-history` are always rendered; new `maintenance-panel`, `maintenance-page`, `maintenance-login`,
+  `maintenance-disable`, `maintenance-clear-schedule`, `maintenance-logout`.
+- The panel index URL is `{path_prefix}/` (the area nav links to it; `{path_prefix}` still redirects there).
 
 ## To 1.9.0
 

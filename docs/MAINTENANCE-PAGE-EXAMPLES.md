@@ -1,6 +1,12 @@
 # Maintenance page examples
 
-Ready-to-use public 503 templates with **calm, anxiety-light copy** in **en / es / it / fr / pt / de / nl**.
+Sample public 503 templates with **calm, anxiety-light copy** in **en / es / it / fr / pt / de / nl**.
+
+> **Samples, not defaults.** These are standalone documents that load their CSS framework and fonts from public
+> CDNs (jsDelivr, Google Fonts) and do not follow the UiKit page contract. They are used only when you point
+> `templates.page` at one. For production, copy the one you like into your app and serve its assets yourself.
+> The **default** page (`maintenance/page.html.twig`) renders on the UiKit guest layout with your
+> `nowo_ui_kit.theme` tokens — no CDN, no JavaScript, no session (see [TEMPLATES.md](TEMPLATES.md)).
 
 Inspiration for the “idea_*” set: common maintenance-page patterns (short & sweet, compassionate, playful, brand-familiar, countdown, live updates) — adapted for Symfony without linking the public page to panel login. See also [this showcase of maintenance-page ideas](https://es.ephesossoftware.com/articles/showcase/6-maintenance-page-ideas-you-can-use-on-your-wordpress-site.html).
 
@@ -37,7 +43,7 @@ CDN frameworks (latest at ship time):
 | `maintenance/examples/idea_countdown.html.twig` | Tailwind CSS **4** | Countdown from `state.scheduledDisableAt` |
 | `maintenance/examples/idea_updates.html.twig` | Foundation Sites **6.9.0** | Progress / status log |
 
-Default page (no CDN): `maintenance/page.html.twig` — also uses the calm messaging keys.
+Default page (no CDN, no JavaScript, UiKit guest layout + theme tokens): `maintenance/page.html.twig` — also uses the calm messaging keys.
 
 ## Activate an example
 
@@ -48,12 +54,7 @@ nowo_maintenance_mode:
         page: '@NowoMaintenanceModeBundle/maintenance/examples/idea_countdown.html.twig'
 ```
 
-Or override in the app:
-
-```twig
-{# templates/bundles/NowoMaintenanceModeBundle/maintenance/page.html.twig #}
-{% include '@NowoMaintenanceModeBundle/maintenance/examples/idea_compassion.html.twig' %}
-```
+Or point `templates.page` at a copy in your app (e.g. `maintenance/503.html.twig`, outside `templates/bundles/`).
 
 When maintenance is enabled with a custom message (`MaintenanceManager::enable(...)` or the panel), that message replaces the template’s default translated body while heading / reassure / thanks stay localized.
 

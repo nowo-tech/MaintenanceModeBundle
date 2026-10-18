@@ -47,7 +47,7 @@ return [
 nowo_maintenance_mode:
     enabled: true
     default_message: "We're making a few gentle improvements. Everything you care about is safe."
-    panel:
+    web_ui:
         enabled: true
         path_prefix: '/_maintenance'
     # security:
@@ -62,7 +62,7 @@ nowo_maintenance_mode:
     resource: '@NowoMaintenanceModeBundle/Resources/config/routes.yaml'
 ```
 
-This registers the admin panel under `panel.path_prefix` and the dev preview at `preview.path` (default `/_maintenance_preview`).
+This registers the admin panel under `web_ui.path_prefix` and the dev preview at `preview.path` (default `/_maintenance_preview`).
 
 4. Ensure the app has a writable directory for state/history (defaults under `%kernel.project_dir%/var/maintenance/`).
 

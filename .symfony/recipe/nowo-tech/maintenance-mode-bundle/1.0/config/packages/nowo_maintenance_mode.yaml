@@ -6,7 +6,7 @@ nowo_maintenance_mode:
         # null = enable when kernel.debug is true (like /_error/{code})
         enabled: ~
         path: '/_maintenance_preview'
-    panel:
+    web_ui:
         enabled: true
         path_prefix: '/_maintenance'
     security:

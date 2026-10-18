@@ -15,7 +15,7 @@ This bundle is **FrankenPHP worker mode friendly** — including when the kernel
 - **503 listener** — Configurable-priority `kernel.request` interceptor (default after router), HTML or JSON, dynamic `Retry-After`, `Cache-Control: no-store`.
 - **Exclusions** — Exact paths, prefixes, route names, globs, `#regex#` / `~regex~`, **IPs/CIDR**, `#[ExcludeFromMaintenance]`, soft bypass token.
 - **Admin panel** — Enable / disable / schedule / clear schedule / history under a configurable prefix (default `/_maintenance`).
-- **Admin chrome hooks** — `maintenance_*` Twig blocks, `web_ui.classes` class map and `web_ui.partials` paths let hosts theme the panel without forking pages ([USAGE](docs/USAGE.md#customising-the-admin-chrome)).
+- **UiKit page contract** — Panel, history and login extend the UiKit 2.1 scaffolds (`page/settings`, `page/list`, `page/auth`); the public 503 renders on the UiKit guest layout with your theme tokens (no CDN, no JavaScript, no session). Theme once in `nowo_ui_kit.theme` ([TEMPLATES](docs/TEMPLATES.md)).
 - **CLI** — `nowo:maintenance-mode:enable` (`--until`, `--message`, `--actor`), `nowo:maintenance-mode:disable`, `nowo:maintenance-mode:status`, `nowo:maintenance-mode:hash-password`.
 - **Events & Twig** — Domain events on state changes; `nowo_maintenance_is_enabled()` / `nowo_maintenance_state()`.
 - **Password gate** — Optional `password_hash` (bcrypt / argon2id); replaceable via `MaintenanceAccessGateInterface`.
@@ -47,8 +47,9 @@ nowo_maintenance_mode:
 nowo_maintenance_mode:
     enabled: true
     default_message: "We're making a few gentle improvements. Everything you care about is safe."
-    panel:
+    web_ui:
         path_prefix: '/_maintenance'
+        layout_template: null          # null = nowo_ui_kit.layouts.admin
     security:
         password_protection: true
         password_hash: '%env(MAINTENANCE_PASSWORD_HASH)%'
