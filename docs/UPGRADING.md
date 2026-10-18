@@ -76,6 +76,20 @@
 
 ## Unreleased
 
+Requires UiKit **^2.2** (`composer require nowo-tech/ui-kit-bundle:^2.2`). No configuration change. What hosts may
+notice:
+
+- **Panel**: Disable maintenance / Clear schedule sit next to the section's submit button (UiKit
+  `SettingsSection::actions`); the submit button is printed after `</form>` and bound with `form="<id>"`, and the
+  panel forms have ids (`nowo-maintenance-enable-form`, `nowo-maintenance-schedule-form`, …). Overrides of
+  `panel/index.html.twig` that printed `section_actions` themselves after `{{ parent() }}` now print them twice —
+  drop that loop (the variable stays for one more minor).
+- **Login**: no empty footer strip under the form (UiKit 2.2 auth scaffold).
+- **History / status**: small uppercase table headers, subtle badges (`badge_info` follows the primary colour).
+- Host guest layouts with their own UiKit script list: wrap it in `{% if nowo_ui_scripts_enabled ?? true %}` (or
+  include `nowo_ui_partial('scripts')`) so the 503 stays JS-free; the bundle's 503 template already empties
+  `nowo_ui_scripts`.
+
 ## To 1.10.0
 
 From **1.9.0**:

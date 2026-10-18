@@ -38,6 +38,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Requires `nowo-tech/ui-kit-bundle` **^2.2**. See [UPGRADING](UPGRADING.md#unreleased).
+- Panel: the Disable / Clear schedule actions are `SettingsSection::actions` (UiKit 2.2), printed by the settings
+  scaffold on the same row as the section's submit button, instead of a bundle `toolbar` under the form. The
+  `section_actions` template variable is kept (same actions) for overrides.
+- Panel forms carry a unique `<form id>` (`nowo-maintenance-<form>-form`), which the scaffold's submit button targets
+  (`form="…"`).
+- Public 503: `AuthPage::scripts = false` and `nowo_ui_scripts_enabled = false` (UiKit 2.2 JS-free pages);
+  `nowo_ui_theme_boot = false` is kept for host guest layouts that only read that flag.
+
+### Removed
+
+- The `flashes: null` workaround of the panel / history / login flashes block: UiKit 2.2 ignores the 1.x `flashes`
+  variable inside page scaffolds, so the session flashes are always consumed.
+
+### Demo
+
+- Host layouts print the UiKit runtimes through the UiKit `scripts` partial (skipped on JS-free pages).
+
 ## [1.10.0] - 2026-10-18
 
 Panel pages and the public 503 on the UiKit 2.1 standard page contract (REQ-UI-003): settings, list and auth scaffolds, JS-free public page on the guest layout, area nav; deprecated panel/templates keys bridged. See [UPGRADING](UPGRADING.md#to-1100).
