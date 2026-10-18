@@ -138,7 +138,6 @@ Panel pages and the public 503 on the UiKit 2.1 standard page contract (REQ-UI-0
 - Lock refreshed: `nowo-tech/ui-kit-bundle` 1.9.1 (Dependabot 1.8.4/1.8.5 + update), Symfony 8.1.8 (`symfony` group), PHPStan 2.3.1, `phpstan/phpstan-symfony` 2.1.0, Rector 2.7.0, `nowo-tech/phpstan-frankenphp` 1.2.3.
 - Demo `symfony8`: regenerated `config/reference.php`.
 
-[1.10.0]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.9.0...v1.10.0
 [1.9.0]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.9.0
 [1.8.0]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.8.0
 [1.7.1]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.7.1
