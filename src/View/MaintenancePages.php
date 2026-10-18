@@ -39,7 +39,7 @@ final class MaintenancePages
 
     /**
      * Panel page ({@code $nav}: {@see PanelView::nav()} with {@code panel} active): sections status (no form), manual (enable form + disable action) and schedule (schedule form +
-     * clear action); header action Logout when the password gate is on; area nav Panel | History.
+     * clear action) — the section actions are {@see SettingsSection::$actions} (UiKit 2.2); header action Logout when the password gate is on; area nav Panel | History.
      *
      * @return array{page: SettingsPage, section_actions: array<string, list<Action>>, status_items: list<DetailItem>}
      */
@@ -56,6 +56,14 @@ final class MaintenancePages
         ?string $logoutHref = null,
         ?string $layout = null,
     ): array {
+        $sectionActions = [
+            'manual' => [
+                new Action('custom', PanelView::label('panel.disable'), $disableHref, method: 'POST', variant: 'danger', attributes: ['data-testid' => 'maintenance-disable'], form: $disableForm),
+            ],
+            'schedule' => [
+                new Action('custom', PanelView::label('panel.clear_schedule'), $clearScheduleHref, method: 'POST', variant: 'secondary', attributes: ['data-testid' => 'maintenance-clear-schedule'], form: $clearScheduleForm),
+            ],
+        ];
         $actions = [];
         if ($logoutForm instanceof FormView && $logoutHref !== null) {
             $actions[] = new Action('custom', PanelView::label('panel.logout'), $logoutHref, method: 'POST', variant: 'secondary', attributes: ['data-testid' => 'maintenance-logout'], form: $logoutForm);
@@ -66,22 +74,16 @@ final class MaintenancePages
                 new PageHeader(PanelView::label('panel.title'), PanelView::label('panel.intro'), $actions, tabs: $nav),
                 [
                     new SettingsSection('status', PanelView::label('panel.status')),
-                    new SettingsSection('manual', PanelView::label('panel.manual'), form: $enableForm, intro: PanelView::label('panel.manual.intro'), submitLabel: PanelView::label('panel.enable')),
-                    new SettingsSection('schedule', PanelView::label('panel.schedule'), form: $scheduleForm, intro: PanelView::label('panel.schedule.intro'), submitLabel: PanelView::label('panel.save_schedule')),
+                    new SettingsSection('manual', PanelView::label('panel.manual'), form: $enableForm, intro: PanelView::label('panel.manual.intro'), submitLabel: PanelView::label('panel.enable'), actions: $sectionActions['manual']),
+                    new SettingsSection('schedule', PanelView::label('panel.schedule'), form: $scheduleForm, intro: PanelView::label('panel.schedule.intro'), submitLabel: PanelView::label('panel.save_schedule'), actions: $sectionActions['schedule']),
                 ],
                 bundle: PanelView::BUNDLE,
                 layout: $layout,
                 attributes: ['data-testid' => 'maintenance-panel'],
             ),
-            'section_actions' => [
-                'manual' => [
-                    new Action('custom', PanelView::label('panel.disable'), $disableHref, method: 'POST', variant: 'danger', attributes: ['data-testid' => 'maintenance-disable'], form: $disableForm),
-                ],
-                'schedule' => [
-                    new Action('custom', PanelView::label('panel.clear_schedule'), $clearScheduleHref, method: 'POST', variant: 'secondary', attributes: ['data-testid' => 'maintenance-clear-schedule'], form: $clearScheduleForm),
-                ],
-            ],
-            'status_items' => [
+            // BC (1.10): the section actions keyed by section id; the scaffold prints SettingsSection::actions
+            'section_actions' => $sectionActions,
+            'status_items'    => [
                 new DetailItem(PanelView::label('panel.message'), $state->getMessage()),
                 new DetailItem(PanelView::label('panel.activated'), self::date($state->getActivatedAt())),
                 new DetailItem(PanelView::label('panel.deactivated'), self::date($state->getDeactivatedAt())),
@@ -151,6 +153,7 @@ final class MaintenancePages
             bundle: PanelView::BUNDLE,
             layout: $layout,
             attributes: ['data-testid' => 'maintenance-page'],
+            scripts: false,
         );
     }
 

@@ -17,7 +17,9 @@
 {% trans_default_domain 'NowoMaintenanceModeBundle' %}
 {% set nowo_ui_bundle = (page ?? null) ? page.bundle : 'NowoMaintenanceModeBundle' %}
 {% set nowo_ui_page_type = 'auth' %}
-{# No JavaScript at all on the 503: skip the layout's pre-paint theme boot (a script file without a CSP nonce). #}
+{# No JavaScript at all on the 503: no UiKit runtime nor pre-paint theme boot (UiKit 2.2 nowo_ui_scripts_enabled, set
+   from AuthPage::scripts = false); nowo_ui_theme_boot = false kept for host guest layouts that only read that flag. #}
+{% set nowo_ui_scripts_enabled = (page ?? null) ? page.scripts : false %}
 {% set nowo_ui_theme_boot = false %}
 
 {% block nowo_ui_document_title %}{% block title %}{{ 'maintenance.page.title'|trans }}{% endblock %}{% endblock %}

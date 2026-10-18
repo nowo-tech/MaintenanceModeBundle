@@ -37,6 +37,22 @@ final class MaintenancePagesTest extends TestCase
         self::assertInstanceOf(Label::class, $default->intro);
         self::assertSame('maintenance.page.message', $default->intro->key);
         self::assertSame('layouts/guest.html.twig', $default->layout);
+        self::assertFalse($default->scripts, 'UiKit 2.2: the public 503 is JS-free (AuthPage::scripts)');
+    }
+
+    public function testPanelSectionActionsAreSettingsSectionActions(): void
+    {
+        $panel    = PageFixtures::index(PageFixtures::enabledState());
+        $sections = [];
+        foreach ($panel['page']->sections as $section) {
+            $sections[$section->id] = $section;
+        }
+
+        self::assertSame([], $sections['status']->actions);
+        self::assertSame($panel['section_actions']['manual'], $sections['manual']->actions, 'BC: section_actions keeps the same actions');
+        self::assertSame($panel['section_actions']['schedule'], $sections['schedule']->actions);
+        self::assertSame('maintenance-disable', $sections['manual']->actions[0]->attributes['data-testid'] ?? null);
+        self::assertSame('maintenance-clear-schedule', $sections['schedule']->actions[0]->attributes['data-testid'] ?? null);
     }
 
     public function testLoginErrorLabel(): void

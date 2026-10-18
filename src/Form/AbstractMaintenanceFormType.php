@@ -9,7 +9,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
- * Shared CSRF / translation defaults for panel forms.
+ * Shared CSRF / translation / form id defaults for panel forms.
  *
  * Empty block prefix keeps request field names flat (`message`, `_token`, …)
  * so host Twig overrides that still post raw HTML remain compatible.
@@ -27,6 +27,10 @@ abstract class AbstractMaintenanceFormType extends AbstractType
             'csrf_field_name'    => '_token',
             'csrf_token_id'      => $this->csrfTokenId(),
             'method'             => 'POST',
+            // Unique <form id> per panel form: the UiKit 2.2 settings scaffold binds a section's submit button
+            // (printed after </form> next to SettingsSection::actions) through form="<id>"; flat-named forms would
+            // otherwise all share the scaffold's fallback id.
+            'attr' => ['id' => str_replace('_', '-', $this->csrfTokenId()) . '-form'],
         ]);
     }
 

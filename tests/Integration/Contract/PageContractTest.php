@@ -71,6 +71,16 @@ final class PageContractTest extends PageContractTestCase
         self::assertStringContainsString('Save schedule', $html);
         self::assertStringContainsString('Clear schedule', $html);
         self::assertStringContainsString('value="token-nowo_maintenance_disable"', $html);
+        // UiKit 2.2 SettingsSection::actions: one actions row per section, after the section form (not nested)
+        self::assertSame(1, substr_count($html, 'data-testid="maintenance-disable"'));
+        self::assertSame(1, substr_count($html, 'data-testid="maintenance-clear-schedule"'));
+        self::assertLessThan(strpos($html, 'action="/_maintenance/disable"'), strpos($html, 'action="/_maintenance/enable"'));
+        // each section submit button targets its own form (unique ids)
+        self::assertStringContainsString('id="nowo-maintenance-enable-form"', $html);
+        self::assertStringContainsString('form="nowo-maintenance-enable-form">Enable maintenance</button>', $html);
+        self::assertStringContainsString('id="nowo-maintenance-schedule-form"', $html);
+        self::assertStringContainsString('form="nowo-maintenance-schedule-form">Save schedule</button>', $html);
+        self::assertStringNotContainsString('nowo-ui-section-form', $html);
         self::assertStringContainsString('value="token-nowo_maintenance_logout"', $html);
         self::assertSame(1, substr_count($html, 'value="token-nowo_maintenance_enable"'));
         foreach (['status', 'manual', 'schedule'] as $section) {

@@ -1,8 +1,9 @@
 {#
   Maintenance panel (REQ-UI-003): UiKit settings scaffold. Variables: page (View\SettingsPage from
   MaintenancePages::panel(): sections status, manual, schedule; header action Logout when the password gate is on;
-  area nav Panel | History in page.header.tabs), section_actions (section id => list<View\Action>: Disable on
-  "manual", Clear schedule on "schedule"), status_items (list<View\DetailItem>), and the 1.x variables state,
+  area nav Panel | History in page.header.tabs; the manual / schedule sections carry their Disable / Clear schedule
+  actions as SettingsSection::actions, printed by the scaffold after the section form), section_actions (BC, 1.10:
+  the same actions keyed by section id), status_items (list<View\DetailItem>), and the 1.x variables state,
   path_prefix, password_required, flashes, enable_form, disable_form, schedule_form, clear_schedule_form, logout_form.
   Data block filled: nowo_ui_settings_section.
 #}
@@ -10,8 +11,8 @@
 {% trans_default_domain 'NowoMaintenanceModeBundle' %}
 
 {% block nowo_ui_flashes %}
-    {#- flashes: null — the 1.x context variable `flashes` (peeked) must not shadow app.flashes (consumed here) -#}
-    {{ include(nowo_ui_partial('flashes', page.bundle), {bundle: page.bundle, trans_domain: 'NowoMaintenanceModeBundle', flashes: null}) }}
+    {#- UiKit 2.2: the 1.x context variable `flashes` (peeked) no longer shadows app.flashes inside page scaffolds -#}
+    {{ include(nowo_ui_partial('flashes', page.bundle), {bundle: page.bundle, trans_domain: 'NowoMaintenanceModeBundle'}) }}
 {% endblock %}
 
 {% block nowo_ui_settings_section %}
@@ -26,14 +27,8 @@
             </p>
             {{ include(nowo_ui_partial('detail_list', _b), {items: status_items, bundle: _b}, false) }}
         {% else %}
+            {#- section form + its actions row (SettingsSection::actions, UiKit 2.2: Disable / Clear schedule) -#}
             {{ parent() }}
-            {% if section_actions[section.id] is defined %}
-                <div class="{{ nowo_ui_class('toolbar', _b) }}">
-                    {% for action in section_actions[section.id] %}
-                        {{ include(nowo_ui_partial('action', _b), {action: action, bundle: _b}, false) }}
-                    {% endfor %}
-                </div>
-            {% endif %}
         {% endif %}
     </div>
 {% endblock %}
