@@ -97,8 +97,10 @@ panel.history: History
 panel.history.action: Action
 panel.history.actor: Actor
 panel.history.empty: No history yet.
+panel.history.intro: 'Most recent enable, disable and schedule changes, newest first.'
 panel.history.message: Message
 panel.history.when: When
+panel.intro: 'Turn the public maintenance page on or off, or schedule a window. The panel and excluded routes stay reachable.'
 panel.login.error: Invalid password.
 panel.login.heading: Maintenance panel
 panel.login.intro: Enter the maintenance password to manage the site.
@@ -106,12 +108,15 @@ panel.login.locked: 'Too many failed attempts. Please try again later.'
 panel.login.password: Password
 panel.login.submit: Sign in
 panel.logout: Logout
+panel.manual: 'Manual control'
+panel.manual.intro: 'Enable now with an optional public message, or disable maintenance.'
 panel.message: Message
 panel.nav.aria_label: Panel
 panel.nav.history: History
 panel.nav.panel: Panel
 panel.save_schedule: Save schedule
 panel.schedule: Schedule
+panel.schedule.intro: 'Maintenance turns on and off automatically at these times (server time zone).'
 panel.scheduled_disable: Scheduled disable
 panel.scheduled_enable: Scheduled enable
 panel.status: Status

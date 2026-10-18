@@ -13,6 +13,7 @@ use Nowo\MaintenanceModeBundle\Model\MaintenanceState;
 use Nowo\MaintenanceModeBundle\Service\MaintenanceManager;
 use Nowo\MaintenanceModeBundle\Storage\MaintenanceHistoryStorageInterface;
 use Nowo\MaintenanceModeBundle\Storage\MaintenanceStateStorageInterface;
+use Nowo\UiKitBundle\View\AuthPage;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -22,6 +23,7 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Twig\Environment;
+use Twig\Error\RuntimeError;
 
 final class MaintenanceRequestSubscriberTest extends TestCase
 {
@@ -87,7 +89,8 @@ final class MaintenanceRequestSubscriberTest extends TestCase
                 self::callback(static function (array $ctx) use ($state): bool {
                     return ($ctx['message'] ?? null) === 'Twig message'
                         && ($ctx['state'] ?? null) instanceof MaintenanceState
-                        && $ctx['state']->getMessage() === $state->getMessage();
+                        && $ctx['state']->getMessage() === $state->getMessage()
+                        && ($ctx['page'] ?? null) instanceof AuthPage && $ctx['page']->intro === 'Twig message';
                 }),
             )
             ->willReturn('<html>maintenance</html>');
@@ -98,6 +101,22 @@ final class MaintenanceRequestSubscriberTest extends TestCase
         $subscriber->onKernelRequest($event);
 
         self::assertSame('<html>maintenance</html>', $event->getResponse()?->getContent());
+    }
+
+    public function testFailingTemplateFallsBackToTheBuiltInPage(): void
+    {
+        $twig = $this->createMock(Environment::class);
+        $twig->method('render')->willThrowException(new RuntimeError('Database is down'));
+
+        $subscriber = $this->createSubscriber(state: (new MaintenanceState())->withEnabled(true)->withMessage('Back <soon>'), twig: $twig);
+        $event      = $this->createMainRequestEvent('/page');
+        $subscriber->onKernelRequest($event);
+
+        $response = $event->getResponse();
+        self::assertInstanceOf(Response::class, $response);
+        self::assertSame(503, $response->getStatusCode());
+        self::assertStringContainsString('<p>Back &lt;soon&gt;</p>', (string) $response->getContent());
+        self::assertStringContainsString('<meta name="robots" content="noindex">', (string) $response->getContent());
     }
 
     public function testFallbackHtmlUsesDefaultMessageWhenNull(): void

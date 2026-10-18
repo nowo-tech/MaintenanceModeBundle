@@ -12,6 +12,8 @@ services:
             - '../../Event/'
             - '../../Attribute/'
             - '../../Resources/'
+            - '../../View/'
+            - '../../Twig/PanelChrome.php'
             - '../../NowoMaintenanceModeBundle.php'
             - '../../Security/MaintenanceModeAccessCheckerInterface.php'
             - '../../Security/ConfigurableMaintenanceModeAccessChecker.php'
@@ -34,6 +36,9 @@ services:
     Nowo\MaintenanceModeBundle\Twig\MaintenanceExtension: ~
 
     Nowo\MaintenanceModeBundle\EventSubscriber\MaintenanceRequestSubscriber: ~
+
+    # Panel renderer + UiKit area-nav provider (area maintenance_mode; autoconfigured tag nowo_ui_kit.area_nav_provider).
+    Nowo\MaintenanceModeBundle\Panel\PanelView: ~
 
     Nowo\MaintenanceModeBundle\Controller\MaintenancePanelController:
         public: true

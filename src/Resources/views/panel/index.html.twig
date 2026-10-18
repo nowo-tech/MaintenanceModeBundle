@@ -1,104 +1,38 @@
-{% extends '@NowoMaintenanceModeBundle/panel/base.html.twig' %}
-{% import '@NowoUiKitBundle/macros/ui.html.twig' as ui %}
-{% set _css_fw = nowo_maintenance_mode_css_framework|default('custom') %}
-{% set _td = 'NowoMaintenanceModeBundle' %}
-{# Admin chrome hooks (1.7.0): web_ui.classes / partials / show_page_header / test_ids + maintenance_* blocks. #}
-{% set _chrome = nowo_maintenance_mode_chrome %}
-{% set _cls = _chrome.classes %}
-{% set _partials = _chrome.partials %}
+{#
+  Maintenance panel (REQ-UI-003): UiKit settings scaffold. Variables: page (View\SettingsPage from
+  MaintenancePages::panel(): sections status, manual, schedule; header action Logout when the password gate is on;
+  area nav Panel | History in page.header.tabs), section_actions (section id => list<View\Action>: Disable on
+  "manual", Clear schedule on "schedule"), status_items (list<View\DetailItem>), and the 1.x variables state,
+  path_prefix, password_required, flashes, enable_form, disable_form, schedule_form, clear_schedule_form, logout_form.
+  Data block filled: nowo_ui_settings_section.
+#}
+{% extends '@NowoUiKit/page/settings.html.twig' %}
+{% trans_default_domain 'NowoMaintenanceModeBundle' %}
 
-{% block title %}{% if _chrome.document_title %}{{ 'panel.title'|trans({}, _td) }}{% else %}{{ parent() }}{% endif %}{% endblock %}
+{% block nowo_ui_flashes %}
+    {{ include(nowo_ui_partial('flashes', page.bundle), {bundle: page.bundle, trans_domain: 'NowoMaintenanceModeBundle'}) }}
+{% endblock %}
 
-{% block body %}
-    {% block maintenance_nav %}{{ include(_partials.nav, {active: 'panel', path_prefix: path_prefix}) }}{% endblock %}
-    {%~ block maintenance_page_header %}
-    {%~ if _chrome.show_page_header %}
-    <header{% if _cls.page_header %} class="{{ _cls.page_header }}"{% endif %}>
-        <h1{% if _cls.page_title %} class="{{ _cls.page_title }}"{% endif %}>{% block maintenance_page_title %}{{ 'panel.title'|trans({}, _td) }}{% endblock %}</h1>
-        {%~ block maintenance_page_intro %}{% endblock %}
-        {%~ block maintenance_header_actions %}{% endblock %}
-    </header>
-    {%~ endif %}
-    {%~ endblock %}
-
-    {%~ block maintenance_flashes %}
-    {% for type, messages in flashes|default({}) %}
-        {% for message in messages %}
-            <div class="{{ ui.flash(type, _css_fw) }}{{ _cls.flash ? ' ' ~ _cls.flash }}" role="alert">{{ message|trans({}, _td) }}</div>
-        {% endfor %}
-    {% endfor %}
-    {%~ endblock %}
-
-    {%~ block maintenance_status %}
-    <p{% if _cls.status_line %} class="{{ _cls.status_line }}"{% endif %}{% if _chrome.test_ids %} data-testid="maintenance-status"{% endif %}>
-        {{ 'panel.status.manual'|trans({}, _td) }}:
-        {% if state.enabled %}
-            <span class="{{ _cls.status_on }}">{{ 'panel.status.enabled'|trans({}, _td) }}</span>
+{% block nowo_ui_settings_section %}
+    {% set _b = page.bundle %}
+    <div data-testid="maintenance-{{ section.id }}">
+        {% if section.id == 'status' %}
+            <p class="{{ nowo_ui_class('toolbar', _b) }}">
+                <span>{{ 'panel.status.manual'|trans }}:</span>
+                <span class="{{ nowo_ui_class(state.enabled ? 'badge_warning' : 'badge_success', _b) }}" data-testid="maintenance-status-manual">{{ (state.enabled ? 'panel.status.enabled' : 'panel.status.disabled')|trans }}</span>
+                <span>{{ 'panel.status.effective'|trans }}:</span>
+                <span class="{{ nowo_ui_class(state.effectivelyEnabled ? 'badge_warning' : 'badge_success', _b) }}" data-testid="maintenance-status-effective">{{ (state.effectivelyEnabled ? 'panel.status.on' : 'panel.status.off')|trans }}</span>
+            </p>
+            {{ include(nowo_ui_partial('detail_list', _b), {items: status_items, bundle: _b}, false) }}
         {% else %}
-            <span class="{{ _cls.status_off }}">{{ 'panel.status.disabled'|trans({}, _td) }}</span>
+            {{ parent() }}
+            {% if section_actions[section.id] is defined %}
+                <div class="{{ nowo_ui_class('toolbar', _b) }}">
+                    {% for action in section_actions[section.id] %}
+                        {{ include(nowo_ui_partial('action', _b), {action: action, bundle: _b}, false) }}
+                    {% endfor %}
+                </div>
+            {% endif %}
         {% endif %}
-        ·
-        {{ 'panel.status.effective'|trans({}, _td) }}:
-        {% if state.effectivelyEnabled %}
-            <span class="{{ _cls.status_on }}">{{ 'panel.status.on'|trans({}, _td) }}</span>
-        {% else %}
-            <span class="{{ _cls.status_off }}">{{ 'panel.status.off'|trans({}, _td) }}</span>
-        {% endif %}
-    </p>
-    {%~ endblock %}
-
-    {%~ block maintenance_state_details %}
-    <div{% if _cls.card %} class="{{ _cls.card }}"{% endif %}>
-        <p><strong>{{ 'panel.message'|trans({}, _td) }}:</strong> {{ state.message ?? '—' }}</p>
-        <p><strong>{{ 'panel.activated'|trans({}, _td) }}:</strong> {{ state.activatedAt ? state.activatedAt|date('Y-m-d H:i:s') : '—' }}</p>
-        <p><strong>{{ 'panel.deactivated'|trans({}, _td) }}:</strong> {{ state.deactivatedAt ? state.deactivatedAt|date('Y-m-d H:i:s') : '—' }}</p>
-        <p><strong>{{ 'panel.scheduled_enable'|trans({}, _td) }}:</strong> {{ state.scheduledEnableAt ? state.scheduledEnableAt|date('Y-m-d H:i:s') : '—' }}</p>
-        <p><strong>{{ 'panel.scheduled_disable'|trans({}, _td) }}:</strong> {{ state.scheduledDisableAt ? state.scheduledDisableAt|date('Y-m-d H:i:s') : '—' }}</p>
-        <p><strong>{{ 'panel.updated_by'|trans({}, _td) }}:</strong> {{ state.updatedBy ?? '—' }}</p>
     </div>
-    {%~ endblock %}
-
-    {%~ block maintenance_manual_forms %}
-    <div{% if _cls.card %} class="{{ _cls.card }}"{% endif %}{% if _chrome.test_ids %} data-testid="maintenance-manual"{% endif %}>
-        {{ form_start(enable_form, _cls.form ? {attr: {class: _cls.form}} : {}) }}
-            {{ include(_partials.form_fields, {form: enable_form}, false) }}
-            {%~ if _cls.form_actions %}<div class="{{ _cls.form_actions }}">{% endif %}
-            <button type="submit" class="{{ ui.btn('primary', null, _css_fw) }}">{{ 'panel.enable'|trans({}, _td) }}</button>
-            {%~ if _cls.form_actions %}</div>{% endif %}
-        {{ form_end(enable_form) }}
-        {{ form_start(disable_form, {attr: {style: 'margin-top:1rem'}|merge(_cls.form ? {class: _cls.form} : {})}) }}
-            {{ include(_partials.form_fields, {form: disable_form}, false) }}
-            {%~ if _cls.form_actions %}<div class="{{ _cls.form_actions }}">{% endif %}
-            <button type="submit" class="{{ ui.btn('danger', null, _css_fw) }}">{{ 'panel.disable'|trans({}, _td) }}</button>
-            {%~ if _cls.form_actions %}</div>{% endif %}
-        {{ form_end(disable_form) }}
-    </div>
-    {%~ endblock %}
-
-    {%~ block maintenance_schedule_forms %}
-    <div{% if _cls.card %} class="{{ _cls.card }}"{% endif %}{% if _chrome.test_ids %} data-testid="maintenance-schedule"{% endif %}>
-        <h2{% if _cls.section_title %} class="{{ _cls.section_title }}"{% endif %}>{{ 'panel.schedule'|trans({}, _td) }}</h2>
-        {{ form_start(schedule_form, _cls.form ? {attr: {class: _cls.form}} : {}) }}
-            {{ include(_partials.form_fields, {form: schedule_form}, false) }}
-            {%~ if _cls.form_actions %}<div class="{{ _cls.form_actions }}">{% endif %}
-            <button type="submit" class="{{ ui.btn('secondary', null, _css_fw) }}">{{ 'panel.save_schedule'|trans({}, _td) }}</button>
-            {%~ if _cls.form_actions %}</div>{% endif %}
-        {{ form_end(schedule_form) }}
-        {{ form_start(clear_schedule_form, {attr: {style: 'margin-top:1rem'}|merge(_cls.form ? {class: _cls.form} : {})}) }}
-            {{ include(_partials.form_fields, {form: clear_schedule_form}, false) }}
-            {%~ if _cls.form_actions %}<div class="{{ _cls.form_actions }}">{% endif %}
-            <button type="submit" class="{{ ui.btn('secondary', null, _css_fw) }}">{{ 'panel.clear_schedule'|trans({}, _td) }}</button>
-            {%~ if _cls.form_actions %}</div>{% endif %}
-        {{ form_end(clear_schedule_form) }}
-    </div>
-    {%~ endblock %}
-
-    {%~ block maintenance_logout_form %}
-    {% if password_required ?? true %}
-        {{ form_start(logout_form, {attr: {style: 'margin-top:1.5rem'}}) }}
-            {{ include(_partials.form_fields, {form: logout_form}, false) }}
-            <button type="submit" class="{{ ui.btn('secondary', null, _css_fw) }}">{{ 'panel.logout'|trans({}, _td) }}</button>
-        {{ form_end(logout_form) }}
-    {% endif %}
-    {%~ endblock %}
 {% endblock %}

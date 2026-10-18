@@ -97,8 +97,10 @@ panel.history: Verlauf
 panel.history.action: Aktion
 panel.history.actor: Akteur
 panel.history.empty: Noch kein Verlauf.
+panel.history.intro: 'Letzte Aktivierungen, Deaktivierungen und Planungsänderungen, neueste zuerst.'
 panel.history.message: Nachricht
 panel.history.when: Wann
+panel.intro: 'Schalten Sie die öffentliche Wartungsseite ein oder aus oder planen Sie ein Wartungsfenster. Panel und ausgenommene Routen bleiben erreichbar.'
 panel.login.error: Ungültiges Kennwort.
 panel.login.heading: Wartungs-Panel
 panel.login.intro: 'Geben Sie das Wartungskennwort ein, um die Website zu verwalten.'
@@ -106,12 +108,15 @@ panel.login.locked: 'Zu viele fehlgeschlagene Versuche. Bitte später erneut ver
 panel.login.password: Kennwort
 panel.login.submit: Anmelden
 panel.logout: Abmelden
+panel.manual: 'Manuelle Steuerung'
+panel.manual.intro: 'Jetzt mit optionaler öffentlicher Nachricht aktivieren oder die Wartung beenden.'
 panel.message: Nachricht
 panel.nav.aria_label: Panel
 panel.nav.history: Verlauf
 panel.nav.panel: Panel
 panel.save_schedule: Zeitplan speichern
 panel.schedule: Zeitplan
+panel.schedule.intro: 'Die Wartung wird zu diesen Zeitpunkten automatisch ein- und ausgeschaltet (Zeitzone des Servers).'
 panel.scheduled_disable: Geplante Deaktivierung
 panel.scheduled_enable: Geplante Aktivierung
 panel.status: Status

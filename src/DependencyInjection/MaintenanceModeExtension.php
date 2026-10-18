@@ -9,6 +9,7 @@ use Nowo\MaintenanceModeBundle\Controller\MaintenancePanelController;
 use Nowo\MaintenanceModeBundle\Controller\MaintenancePreviewController;
 use Nowo\MaintenanceModeBundle\EventSubscriber\MaintenanceRequestSubscriber;
 use Nowo\MaintenanceModeBundle\Exclusion\MaintenanceExclusionMatcher;
+use Nowo\MaintenanceModeBundle\Panel\PanelView;
 use Nowo\MaintenanceModeBundle\Security\AllowAllMaintenanceModeAccessChecker;
 use Nowo\MaintenanceModeBundle\Security\ConfigurableMaintenanceModeAccessChecker;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceAccessGateInterface;
@@ -20,6 +21,7 @@ use Nowo\MaintenanceModeBundle\Storage\FilesystemMaintenanceStateStorage;
 use Nowo\MaintenanceModeBundle\Storage\MaintenanceHistoryStorageInterface;
 use Nowo\MaintenanceModeBundle\Storage\MaintenanceStateStorageInterface;
 use Nowo\MaintenanceModeBundle\Twig\MaintenanceExtension as TwigMaintenanceExtension;
+use Nowo\MaintenanceModeBundle\Twig\PanelChrome;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -40,7 +42,8 @@ use function rtrim;
 final class MaintenanceModeExtension extends Extension implements PrependExtensionInterface
 {
     /**
-     * Seeds UiKit defaults from web_ui when the host has not set nowo_ui_kit (REQ-UI-001-kit).
+     * Seeds UiKit defaults from the deprecated web_ui keys when the host has not set nowo_ui_kit (REQ-UI-001-kit) and
+     * bridges the deprecated web_ui.classes map into nowo_ui_kit.theme.bundles.NowoMaintenanceModeBundle (REQ-UI-003).
      */
     public function prepend(ContainerBuilder $container): void
     {
@@ -48,8 +51,9 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
     }
 
     /**
-     * When UiKit is installed, seed nowo_ui_kit.css_framework / icon_set from web_ui
-     * so kit macros resolve the same stack. Does not override keys the host already set.
+     * When UiKit is installed: seed nowo_ui_kit.css_framework / icon_set from the deprecated web_ui keys when the host
+     * set them (and not the nowo_ui_kit ones), and bridge the deprecated web_ui.classes map into
+     * nowo_ui_kit.theme.bundles.NowoMaintenanceModeBundle. Prepended: the host's own UiKit config wins.
      */
     private function prependUiKitDefaults(ContainerBuilder $container): void
     {
@@ -71,20 +75,22 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
             }
         }
 
-        if ($hostHasCssFramework && $hostHasIconSet) {
-            return;
-        }
-
         $config   = $this->processConfiguration(new Configuration(), $container->getExtensionConfig(Configuration::ALIAS));
         $webUi    = is_array($config['web_ui'] ?? null) ? $config['web_ui'] : [];
         $defaults = [];
 
-        if (!$hostHasCssFramework) {
-            $fw                        = (string) ($webUi['css_framework'] ?? 'custom');
+        $fw = $webUi['css_framework'] ?? null;
+        if (!$hostHasCssFramework && is_string($fw)) {
             $defaults['css_framework'] = $fw === 'bootstrap' ? 'bootstrap5' : $fw;
         }
-        if (!$hostHasIconSet) {
-            $defaults['icon_set'] = (string) ($webUi['icon_set'] ?? 'none');
+        $iconSet = $webUi['icon_set'] ?? null;
+        if (!$hostHasIconSet && is_string($iconSet)) {
+            $defaults['icon_set'] = $iconSet;
+        }
+
+        $bridge = PanelChrome::themeBridge(is_array($webUi['classes'] ?? null) ? $webUi['classes'] : []);
+        if ($bridge !== []) {
+            $defaults['theme'] = ['bundles' => [PanelView::BUNDLE => $bridge]];
         }
 
         if ($defaults !== []) {
@@ -102,8 +108,15 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
         $container->setParameter('nowo.maintenance_mode.status_code', $config['status_code']);
         $container->setParameter('nowo.maintenance_mode.retry_after', $config['retry_after']);
         $container->setParameter('nowo.maintenance_mode.subscriber_priority', $config['subscriber_priority']);
-        $container->setParameter('nowo.maintenance_mode.panel.enabled', $config['panel']['enabled']);
-        $container->setParameter('nowo.maintenance_mode.panel.path_prefix', $config['panel']['path_prefix']);
+        $webUi = $config['web_ui'];
+        /** @var array<string, string> $pageTemplates */
+        $pageTemplates = $webUi['templates'];
+        $pageTemplates += PanelView::TEMPLATES;
+        $panelEnabled = (bool) $webUi['enabled'];
+        $pathPrefix   = (string) $webUi['path_prefix'];
+
+        $container->setParameter('nowo.maintenance_mode.panel.enabled', $panelEnabled);
+        $container->setParameter('nowo.maintenance_mode.panel.path_prefix', $pathPrefix);
         $container->setParameter('nowo.maintenance_mode.preview.enabled', $this->resolvePreviewEnabled($container, $config['preview']['enabled'] ?? null));
         $container->setParameter('nowo.maintenance_mode.preview.path', $config['preview']['path']);
         $container->setParameter('nowo.maintenance_mode.exclusions', $config['exclusions']);
@@ -112,24 +125,24 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
         $container->setParameter('nowo.maintenance_mode.storage', $config['storage']);
         $container->setParameter('nowo.maintenance_mode.storage.state_file', $config['storage']['state_file']);
         $container->setParameter('nowo.maintenance_mode.storage.history_file', $config['storage']['history_file']);
-        $defaultLayout = '@NowoMaintenanceModeBundle/panel/layout.html.twig';
-        // REQ-UI-001: web_ui.layout_template is canonical; preserve legacy templates.panel_layout overrides.
-        if ($config['web_ui']['layout_template'] === $defaultLayout
-            && $config['templates']['panel_layout'] !== $defaultLayout) {
-            $config['web_ui']['layout_template'] = $config['templates']['panel_layout'];
-        } else {
-            $config['templates']['panel_layout'] = $config['web_ui']['layout_template'];
-        }
-
-        $container->setParameter('nowo.maintenance_mode.templates', $config['templates']);
-        $container->setParameter('nowo.maintenance_mode.web_ui', $config['web_ui']);
-        $container->setParameter('nowo.maintenance_mode.web_ui.enabled', (bool) $config['web_ui']['enabled']);
-        $container->setParameter('nowo.maintenance_mode.web_ui.layout_template', $config['web_ui']['layout_template']);
-        $container->setParameter('nowo.maintenance_mode.web_ui.css_framework', $config['web_ui']['css_framework']);
-        $container->setParameter('nowo.maintenance_mode.web_ui.icon_set', $config['web_ui']['icon_set']);
+        // 1.x shape (page + deprecated panel_* keys) resolved from the canonical keys.
+        $container->setParameter('nowo.maintenance_mode.templates', [
+            'page'          => $config['templates']['page'],
+            'panel_layout'  => $webUi['layout_template'],
+            'panel_index'   => $pageTemplates['index'],
+            'panel_login'   => $pageTemplates['login'],
+            'panel_history' => $pageTemplates['history'],
+        ]);
+        $container->setParameter('nowo.maintenance_mode.web_ui', $webUi);
+        $container->setParameter('nowo.maintenance_mode.web_ui.enabled', $panelEnabled);
+        $container->setParameter('nowo.maintenance_mode.web_ui.path_prefix', $pathPrefix);
+        $container->setParameter('nowo.maintenance_mode.web_ui.layout_template', $webUi['layout_template']);
+        $container->setParameter('nowo.maintenance_mode.web_ui.templates', $pageTemplates);
+        $container->setParameter('nowo.maintenance_mode.web_ui.css_framework', $webUi['css_framework'] ?? null);
+        $container->setParameter('nowo.maintenance_mode.web_ui.icon_set', $webUi['icon_set'] ?? null);
 
         if (
-            (bool) $config['panel']['enabled']
+            $panelEnabled
             && !$config['security']['allow_unauthenticated']
             && !$this->isSecurityBundleAvailable($container)
         ) {
@@ -145,7 +158,7 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
         $this->registerAccessChecker($container, $config['security']);
         $this->configureManager($container, $config);
         $this->configureSubscriber($container, $config);
-        $this->configurePanel($container, $config);
+        $this->configurePanel($container, $config, $pathPrefix, $pageTemplates);
         $this->configurePreview($container, $config);
         $this->configureTwigExtension($container, $config);
     }
@@ -202,7 +215,7 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
         $exclusions  = $config['exclusions'];
         $paths       = array_values($exclusions['paths'] ?? []);
         $prefixes    = array_values($exclusions['path_prefixes'] ?? []);
-        $panelPrefix = is_string($config['panel']['path_prefix'] ?? null) ? $config['panel']['path_prefix'] : '/_maintenance';
+        $panelPrefix = (string) $config['web_ui']['path_prefix'];
         // Segment-aware: exclude "/_maintenance" and "/_maintenance/…", never "/_maintenance-public".
         $panelBase = rtrim($panelPrefix, '/');
         if ($panelBase !== '') {
@@ -322,7 +335,7 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
             ->setArgument('$template', $config['templates']['page'])
             ->setArgument('$statusCode', (int) $config['status_code'])
             ->setArgument('$retryAfter', (int) $config['retry_after'])
-            ->setArgument('$panelPathPrefix', $config['panel']['path_prefix'])
+            ->setArgument('$panelPathPrefix', (string) $config['web_ui']['path_prefix'])
             ->setArgument('$bypassToken', is_string($security['bypass_token'] ?? null) ? $security['bypass_token'] : null)
             ->setArgument('$bypassQueryParameter', (string) ($security['bypass_query_parameter'] ?? 'maintenance_bypass'))
             ->setArgument('$bypassCookieName', (string) ($security['bypass_cookie_name'] ?? 'nowo_maintenance_bypass'))
@@ -342,29 +355,38 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
 
     /**
      * @param array<string, mixed> $config
+     * @param array<string, string> $pageTemplates
      */
-    private function configurePanel(ContainerBuilder $container, array $config): void
+    private function configurePanel(ContainerBuilder $container, array $config, string $pathPrefix, array $pageTemplates): void
     {
         // Defensive: services.yaml always registers the controller when the extension loads.
         if (!$container->hasDefinition(MaintenancePanelController::class)) {
             return; // @codeCoverageIgnore
         }
 
-        if (!(bool) $config['panel']['enabled']) {
+        if (!(bool) $config['web_ui']['enabled']) {
             $container->removeDefinition(MaintenancePanelController::class);
+            $container->removeDefinition(PanelView::class);
 
             return;
         }
+
+        $container->getDefinition(PanelView::class)
+            ->setArgument('$twig', new Reference('twig'))
+            ->setArgument('$pathPrefix', $pathPrefix)
+            ->setArgument('$layoutTemplate', $config['web_ui']['layout_template'])
+            ->setArgument('$templates', $pageTemplates);
 
         $container->getDefinition(MaintenancePanelController::class)
             ->setArgument('$manager', new Reference(MaintenanceManager::class))
             ->setArgument('$accessGate', new Reference(MaintenanceAccessGateInterface::class))
             ->setArgument('$formFactory', new Reference('form.factory'))
-            ->setArgument('$templates', $config['templates'])
-            ->setArgument('$pathPrefix', $config['panel']['path_prefix'])
+            ->setArgument('$view', new Reference(PanelView::class))
             ->setArgument('$csrfTokenManager', new Reference(CsrfTokenManagerInterface::class, ContainerBuilder::IGNORE_ON_INVALID_REFERENCE))
             ->setArgument('$accessChecker', new Reference(MaintenanceModeAccessCheckerInterface::class))
             ->setArgument('$allowUnauthenticated', (bool) $config['security']['allow_unauthenticated'])
+            ->setArgument('$historyLimit', (int) $config['web_ui']['history_limit'])
+            ->setArgument('$historyPerPage', (int) $config['web_ui']['history_per_page'])
             ->setPublic(true);
     }
 
@@ -399,15 +421,16 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
             return;
         }
 
+        // Deprecated 1.x globals (nowo_maintenance_mode_*), kept for host templates written for 1.x.
         $webUi = $config['web_ui'];
         $container->getDefinition(TwigMaintenanceExtension::class)
             ->setArgument('$layoutTemplate', $webUi['layout_template'])
-            ->setArgument('$cssFramework', $webUi['css_framework'])
-            ->setArgument('$iconSet', $webUi['icon_set'])
+            ->setArgument('$cssFramework', $webUi['css_framework'] ?? 'custom')
+            ->setArgument('$iconSet', $webUi['icon_set'] ?? 'none')
             ->setArgument('$chrome', [
-                'show_page_header' => (bool) $webUi['show_page_header'],
-                'document_title'   => (bool) $webUi['document_title'],
-                'test_ids'         => (bool) $webUi['test_ids'],
+                'show_page_header' => (bool) ($webUi['show_page_header'] ?? true),
+                'document_title'   => (bool) ($webUi['document_title'] ?? true),
+                'test_ids'         => (bool) ($webUi['test_ids'] ?? false),
                 'classes'          => $webUi['classes'],
                 'partials'         => $webUi['partials'],
             ]);

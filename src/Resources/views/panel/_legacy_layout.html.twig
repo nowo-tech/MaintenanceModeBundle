@@ -1,0 +1,31 @@
+{#
+  BC bridge (deprecated since 1.10, removed in 2.0): wraps a 1.x web_ui.layout_template that renders `body` (and
+  optionally `title`, `stylesheets`, `javascripts`) instead of the UiKit canonical blocks. PanelView selects it
+  automatically when the configured layout has no `nowo_ui_content` block. Variable:
+  nowo_maintenance_mode_legacy_layout. Adds nowo-ui.css, as the 1.x panel base template did.
+#}
+{% extends nowo_maintenance_mode_legacy_layout %}
+
+{% block title %}{% block nowo_ui_document_title %}{% endblock %}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/nowo-ui.css', 'nowo_ui_kit') }}">
+    {% block nowo_ui_head %}{% endblock %}
+    {% block nowo_ui_styles %}{% endblock %}
+{% endblock %}
+
+{% block body %}
+    {% block nowo_ui_navigation %}{% endblock %}
+    <div class="{{ nowo_ui_class('content', nowo_ui_bundle|default(null)) }}"{% if nowo_ui_bundle|default(null) %} data-nowo-ui-bundle="{{ nowo_ui_bundle }}"{% endif %}>
+        {% block nowo_ui_page_header %}{% endblock %}
+        {% block nowo_ui_flashes %}{{ include(nowo_ui_partial('flashes', nowo_ui_bundle|default(null)), {bundle: nowo_ui_bundle|default(null)}) }}{% endblock %}
+        {% block nowo_ui_content %}{% endblock %}
+    </div>
+    {% block nowo_ui_modals %}{% endblock %}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {% block nowo_ui_scripts %}{% endblock %}
+{% endblock %}

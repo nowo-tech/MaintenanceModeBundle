@@ -9,6 +9,7 @@ use Nowo\MaintenanceModeBundle\Attribute\ExcludeFromMaintenance;
 use Nowo\MaintenanceModeBundle\Exclusion\MaintenanceExclusionMatcher;
 use Nowo\MaintenanceModeBundle\Model\MaintenanceState;
 use Nowo\MaintenanceModeBundle\Service\MaintenanceManager;
+use Nowo\MaintenanceModeBundle\View\MaintenancePages;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
@@ -18,6 +19,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
+use Throwable;
 use Twig\Environment;
 
 use function explode;
@@ -242,19 +244,29 @@ final class MaintenanceRequestSubscriber
         return $this->retryAfter;
     }
 
+    /**
+     * Renders the public page (templates.page: UiKit guest layout + theme by default). A failing template (host
+     * layout, appearance provider or override touching a database that is down) must never turn the 503 into a 500:
+     * the minimal built-in page is served instead (check templates with the preview route, which does not fall back).
+     */
     private function renderHtml(MaintenanceState $state): string
     {
         $message = $state->getMessage();
 
         if ($this->twig instanceof Environment) {
-            return $this->twig->render($this->template, [
-                'message' => $message,
-                'state'   => $state,
-            ]);
+            try {
+                return $this->twig->render($this->template, [
+                    'message' => $message,
+                    'state'   => $state,
+                    'page'    => MaintenancePages::maintenance($message),
+                ]);
+            } catch (Throwable) {
+                // Fall through to the built-in page.
+            }
         }
 
         $safe = htmlspecialchars($message ?? "We're making a few gentle improvements. Everything you care about is safe.", ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
-        return '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Maintenance</title></head><body><h1>Maintenance</h1><p>' . $safe . '</p></body></html>';
+        return '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="robots" content="noindex"><title>Maintenance</title></head><body><h1>Maintenance</h1><p>' . $safe . '</p></body></html>';
     }
 }

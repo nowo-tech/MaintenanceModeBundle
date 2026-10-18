@@ -97,8 +97,10 @@ panel.history: Histórico
 panel.history.action: Ação
 panel.history.actor: Autor
 panel.history.empty: Ainda sem histórico.
+panel.history.intro: 'Alterações recentes de ativação, desativação e agendamento, da mais recente para a mais antiga.'
 panel.history.message: Mensagem
 panel.history.when: Quando
+panel.intro: 'Ative ou desative a página pública de manutenção, ou agende uma janela. O painel e as rotas excluídas continuam acessíveis.'
 panel.login.error: Palavra-passe inválida.
 panel.login.heading: Painel de manutenção
 panel.login.intro: Introduza a palavra-passe de manutenção para gerir o site.
@@ -106,12 +108,15 @@ panel.login.locked: 'Demasiadas tentativas falhadas. Tente novamente mais tarde.
 panel.login.password: Palavra-passe
 panel.login.submit: Entrar
 panel.logout: Terminar sessão
+panel.manual: 'Controlo manual'
+panel.manual.intro: 'Ative agora com uma mensagem pública opcional, ou desative a manutenção.'
 panel.message: Mensagem
 panel.nav.aria_label: Painel
 panel.nav.history: Histórico
 panel.nav.panel: Painel
 panel.save_schedule: Guardar agendamento
 panel.schedule: Agendamento
+panel.schedule.intro: 'A manutenção liga e desliga automaticamente nestas datas (fuso horário do servidor).'
 panel.scheduled_disable: Desativação agendada
 panel.scheduled_enable: Ativação agendada
 panel.status: Estado

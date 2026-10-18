@@ -97,8 +97,10 @@ panel.history: Geschiedenis
 panel.history.action: Actie
 panel.history.actor: Actor
 panel.history.empty: Nog geen geschiedenis.
+panel.history.intro: 'Recente in- en uitschakelingen en planningswijzigingen, nieuwste eerst.'
 panel.history.message: Bericht
 panel.history.when: Wanneer
+panel.intro: 'Zet de openbare onderhoudspagina aan of uit, of plan een onderhoudsvenster. Het paneel en uitgesloten routes blijven bereikbaar.'
 panel.login.error: Ongeldig wachtwoord.
 panel.login.heading: Onderhoudspaneel
 panel.login.intro: Voer het onderhoudswachtwoord in om de site te beheren.
@@ -106,12 +108,15 @@ panel.login.locked: 'Te veel mislukte pogingen. Probeer het later opnieuw.'
 panel.login.password: Wachtwoord
 panel.login.submit: Inloggen
 panel.logout: Uitloggen
+panel.manual: 'Handmatige bediening'
+panel.manual.intro: 'Nu inschakelen met een optioneel openbaar bericht, of het onderhoud uitschakelen.'
 panel.message: Bericht
 panel.nav.aria_label: Paneel
 panel.nav.history: Geschiedenis
 panel.nav.panel: Paneel
 panel.save_schedule: Planning opslaan
 panel.schedule: Planning
+panel.schedule.intro: 'Onderhoud wordt op deze tijden automatisch in- en uitgeschakeld (tijdzone van de server).'
 panel.scheduled_disable: Geplande deactivatie
 panel.scheduled_enable: Geplande activatie
 panel.status: Status

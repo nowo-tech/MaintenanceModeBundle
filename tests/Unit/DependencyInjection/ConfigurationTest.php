@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Nowo\MaintenanceModeBundle\Tests\Unit\DependencyInjection;
 
 use Nowo\MaintenanceModeBundle\DependencyInjection\Configuration;
-use Nowo\MaintenanceModeBundle\Twig\PanelChrome;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Config\Definition\Processor;
@@ -18,8 +17,8 @@ final class ConfigurationTest extends TestCase
 
         self::assertTrue($config['enabled']);
         self::assertStringContainsString('gentle improvements', $config['default_message']);
-        self::assertSame('/_maintenance', $config['panel']['path_prefix']);
-        self::assertTrue($config['panel']['enabled']);
+        self::assertSame('/_maintenance', $config['web_ui']['path_prefix']);
+        self::assertSame([], $config['panel']);
         self::assertSame(503, $config['status_code']);
         self::assertSame(31, $config['subscriber_priority']);
         self::assertTrue($config['security']['password_protection']);
@@ -38,45 +37,85 @@ final class ConfigurationTest extends TestCase
         self::assertStringContainsString('var/maintenance/state.json', $config['storage']['state_file']);
         self::assertSame('@NowoMaintenanceModeBundle/maintenance/page.html.twig', $config['templates']['page']);
         self::assertTrue($config['web_ui']['enabled']);
-        self::assertSame('@NowoMaintenanceModeBundle/panel/layout.html.twig', $config['web_ui']['layout_template']);
-        self::assertSame('custom', $config['web_ui']['css_framework']);
-        self::assertSame('none', $config['web_ui']['icon_set']);
-        self::assertTrue($config['web_ui']['show_page_header']);
-        self::assertTrue($config['web_ui']['document_title']);
-        self::assertFalse($config['web_ui']['test_ids']);
-        self::assertSame(PanelChrome::DEFAULT_CLASSES, $config['web_ui']['classes']);
-        self::assertSame(PanelChrome::DEFAULT_PARTIALS, $config['web_ui']['partials']);
+        self::assertSame(['page' => '@NowoMaintenanceModeBundle/maintenance/page.html.twig'], $config['templates']);
+        self::assertNull($config['web_ui']['layout_template']);
+        self::assertSame([], $config['web_ui']['templates']);
+        self::assertSame(100, $config['web_ui']['history_limit']);
+        self::assertSame(25, $config['web_ui']['history_per_page']);
+        self::assertArrayNotHasKey('css_framework', $config['web_ui']);
+        self::assertArrayNotHasKey('icon_set', $config['web_ui']);
+        self::assertArrayNotHasKey('show_page_header', $config['web_ui']);
+        self::assertSame([], $config['web_ui']['classes']);
+        self::assertSame([], $config['web_ui']['partials']);
     }
 
-    public function testAdminChromeOverrides(): void
+    public function testDeprecatedChromeKeysAreKeptAsGiven(): void
     {
         $config = (new Processor())->processConfiguration(new Configuration(), [[
             'web_ui' => [
                 'show_page_header' => false,
                 'document_title'   => false,
                 'test_ids'         => true,
-                'classes'          => [
-                    'card'       => 'panel mb-6',
-                    'table_cell' => 'px-2 py-3',
-                    'status_on'  => null,
-                ],
-                'partials' => [
-                    'nav'        => '@NowoMaintenanceModeBundle/panel/_nav_tabs.html.twig',
-                    'pagination' => 'kit/_pagination.html.twig',
-                ],
+                'classes'          => ['card' => 'panel mb-6', 'status_on' => null],
+                'partials'         => ['nav' => '@NowoMaintenanceModeBundle/panel/_nav_tabs.html.twig', 'pagination' => null],
             ],
         ]]);
 
         self::assertFalse($config['web_ui']['show_page_header']);
         self::assertFalse($config['web_ui']['document_title']);
         self::assertTrue($config['web_ui']['test_ids']);
-        self::assertSame('panel mb-6', $config['web_ui']['classes']['card']);
-        self::assertSame('px-2 py-3', $config['web_ui']['classes']['table_cell']);
-        self::assertSame('', $config['web_ui']['classes']['status_on']);
-        self::assertSame('nowo-ui-table', $config['web_ui']['classes']['table']);
-        self::assertSame('@NowoMaintenanceModeBundle/panel/_nav_tabs.html.twig', $config['web_ui']['partials']['nav']);
-        self::assertSame('kit/_pagination.html.twig', $config['web_ui']['partials']['pagination']);
-        self::assertSame(PanelChrome::DEFAULT_PARTIALS['form_fields'], $config['web_ui']['partials']['form_fields']);
+        self::assertSame(['card' => 'panel mb-6', 'status_on' => null], $config['web_ui']['classes']);
+        self::assertSame(['nav' => '@NowoMaintenanceModeBundle/panel/_nav_tabs.html.twig', 'pagination' => null], $config['web_ui']['partials']);
+    }
+
+    public function testDeprecatedAliasesMapToCanonicalKeys(): void
+    {
+        $config = (new Processor())->processConfiguration(new Configuration(), [[
+            'panel'     => ['enabled' => false, 'path_prefix' => '/ops/maintenance'],
+            'templates' => [
+                'panel_layout'  => 'admin/layout.html.twig',
+                'panel_index'   => 'admin/maintenance.html.twig',
+                'panel_login'   => '@NowoMaintenanceModeBundle/panel/login.html.twig',
+                'panel_history' => '',
+            ],
+        ]]);
+
+        self::assertFalse($config['web_ui']['enabled']);
+        self::assertSame('/ops/maintenance', $config['web_ui']['path_prefix']);
+        self::assertSame('admin/layout.html.twig', $config['web_ui']['layout_template']);
+        self::assertSame(['index' => 'admin/maintenance.html.twig'], $config['web_ui']['templates'], '1.x defaults and empty values are no override.');
+    }
+
+    public function testCanonicalKeysWinOverDeprecatedAliases(): void
+    {
+        $config = (new Processor())->processConfiguration(new Configuration(), [[
+            'panel'     => ['enabled' => false, 'path_prefix' => '/old'],
+            'templates' => ['panel_layout' => 'old.html.twig', 'panel_index' => 'old_index.html.twig'],
+            'web_ui'    => ['enabled' => true, 'path_prefix' => '/new', 'layout_template' => 'new.html.twig', 'templates' => ['index' => 'new_index.html.twig']],
+        ]]);
+
+        self::assertTrue($config['web_ui']['enabled']);
+        self::assertSame('/new', $config['web_ui']['path_prefix']);
+        self::assertSame('new.html.twig', $config['web_ui']['layout_template']);
+        self::assertSame(['index' => 'new_index.html.twig'], $config['web_ui']['templates']);
+    }
+
+    public function testLegacyDefaultLayoutMapsToNull(): void
+    {
+        foreach ([['web_ui' => ['layout_template' => Configuration::LEGACY_LAYOUT_TEMPLATE]], ['templates' => ['panel_layout' => Configuration::LEGACY_LAYOUT_TEMPLATE]]] as $input) {
+            $config = (new Processor())->processConfiguration(new Configuration(), [$input]);
+            self::assertNull($config['web_ui']['layout_template']);
+        }
+    }
+
+    public function testUnknownPageTemplateIsRejected(): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage('Unknown nowo_maintenance_mode.web_ui.templates page(s): settings');
+
+        (new Processor())->processConfiguration(new Configuration(), [[
+            'web_ui' => ['templates' => ['settings' => 'x.html.twig']],
+        ]]);
     }
 
     public function testAdminChromeRejectsUnknownClassKey(): void
@@ -85,15 +124,6 @@ final class ConfigurationTest extends TestCase
 
         (new Processor())->processConfiguration(new Configuration(), [[
             'web_ui' => ['classes' => ['not_a_hook' => 'x']],
-        ]]);
-    }
-
-    public function testAdminChromeRejectsEmptyNavPartial(): void
-    {
-        $this->expectException(InvalidConfigurationException::class);
-
-        (new Processor())->processConfiguration(new Configuration(), [[
-            'web_ui' => ['partials' => ['nav' => '']],
         ]]);
     }
 
@@ -114,7 +144,7 @@ final class ConfigurationTest extends TestCase
             ],
         ]]);
 
-        self::assertSame('/admin/maintenance', $config['panel']['path_prefix']);
+        self::assertSame('/admin/maintenance', $config['web_ui']['path_prefix']);
         self::assertTrue($config['preview']['enabled']);
         self::assertSame('/_mm_preview', $config['preview']['path']);
         self::assertSame(['/health'], $config['exclusions']['paths']);

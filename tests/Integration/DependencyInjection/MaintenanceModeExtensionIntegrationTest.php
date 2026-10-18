@@ -10,6 +10,7 @@ use Nowo\MaintenanceModeBundle\Controller\MaintenancePreviewController;
 use Nowo\MaintenanceModeBundle\DependencyInjection\MaintenanceModeExtension;
 use Nowo\MaintenanceModeBundle\EventSubscriber\MaintenanceRequestSubscriber;
 use Nowo\MaintenanceModeBundle\Exclusion\MaintenanceExclusionMatcher;
+use Nowo\MaintenanceModeBundle\Panel\PanelView;
 use Nowo\MaintenanceModeBundle\Security\AllowAllMaintenanceModeAccessChecker;
 use Nowo\MaintenanceModeBundle\Security\ConfigurableMaintenanceModeAccessChecker;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceAccessGateInterface;
@@ -401,7 +402,7 @@ final class MaintenanceModeExtensionIntegrationTest extends TestCase
         self::assertSame($layout, $twigDef->getArgument('$layoutTemplate'));
         self::assertSame('bootstrap5', $twigDef->getArgument('$cssFramework'));
         self::assertSame('bootstrap-icons', $twigDef->getArgument('$iconSet'));
-        self::assertSame(PanelChrome::DEFAULTS, $twigDef->getArgument('$chrome'));
+        self::assertSame(['show_page_header' => true, 'document_title' => true, 'test_ids' => false, 'classes' => [], 'partials' => []], $twigDef->getArgument('$chrome'));
     }
 
     public function testLoadPassesAdminChromeHooksToTwigExtension(): void
@@ -426,11 +427,9 @@ final class MaintenanceModeExtensionIntegrationTest extends TestCase
         self::assertFalse($chrome['document_title']);
         self::assertTrue($chrome['test_ids']);
         self::assertSame('data-table', $chrome['classes']['table']);
-        self::assertSame('', $chrome['classes']['empty']);
-        self::assertSame('nowo-ui-nav', $chrome['classes']['nav']);
+        self::assertNull($chrome['classes']['empty']);
         self::assertSame('kit/maintenance_nav.html.twig', $chrome['partials']['nav']);
         self::assertSame('kit/_pagination.html.twig', $chrome['partials']['pagination']);
-        self::assertSame(PanelChrome::DEFAULT_PARTIALS['form_fields'], $chrome['partials']['form_fields']);
 
         /** @var array<string, mixed> $webUi */
         $webUi = $container->getParameter('nowo.maintenance_mode.web_ui');
@@ -607,6 +606,50 @@ final class MaintenanceModeExtensionIntegrationTest extends TestCase
             }
         }
         self::assertTrue($seededIcon);
+    }
+
+    public function testPrependBridgesTheDeprecatedClassMapIntoTheUiKitTheme(): void
+    {
+        $container = new ContainerBuilder();
+        $this->registerUiKitStub($container);
+        $container->prependExtensionConfig('nowo_ui_kit', ['css_framework' => 'tailwind', 'icon_set' => 'none']);
+        $container->prependExtensionConfig('nowo_maintenance_mode', [
+            'web_ui' => ['classes' => ['card' => 'rounded-xl border', 'table' => 'nowo-ui-table']],
+        ]);
+
+        (new MaintenanceModeExtension())->prepend($container);
+
+        self::assertSame(
+            ['theme' => ['bundles' => ['NowoMaintenanceModeBundle' => ['classes' => ['card' => ['value' => 'rounded-xl border', 'framework_defaults' => false]]]]]],
+            $container->getExtensionConfig('nowo_ui_kit')[0],
+        );
+    }
+
+    public function testLoadWiresThePanelViewFromTheCanonicalKeys(): void
+    {
+        $container = new ContainerBuilder();
+        $container->setParameter('kernel.project_dir', sys_get_temp_dir());
+
+        (new MaintenanceModeExtension())->load([[
+            'security' => ['allow_unauthenticated' => true],
+            'panel'    => ['path_prefix' => '/ops/maintenance'],
+            'web_ui'   => ['layout_template' => 'layouts/admin.html.twig', 'templates' => ['history' => 'admin/history.html.twig'], 'history_limit' => 50, 'history_per_page' => 10],
+        ]], $container);
+
+        $view = $container->getDefinition(PanelView::class);
+        self::assertSame('/ops/maintenance', $view->getArgument('$pathPrefix'));
+        self::assertSame('layouts/admin.html.twig', $view->getArgument('$layoutTemplate'));
+        self::assertSame('admin/history.html.twig', $view->getArgument('$templates')['history']);
+        self::assertSame(PanelView::TEMPLATES['index'], $view->getArgument('$templates')['index']);
+        $controller = $container->getDefinition(MaintenancePanelController::class);
+        self::assertSame(50, $controller->getArgument('$historyLimit'));
+        self::assertSame(10, $controller->getArgument('$historyPerPage'));
+        self::assertSame('/ops/maintenance', $container->getParameter('nowo.maintenance_mode.panel.path_prefix'));
+        self::assertSame('/ops/maintenance', $container->getParameter('nowo.maintenance_mode.web_ui.path_prefix'));
+        /** @var array<string, mixed> $templates */
+        $templates = $container->getParameter('nowo.maintenance_mode.templates');
+        self::assertSame('admin/history.html.twig', $templates['panel_history']);
+        self::assertSame('layouts/admin.html.twig', $templates['panel_layout']);
     }
 
     public function testGetAlias(): void

@@ -1,105 +1,66 @@
-{# Public maintenance page. Hooks (1.7.0): extend this template from a host file set in templates.page and
-   override maintenance_* blocks (head, fonts, styles, head_extra, body attributes, brand, heading, message, …). #}
-<!DOCTYPE html>
-<html lang="{{ app.request.locale|default('en')|slice(0, 2) }}"{% block maintenance_html_attributes %}{% endblock %}>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+{#
+  Public maintenance page (503 and the dev preview) — REQ-UI-003 unique page on the guest layout
+  (page.layout ?? nowo_ui_layout.guest), painted by the UiKit theme slots and --nowo-ui-* tokens. No CDN, no inline
+  styles, no JavaScript (the UiKit scripts are not loaded: nowo_ui_scripts only holds maintenance_scripts, and the
+  layout's pre-paint theme boot is skipped with nowo_ui_theme_boot = false), no
+  flashes (the 503 never reads or starts the session). Rendered by MaintenanceRequestSubscriber before the firewall:
+  keep host overrides free of database, session and security calls.
+
+  Variables: message (string|null, the state message), state (MaintenanceState), page (View\AuthPage from
+  MaintenancePages::maintenance(): title, brand, intro = message, bundle, layout) — all optional except state.
+  Hooks (1.7.0): set templates.page to a host template that extends this one and overrides the maintenance_* blocks
+  (head, fonts, styles, head_extra, body, brand, heading, message, reassure, footer, scripts), or that extends
+  @NowoUiKit/page/auth.html.twig with `page`. maintenance_html_attributes / maintenance_body_attributes are no longer
+  rendered (the document layout owns <html> and <body>; use theme.attributes.document / body).
+#}
+{% extends (page ?? null) and page.layout ? page.layout : nowo_ui_layout.guest %}
+{% trans_default_domain 'NowoMaintenanceModeBundle' %}
+{% set nowo_ui_bundle = (page ?? null) ? page.bundle : 'NowoMaintenanceModeBundle' %}
+{% set nowo_ui_page_type = 'auth' %}
+{# No JavaScript at all on the 503: skip the layout's pre-paint theme boot (a script file without a CSP nonce). #}
+{% set nowo_ui_theme_boot = false %}
+
+{% block nowo_ui_document_title %}{% block title %}{{ 'maintenance.page.title'|trans }}{% endblock %}{% endblock %}
+
+{% block nowo_ui_head %}
+    {{ parent() }}
     <meta name="robots" content="noindex">
-    <title>{% block title %}{{ 'maintenance.page.title'|trans({}, 'NowoMaintenanceModeBundle') }}{% endblock %}</title>
     {%~ block maintenance_head %}
-    {%~ block maintenance_fonts %}
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
-    {%~ endblock %}
-    {%~ block maintenance_styles %}
-    <style>
-        :root {
-            --ink: #1c2430;
-            --muted: #4a5564;
-            --card: rgba(255, 255, 255, 0.78);
-            --accent: #2f6f6a;
-        }
-        * { box-sizing: border-box; }
-        body {
-            margin: 0;
-            min-height: 100vh;
-            display: grid;
-            place-items: center;
-            padding: 1.5rem;
-            font-family: "Source Sans 3", system-ui, sans-serif;
-            color: var(--ink);
-            background:
-                radial-gradient(ellipse 80% 60% at 20% 10%, #d7efe9 0%, transparent 55%),
-                radial-gradient(ellipse 70% 50% at 90% 85%, #e8f0d8 0%, transparent 50%),
-                linear-gradient(165deg, #f7faf8, #eef3f1 45%, #e7eee9);
-        }
-        main {
-            width: min(100%, 34rem);
-            padding: 2.25rem 2rem;
-            border-radius: 1.35rem;
-            background: var(--card);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 18px 50px rgba(28, 36, 48, 0.08);
-            text-align: center;
-        }
-        .badge {
-            display: inline-block;
-            margin-bottom: 1rem;
-            padding: 0.35rem 0.85rem;
-            border-radius: 999px;
-            background: rgba(47, 111, 106, 0.12);
-            color: var(--accent);
-            font-size: 0.85rem;
-            font-weight: 600;
-            letter-spacing: 0.02em;
-        }
-        h1 {
-            font-family: Fraunces, Georgia, serif;
-            font-size: clamp(1.85rem, 4vw, 2.55rem);
-            font-weight: 700;
-            line-height: 1.15;
-            margin: 0 0 0.85rem;
-        }
-        .message {
-            margin: 0 0 1rem;
-            color: var(--muted);
-            font-size: 1.08rem;
-            line-height: 1.65;
-        }
-        .reassure, .thanks {
-            margin: 0;
-            color: #5b6572;
-            font-size: 0.98rem;
-            line-height: 1.55;
-        }
-        .thanks { margin-top: 0.75rem; color: var(--accent); font-weight: 600; }
-    </style>
-    {%~ endblock %}
+    {%~ block maintenance_fonts %}{% endblock %}
+    {%~ block maintenance_styles %}{% endblock %}
     {%~ endblock %}
     {%~ block maintenance_head_extra %}{% endblock %}
-</head>
-<body{% block maintenance_body_attributes %}{% endblock %}>
-{%~ block maintenance_body %}
-<main>
-    {%~ block maintenance_brand %}
-    <p class="badge">{{ 'maintenance.page.badge'|trans({}, 'NowoMaintenanceModeBundle') }}</p>
+{% endblock %}
+
+{% block nowo_ui_flashes %}{% endblock %}
+
+{% block nowo_ui_content %}
+    {% set _b = nowo_ui_bundle %}
+    {%~ block maintenance_body %}
+    <section class="{{ nowo_ui_class('auth_panel', _b) }} nowo-maintenance-page" data-nowo-ui-page="maintenance" data-nowo-ui-region="panel" data-testid="maintenance-page"{{ nowo_ui_attrs('auth_panel', _b) }}>
+        <div class="{{ nowo_ui_class('card_body', _b) }}">
+            {%~ block maintenance_brand %}
+            <p class="nowo-ui-auth-panel__brand"><span class="{{ nowo_ui_class('badge_info', _b) }}">{{ 'maintenance.page.badge'|trans }}</span></p>
+            {%~ endblock %}
+            {%~ block maintenance_heading %}
+            <h1 class="{{ nowo_ui_class('page_title', _b) }}">{{ 'maintenance.page.heading'|trans }}</h1>
+            {%~ endblock %}
+            {%~ block maintenance_message %}
+            <p class="{{ nowo_ui_class('page_intro', _b) }}">{{ message|default('maintenance.page.message'|trans) }}</p>
+            {%~ endblock %}
+            {%~ block maintenance_reassure %}
+            <p class="{{ nowo_ui_class('muted', _b) }}">{{ 'maintenance.page.reassure'|trans }}</p>
+            {%~ endblock %}
+        </div>
+        <footer class="{{ nowo_ui_class('auth_footer', _b) }}">
+            {%~ block maintenance_footer %}
+            <p>{{ 'maintenance.page.thanks'|trans }}</p>
+            {%~ endblock %}
+        </footer>
+    </section>
     {%~ endblock %}
-    {%~ block maintenance_heading %}
-    <h1>{{ 'maintenance.page.heading'|trans({}, 'NowoMaintenanceModeBundle') }}</h1>
-    {%~ endblock %}
-    {%~ block maintenance_message %}
-    <p class="message">{{ message|default('maintenance.page.message'|trans({}, 'NowoMaintenanceModeBundle')) }}</p>
-    {%~ endblock %}
-    {%~ block maintenance_reassure %}
-    <p class="reassure">{{ 'maintenance.page.reassure'|trans({}, 'NowoMaintenanceModeBundle') }}</p>
-    {%~ endblock %}
-    {%~ block maintenance_footer %}
-    <p class="thanks">{{ 'maintenance.page.thanks'|trans({}, 'NowoMaintenanceModeBundle') }}</p>
-    {%~ endblock %}
-</main>
-{%~ endblock %}
-{%~ block maintenance_scripts %}{% endblock %}
-</body>
-</html>
+{% endblock %}
+
+{% block nowo_ui_scripts %}
+    {%~ block maintenance_scripts %}{% endblock %}
+{% endblock %}

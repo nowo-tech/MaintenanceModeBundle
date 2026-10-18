@@ -97,8 +97,10 @@ panel.history: Cronologia
 panel.history.action: Azione
 panel.history.actor: Autore
 panel.history.empty: Nessuna cronologia.
+panel.history.intro: 'Modifiche recenti di attivazione, disattivazione e pianificazione, dalla più recente.'
 panel.history.message: Messaggio
 panel.history.when: Quando
+panel.intro: 'Attiva o disattiva la pagina pubblica di manutenzione, oppure pianifica una finestra. Il pannello e le rotte escluse restano raggiungibili.'
 panel.login.error: Password non valida.
 panel.login.heading: Pannello manutenzione
 panel.login.intro: Inserisci la password di manutenzione per gestire il sito.
@@ -106,12 +108,15 @@ panel.login.locked: 'Troppi tentativi falliti. Riprova più tardi.'
 panel.login.password: Password
 panel.login.submit: Accedi
 panel.logout: Esci
+panel.manual: 'Controllo manuale'
+panel.manual.intro: 'Attivala ora con un messaggio pubblico facoltativo, oppure disattiva la manutenzione.'
 panel.message: Messaggio
 panel.nav.aria_label: Pannello
 panel.nav.history: Cronologia
 panel.nav.panel: Pannello
 panel.save_schedule: Salva pianificazione
 panel.schedule: Pianificazione
+panel.schedule.intro: 'La manutenzione si attiva e si disattiva automaticamente in questi orari (fuso orario del server).'
 panel.scheduled_disable: Disattivazione programmata
 panel.scheduled_enable: Attivazione programmata
 panel.status: Stato

@@ -97,8 +97,10 @@ panel.history: Historique
 panel.history.action: Action
 panel.history.actor: Auteur
 panel.history.empty: 'Pas encore d''historique.'
+panel.history.intro: 'Changements récents d’activation, de désactivation et de planification, du plus récent au plus ancien.'
 panel.history.message: Message
 panel.history.when: Quand
+panel.intro: 'Activez ou désactivez la page publique de maintenance, ou planifiez une fenêtre. Le panneau et les routes exclues restent accessibles.'
 panel.login.error: Mot de passe invalide.
 panel.login.heading: Panneau de maintenance
 panel.login.intro: Saisissez le mot de passe de maintenance pour gérer le site.
@@ -106,12 +108,15 @@ panel.login.locked: 'Trop de tentatives échouées. Veuillez réessayer plus tar
 panel.login.password: Mot de passe
 panel.login.submit: Connexion
 panel.logout: Déconnexion
+panel.manual: 'Contrôle manuel'
+panel.manual.intro: 'Activez-la maintenant avec un message public facultatif, ou désactivez la maintenance.'
 panel.message: Message
 panel.nav.aria_label: Panneau
 panel.nav.history: Historique
 panel.nav.panel: Panneau
 panel.save_schedule: Enregistrer la planification
 panel.schedule: Planification
+panel.schedule.intro: 'La maintenance s’active et se désactive automatiquement à ces dates (fuseau horaire du serveur).'
 panel.scheduled_disable: Désactivation planifiée
 panel.scheduled_enable: Activation planifiée
 panel.status: Statut

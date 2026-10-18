@@ -8,12 +8,17 @@ use DateTimeImmutable;
 use Nowo\MaintenanceModeBundle\Controller\MaintenancePanelController;
 use Nowo\MaintenanceModeBundle\Model\MaintenanceHistoryEntry;
 use Nowo\MaintenanceModeBundle\Model\MaintenanceState;
+use Nowo\MaintenanceModeBundle\Panel\PanelView;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceAccessGateInterface;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceModeAccessCheckerInterface;
 use Nowo\MaintenanceModeBundle\Security\PasswordMaintenanceAccessGate;
 use Nowo\MaintenanceModeBundle\Service\MaintenanceManager;
 use Nowo\MaintenanceModeBundle\Tests\Unit\Service\InMemoryHistoryStorage;
 use Nowo\MaintenanceModeBundle\Tests\Unit\Service\InMemoryStateStorage;
+use Nowo\UiKitBundle\View\AuthPage;
+use Nowo\UiKitBundle\View\ListPage;
+use Nowo\UiKitBundle\View\Pagination;
+use Nowo\UiKitBundle\View\SettingsPage;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\Extension\Csrf\CsrfExtension;
@@ -36,8 +41,6 @@ use const PASSWORD_BCRYPT;
 final class MaintenancePanelControllerTest extends TestCase
 {
     private const TEMPLATES = [
-        'page'          => '@NowoMaintenanceModeBundle/maintenance/page.html.twig',
-        'panel_layout'  => '@NowoMaintenanceModeBundle/panel/layout.html.twig',
         'panel_index'   => '@NowoMaintenanceModeBundle/panel/index.html.twig',
         'panel_login'   => '@NowoMaintenanceModeBundle/panel/login.html.twig',
         'panel_history' => '@NowoMaintenanceModeBundle/panel/history.html.twig',
@@ -80,7 +83,8 @@ final class MaintenancePanelControllerTest extends TestCase
         $this->twig->expects(self::once())
             ->method('render')
             ->with(self::TEMPLATES['panel_index'], self::callback(static function (array $context): bool {
-                return isset($context['state'], $context['path_prefix'], $context['layout'], $context['enable_form'], $context['schedule_form'])
+                return isset($context['state'], $context['path_prefix'], $context['enable_form'], $context['schedule_form'])
+                    && $context['page'] instanceof SettingsPage && $context['page']->layout === null
                     && $context['path_prefix'] === '/_maintenance';
             }))
             ->willReturn('<html>index</html>');
@@ -332,7 +336,8 @@ final class MaintenancePanelControllerTest extends TestCase
         $this->twig->expects(self::once())
             ->method('render')
             ->with(self::TEMPLATES['panel_history'], self::callback(static function (array $context): bool {
-                return count($context['entries']) === 1 && $context['path_prefix'] === '/_maintenance';
+                return count($context['entries']) === 1 && $context['path_prefix'] === '/_maintenance'
+                    && $context['page'] instanceof ListPage && count($context['page']->rows) === 1 && !$context['page']->pagination instanceof Pagination;
             }))
             ->willReturn('<html>history</html>');
 
@@ -368,7 +373,7 @@ final class MaintenancePanelControllerTest extends TestCase
 
         $this->twig->expects(self::once())
             ->method('render')
-            ->with(self::TEMPLATES['panel_login'], self::callback(static fn (array $c): bool => $c['error'] === null && isset($c['login_form'])))
+            ->with(self::TEMPLATES['panel_login'], self::callback(static fn (array $c): bool => $c['error'] === null && isset($c['login_form']) && $c['page'] instanceof AuthPage && $c['page']->error === null))
             ->willReturn('<html>login</html>');
 
         $response = $this->createController()->login(Request::create('/_maintenance/login', 'GET'));
@@ -432,9 +437,7 @@ final class MaintenancePanelControllerTest extends TestCase
             $this->manager,
             $gate,
             $this->formFactory,
-            $this->twig,
-            self::TEMPLATES,
-            '/_maintenance',
+            new PanelView($this->twig),
             $this->csrfTokenManager,
         );
         $session = new Session(new MockArraySessionStorage());
@@ -499,9 +502,7 @@ final class MaintenancePanelControllerTest extends TestCase
             $this->manager,
             $this->accessGate,
             $this->formFactory,
-            $this->twig,
-            self::TEMPLATES,
-            '/_maintenance',
+            new PanelView($this->twig),
         );
 
         $response = $controller->enable(
@@ -542,9 +543,7 @@ final class MaintenancePanelControllerTest extends TestCase
             $this->manager,
             $this->accessGate,
             $this->formFactory,
-            $this->twig,
-            self::TEMPLATES,
-            '/_maintenance',
+            new PanelView($this->twig),
             $this->csrfTokenManager,
             $checker,
             false,
@@ -561,9 +560,7 @@ final class MaintenancePanelControllerTest extends TestCase
             $this->manager,
             $this->accessGate,
             $this->formFactory,
-            $this->twig,
-            self::TEMPLATES,
-            '/_maintenance',
+            new PanelView($this->twig),
             $this->csrfTokenManager,
             null,
             false,
@@ -583,9 +580,7 @@ final class MaintenancePanelControllerTest extends TestCase
             $this->manager,
             $this->accessGate,
             $this->formFactory,
-            $this->twig,
-            self::TEMPLATES,
-            '/_maintenance',
+            new PanelView($this->twig),
             $this->csrfTokenManager,
             $checker,
             false,
@@ -607,9 +602,7 @@ final class MaintenancePanelControllerTest extends TestCase
             $this->manager,
             $this->accessGate,
             $this->formFactory,
-            $this->twig,
-            self::TEMPLATES,
-            '/_maintenance',
+            new PanelView($this->twig),
             $this->csrfTokenManager,
             $checker,
             false,
@@ -631,9 +624,7 @@ final class MaintenancePanelControllerTest extends TestCase
             $manager,
             $this->accessGate,
             $this->formFactory,
-            $this->twig,
-            self::TEMPLATES,
-            '/_maintenance',
+            new PanelView($this->twig),
             $this->csrfTokenManager,
         );
     }

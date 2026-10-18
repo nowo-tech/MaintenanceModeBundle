@@ -25,7 +25,7 @@ final class MaintenanceExtension extends AbstractExtension implements GlobalsInt
      */
     public function __construct(
         private readonly MaintenanceManager $manager,
-        private readonly string $layoutTemplate = '@NowoMaintenanceModeBundle/panel/layout.html.twig',
+        private readonly ?string $layoutTemplate = null,
         private readonly string $cssFramework = 'custom',
         private readonly string $iconSet = 'none',
         array $chrome = PanelChrome::DEFAULTS,
@@ -55,6 +55,10 @@ final class MaintenanceExtension extends AbstractExtension implements GlobalsInt
         ];
     }
 
+    /**
+     * Deprecated since 1.10 (REQ-UI-003: bundles must not expose layout globals; the panel pages read the UiKit
+     * scaffolds and theme). Kept for host templates written for 1.x; removed in 2.0.
+     */
     public function getGlobals(): array
     {
         return [

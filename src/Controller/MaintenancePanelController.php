@@ -12,10 +12,12 @@ use Nowo\MaintenanceModeBundle\Form\LoginMaintenanceType;
 use Nowo\MaintenanceModeBundle\Form\LogoutMaintenanceType;
 use Nowo\MaintenanceModeBundle\Form\ScheduleMaintenanceType;
 use Nowo\MaintenanceModeBundle\Model\MaintenanceState;
+use Nowo\MaintenanceModeBundle\Panel\PanelView;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceAccessGateInterface;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceModeAccessCheckerInterface;
 use Nowo\MaintenanceModeBundle\Security\PasswordMaintenanceAccessGate;
 use Nowo\MaintenanceModeBundle\Service\MaintenanceManager;
+use Nowo\MaintenanceModeBundle\View\MaintenancePages;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -24,15 +26,19 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\FlashBagAwareSessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
-use Twig\Environment;
 
+use function array_merge;
 use function is_string;
+use function max;
 
 /**
- * Twig panel to enable / disable maintenance and view history (Symfony Forms + CSRF).
+ * Twig panel to enable / disable maintenance and view history (Symfony Forms + CSRF). Pages render on the UiKit page
+ * contract (REQ-UI-003): settings scaffold (panel), list scaffold (history), auth scaffold (password login).
  */
 final class MaintenancePanelController
 {
+    private readonly string $pathPrefix;
+
     public const CSRF_ENABLE         = 'nowo_maintenance_enable';
     public const CSRF_DISABLE        = 'nowo_maintenance_disable';
     public const CSRF_SCHEDULE       = 'nowo_maintenance_schedule';
@@ -40,20 +46,18 @@ final class MaintenancePanelController
     public const CSRF_LOGIN          = 'nowo_maintenance_login';
     public const CSRF_LOGOUT         = 'nowo_maintenance_logout';
 
-    /**
-     * @param array{page: string, panel_layout: string, panel_index: string, panel_login: string, panel_history: string} $templates
-     */
     public function __construct(
         private readonly MaintenanceManager $manager,
         private readonly MaintenanceAccessGateInterface $accessGate,
         private readonly FormFactoryInterface $formFactory,
-        private readonly Environment $twig,
-        private readonly array $templates,
-        private readonly string $pathPrefix = '/_maintenance',
+        private readonly PanelView $view,
         private readonly ?CsrfTokenManagerInterface $csrfTokenManager = null,
         private readonly ?MaintenanceModeAccessCheckerInterface $accessChecker = null,
         private readonly bool $allowUnauthenticated = true,
+        private readonly int $historyLimit = 100,
+        private readonly int $historyPerPage = 25,
     ) {
+        $this->pathPrefix = $view->pathPrefix;
     }
 
     #[Route(path: '', name: 'nowo_maintenance_mode_panel_index', methods: ['GET'])]
@@ -63,28 +67,42 @@ final class MaintenancePanelController
             return $response;
         }
 
+        // 1.x context variable: peek only, the layout's flashes partial consumes them.
         $flashes = [];
         if ($request->hasSession()) {
             $session = $request->getSession();
             if ($session instanceof FlashBagAwareSessionInterface) {
-                $flashes = $session->getFlashBag()->all();
+                $flashes = $session->getFlashBag()->peekAll();
             }
         }
 
-        $state = $this->manager->getState();
-
-        return new Response($this->twig->render($this->templates['panel_index'], [
-            'state'               => $state,
-            'path_prefix'         => $this->pathPrefix,
-            'layout'              => $this->templates['panel_layout'],
-            'flashes'             => $flashes,
-            'password_required'   => $this->accessGate->isPasswordRequired(),
+        $state            = $this->manager->getState();
+        $passwordRequired = $this->accessGate->isPasswordRequired();
+        $forms            = [
             'enable_form'         => $this->createEnableForm($state)->createView(),
             'disable_form'        => $this->createDisableForm()->createView(),
             'schedule_form'       => $this->createScheduleForm($state)->createView(),
             'clear_schedule_form' => $this->createClearScheduleForm()->createView(),
             'logout_form'         => $this->createLogoutForm()->createView(),
-        ]));
+        ];
+
+        return $this->view->render('index', MaintenancePages::panel(
+            $state,
+            $forms['enable_form'],
+            $forms['disable_form'],
+            $forms['schedule_form'],
+            $forms['clear_schedule_form'],
+            $passwordRequired ? $forms['logout_form'] : null,
+            $this->view->nav('panel'),
+            $this->view->href('/disable'),
+            $this->view->href('/clear-schedule'),
+            $this->view->href('/logout'),
+            $this->view->layout(),
+        ) + $forms + [
+            'state'             => $state,
+            'flashes'           => $flashes,
+            'password_required' => $passwordRequired,
+        ]);
     }
 
     #[Route(path: '/enable', name: 'nowo_maintenance_mode_panel_enable', methods: ['POST'])]
@@ -187,11 +205,13 @@ final class MaintenancePanelController
             return $response;
         }
 
-        return new Response($this->twig->render($this->templates['panel_history'], [
-            'entries'     => $this->manager->history(100),
-            'path_prefix' => $this->pathPrefix,
-            'layout'      => $this->templates['panel_layout'],
-        ]));
+        $entries = $this->manager->history($this->historyLimit);
+        $page    = max(1, $request->query->getInt('page', 1));
+
+        return $this->view->render('history', [
+            'page'    => MaintenancePages::history($entries, $page, $this->historyPerPage, $this->view->nav('history'), $this->view->layout()),
+            'entries' => $entries,
+        ]);
     }
 
     #[Route(path: '/login', name: 'nowo_maintenance_mode_panel_login', methods: ['GET', 'POST'])]
@@ -225,13 +245,15 @@ final class MaintenancePanelController
             }
         }
 
-        return new Response($this->twig->render($this->templates['panel_login'], [
-            'error'       => $error,
-            'locked'      => $status === Response::HTTP_TOO_MANY_REQUESTS,
-            'path_prefix' => $this->pathPrefix,
-            'layout'      => $this->templates['panel_layout'],
-            'login_form'  => $form->createView(),
-        ]), $status ?? ($error !== null ? Response::HTTP_UNAUTHORIZED : Response::HTTP_OK));
+        $locked    = $status === Response::HTTP_TOO_MANY_REQUESTS;
+        $loginForm = $form->createView();
+
+        return $this->view->render('login', [
+            'page'       => MaintenancePages::login($loginForm, $error, $locked),
+            'error'      => $error,
+            'locked'     => $locked,
+            'login_form' => $loginForm,
+        ], $status ?? ($error !== null ? Response::HTTP_UNAUTHORIZED : Response::HTTP_OK));
     }
 
     #[Route(path: '/logout', name: 'nowo_maintenance_mode_panel_logout', methods: ['POST'])]

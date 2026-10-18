@@ -97,8 +97,10 @@ panel.history: Historial
 panel.history.action: Acción
 panel.history.actor: Actor
 panel.history.empty: Aún no hay historial.
+panel.history.intro: 'Cambios recientes de activación, desactivación y programación, del más nuevo al más antiguo.'
 panel.history.message: Mensaje
 panel.history.when: Cuándo
+panel.intro: 'Activa o desactiva la página pública de mantenimiento, o programa una ventana. El panel y las rutas excluidas siguen accesibles.'
 panel.login.error: Contraseña incorrecta.
 panel.login.heading: Panel de mantenimiento
 panel.login.intro: Introduce la contraseña de mantenimiento para gestionar el sitio.
@@ -106,12 +108,15 @@ panel.login.locked: 'Demasiados intentos fallidos. Inténtalo de nuevo más tard
 panel.login.password: Contraseña
 panel.login.submit: Entrar
 panel.logout: Cerrar sesión
+panel.manual: 'Control manual'
+panel.manual.intro: 'Actívalo ahora con un mensaje público opcional, o desactiva el mantenimiento.'
 panel.message: Mensaje
 panel.nav.aria_label: Panel
 panel.nav.history: Historial
 panel.nav.panel: Panel
 panel.save_schedule: Guardar programación
 panel.schedule: Programación
+panel.schedule.intro: 'El mantenimiento se activa y desactiva automáticamente en estas fechas (zona horaria del servidor).'
 panel.scheduled_disable: Desactivación programada
 panel.scheduled_enable: Activación programada
 panel.status: Estado

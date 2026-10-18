@@ -6,6 +6,7 @@ namespace Nowo\MaintenanceModeBundle\Controller;
 
 use DateTimeImmutable;
 use Nowo\MaintenanceModeBundle\Service\MaintenanceManager;
+use Nowo\MaintenanceModeBundle\View\MaintenancePages;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -68,6 +69,7 @@ final class MaintenancePreviewController
             $response     = new Response($this->twig->render($this->template, [
                 'message' => $message,
                 'state'   => $previewState,
+                'page'    => MaintenancePages::maintenance($message),
             ]), $this->statusCode);
         }
 

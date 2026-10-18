@@ -26,7 +26,7 @@ final class MaintenanceExtensionTest extends TestCase
         self::assertTrue($extension->isEffectivelyEnabled());
         self::assertSame('Down', $extension->getState()->getMessage());
         $globals = $extension->getGlobals();
-        self::assertSame('@NowoMaintenanceModeBundle/panel/layout.html.twig', $globals['nowo_maintenance_mode_layout_template']);
+        self::assertNull($globals['nowo_maintenance_mode_layout_template']);
         self::assertSame('custom', $globals['nowo_maintenance_mode_css_framework']);
         self::assertSame('none', $globals['nowo_maintenance_mode_icon_set']);
         self::assertSame(PanelChrome::DEFAULTS, $globals['nowo_maintenance_mode_chrome']);
