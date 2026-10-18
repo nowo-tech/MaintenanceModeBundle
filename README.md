@@ -10,6 +10,25 @@
 
 This bundle is **FrankenPHP worker mode friendly** — including when the kernel is **not** reset between requests (`reset_kernel false`). See [docs/FRANKENPHP-WORKER-AUDIT.md](docs/FRANKENPHP-WORKER-AUDIT.md).
 
+<table>
+  <tr>
+    <td align="center" width="34%">
+      <img src="docs/images/demo/panel.webp" alt="Maintenance panel on the UiKit settings scaffold: demo masthead, Panel / History tabs, Logout header action, Schedule saved flash, Status card with ENABLED / ON badges and state details, Manual control card (message, Enable / Disable maintenance), Schedule card (scheduled disable set, Save / Clear schedule), Symfony web debug toolbar" />
+      <br><sub>Panel (<code>page/settings</code>)</sub>
+    </td>
+    <td align="center" width="33%">
+      <img src="docs/images/demo/maintenance-page.webp" alt="Public 503 maintenance page on the demo guest layout: Be right back badge, heading, the operator message and reassurance in a UiKit auth panel painted by the theme tokens, no CDN and no JavaScript; web debug toolbar shows 503" />
+      <br><sub>Public 503 (UiKit guest layout, no JS)</sub>
+    </td>
+    <td align="center" width="33%">
+      <img src="docs/images/demo/history.webp" alt="Maintenance history on the UiKit list scaffold: when / action badge / actor / message columns, 25 of 30 entries and UiKit pagination" />
+      <br><sub>History (<code>page/list</code>)</sub>
+    </td>
+  </tr>
+</table>
+
+Demo: `demo/symfony8` (FrankenPHP) — host layouts `templates/layouts/{admin,guest}.html.twig`, UiKit theme tokens, password `maintenance`. More: [login](docs/images/demo/login.webp) and [mobile 503](docs/images/demo/maintenance-page-mobile.webp) in [TEMPLATES.md](docs/TEMPLATES.md#screenshots).
+
 ## Features
 
 - **503 listener** — Configurable-priority `kernel.request` interceptor (default after router), HTML or JSON, dynamic `Retry-After`, `Cache-Control: no-store`.

@@ -1,24 +1,28 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app.request.locale|default('en') }}"{% block html_attributes %}{% endblock %}>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Maintenance Mode Demo{% endblock %}</title>
-    <style>
-        body { font-family: system-ui, sans-serif; margin: 0; background: #f4f6f8; color: #1a1a1a; }
-        main { max-width: 52rem; margin: 0 auto; padding: 2.5rem 1.25rem; }
-        a { color: #0b5fff; }
-        .card { background: #fff; border: 1px solid #ddd; border-radius: .75rem; padding: 1.25rem; margin-top: 1rem; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
-        th, td { text-align: left; padding: 0.55rem 0.4rem; border-bottom: 1px solid #e6e6e6; vertical-align: top; }
-        th { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; color: #666; }
-        code { font-size: 0.88em; }
-        ul { padding-left: 1.2rem; }
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/demo.css') }}">
+    {% block stylesheets %}{% endblock %}
 </head>
 <body>
-<main>
+<header class="demo-masthead">
+    <a class="demo-brand" href="/">Maintenance Mode <span>Demo</span></a>
+    {% block masthead_nav %}
+        <nav aria-label="Demo">
+            <a href="/">Home</a>
+            <a href="/_maintenance/">Admin panel</a>
+            <a href="/_maintenance/history">History</a>
+            <a href="/_maintenance_preview">503 preview</a>
+            <a href="/examples">Sample pages</a>
+        </nav>
+    {% endblock %}
+</header>
+<main class="{% block main_class %}{% endblock %}">
     {% block body %}{% endblock %}
 </main>
+{% block javascripts %}{% endblock %}
 </body>
 </html>

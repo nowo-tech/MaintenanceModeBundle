@@ -1,10 +1,14 @@
 nowo_maintenance_mode:
     enabled: true
     default_message: "We're making a few gentle improvements. Everything you care about is safe."
-    panel:
+    # Admin panel on the UiKit page contract (REQ-UI-003): layouts and theme come from nowo_ui_kit.
+    web_ui:
         enabled: true
         # Auto-excluded from 503 — operators open this URL directly (do not link it from the public 503 page).
         path_prefix: '/_maintenance'
+        # layout_template: null → nowo_ui_kit.layouts.admin (templates/layouts/admin.html.twig)
+    # templates.page: default = UiKit guest layout + theme tokens (templates/layouts/guest.html.twig here).
+    # Opt-in CDN samples: '@NowoMaintenanceModeBundle/maintenance/examples/*.html.twig' (see /examples).
     security:
         # Demo: password gate only (no SecurityBundle). Never copy allow_unauthenticated to production.
         allow_unauthenticated: true
@@ -25,6 +29,9 @@ nowo_maintenance_mode:
         path_prefixes:
             - /examples
             - /api/ops
+            # Dev: keep the Symfony web debug toolbar / profiler working while maintenance is on
+            - /_wdt
+            - /_profiler
         # Symfony route names (see ExclusionExamplesController)
         routes:
             - app_status

@@ -16,6 +16,7 @@ the guest layout) and fill data blocks only. Contract test: `tests/Integration/C
 - [Sample public pages (opt-in, not defaults)](#sample-public-pages-opt-in-not-defaults)
 - [Bundle partials](#bundle-partials)
 - [Allowed exceptions](#allowed-exceptions)
+- [Screenshots](#screenshots)
 
 ## Pages
 
@@ -97,3 +98,16 @@ covered by the contract test. Copy one into your app and serve its assets yourse
 ## Allowed exceptions
 
 - (none) — the contract test declares no `allowedClasses()`.
+
+## Screenshots
+
+Demo `demo/symfony8` with its host layouts (`templates/layouts/admin.html.twig`, `guest.html.twig`) and UiKit theme
+tokens (REQ-DEMO-013, WebP):
+
+| Page | Screenshot |
+| --- | --- |
+| Panel (`page/settings`) | ![Maintenance panel](images/demo/panel.webp) |
+| History (`page/list`, page 1 of 2) | ![Maintenance history](images/demo/history.webp) |
+| Password login (`page/auth`, wrong password) | ![Panel login](images/demo/login.webp) |
+| Public 503 (unique page, guest layout) | ![Public maintenance page](images/demo/maintenance-page.webp) |
+| Public 503 on a phone (390 px) | ![Public maintenance page on mobile](images/demo/maintenance-page-mobile.webp) |

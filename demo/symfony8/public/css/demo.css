@@ -1,0 +1,21 @@
+/* Demo host stylesheet (served by the demo app, never by the bundle). */
+body { font-family: system-ui, sans-serif; margin: 0; background: #f4f6f8; color: #1a1a1a; }
+main { max-width: 52rem; margin: 0 auto; padding: 2.5rem 1.25rem; }
+main.demo-admin { max-width: 64rem; padding-top: 1.5rem; }
+main.demo-guest { max-width: none; padding: 0; }
+a:not([class]) { color: #0b5fff; }
+.demo-masthead { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1.5rem; padding: 0.75rem 1.25rem; background: #14213d; color: #fff; }
+.demo-masthead a { color: #dbe4ff; text-decoration: none; }
+.demo-masthead a:hover { color: #fff; text-decoration: underline; }
+.demo-brand { font-weight: 700; font-size: 1.05rem; color: #fff !important; }
+.demo-brand span { font-weight: 400; opacity: 0.7; }
+.demo-masthead nav { display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.9rem; }
+.card { background: #fff; border: 1px solid #ddd; border-radius: .75rem; padding: 1.25rem; margin-top: 1rem; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+th, td { text-align: left; padding: 0.55rem 0.4rem; border-bottom: 1px solid #e6e6e6; vertical-align: top; }
+code { font-size: 0.88em; }
+ul { padding-left: 1.2rem; }
+/* Host form styling for the bundle forms (plain Symfony form_div_layout). */
+.nowo-ui-form > div:not(.nowo-ui-form__actions) { margin-bottom: 0.85rem; }
+.nowo-ui-form label { display: block; margin-bottom: 0.3rem; font-weight: 500; }
+.nowo-ui-form input:not([type=hidden]), .nowo-ui-form textarea { width: 100%; max-width: 36rem; box-sizing: border-box; padding: 0.45rem 0.6rem; border: 1px solid #ccc; border-radius: 0.4rem; font: inherit; }

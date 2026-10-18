@@ -78,6 +78,16 @@ final class PageContractTest extends PageContractTestCase
         }
     }
 
+    public function testPanelFlashesComeFromTheSessionNotFromThePeekedOneXVariable(): void
+    {
+        $context            = PageFixtures::index(PageFixtures::enabledState());
+        $context['flashes'] = ['success' => ['panel.flash.enabled']];
+
+        $html = $this->renderPage(new PageFixture('@NowoMaintenanceModeBundle/panel/index.html.twig', $context))->html;
+
+        self::assertStringNotContainsString('Maintenance enabled.', $html, 'The flashes partial must read (and consume) app.flashes.');
+    }
+
     public function testPanelWithoutPasswordGateHasNoLogout(): void
     {
         $context = PageFixtures::index(PageFixtures::disabledState(), false);

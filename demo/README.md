@@ -6,7 +6,7 @@
 make up-symfony8
 ```
 
-Open http://localhost:8055 — panel at `/_maintenance` (password: `maintenance` when `password_protection: true`).
+Open http://localhost:8055 — panel at `/_maintenance/` (password: `maintenance` when `password_protection: true`).
 
 - Calm page examples: http://localhost:8055/examples
 - Exclusion / bypass guide: http://localhost:8055/examples/bypass

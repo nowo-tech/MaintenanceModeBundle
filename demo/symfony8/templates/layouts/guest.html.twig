@@ -1,0 +1,42 @@
+{#
+  Demo guest layout (nowo_ui_kit.layouts.guest): the password login and the public 503 page. Static and cheap on
+  purpose — the 503 renders before the firewall while the site is down: no database, session or security calls.
+  The UiKit scripts sit inside nowo_ui_scripts, so the 503 page (which empties that block) ships no JavaScript.
+#}
+{% extends 'base.html.twig' %}
+
+{% block html_attributes %}{% if nowo_ui_theme.hasTokens() %} data-nowo-ui-host-tokens{% endif %}{% endblock %}
+
+{% block title %}{% block nowo_ui_document_title %}{% endblock %} · Maintenance Mode Demo{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/nowo-ui.css', 'nowo_ui_kit') }}">
+    {{ nowo_ui_tokens() }}
+    {% block nowo_ui_head %}{% endblock %}
+    {% block nowo_ui_styles %}{% endblock %}
+{% endblock %}
+
+{% block masthead_nav %}{% endblock %}
+
+{% block main_class %}demo-guest{% endblock %}
+
+{% block body %}
+    <div class="{{ nowo_ui_class('page', nowo_ui_bundle|default(null)) }} nowo-ui-page--guest">
+        <div class="{{ nowo_ui_class('content', nowo_ui_bundle|default(null)) }}" id="nowo-ui-content"{% if nowo_ui_bundle|default(null) %} data-nowo-ui-bundle="{{ nowo_ui_bundle }}"{% endif %}>
+            {% block nowo_ui_page_header %}{% endblock %}
+            {% block nowo_ui_flashes %}
+                {{ include(nowo_ui_partial('flashes', nowo_ui_bundle|default(null)), {bundle: nowo_ui_bundle|default(null)}) }}
+            {% endblock %}
+            {% block nowo_ui_content %}{% endblock %}
+        </div>
+        {% block nowo_ui_modals %}{% endblock %}
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {% block nowo_ui_scripts %}
+        {% for _script in ['nowo-ui-modal', 'nowo-ui-confirm', 'nowo-ui-dialog', 'nowo-ui-toast'] %}
+            <script src="{{ asset('js/' ~ _script ~ '.js', 'nowo_ui_kit') }}" defer></script>
+        {% endfor %}
+    {% endblock %}
+{% endblock %}

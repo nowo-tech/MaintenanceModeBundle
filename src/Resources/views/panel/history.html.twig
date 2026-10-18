@@ -8,7 +8,7 @@
 {% trans_default_domain 'NowoMaintenanceModeBundle' %}
 
 {% block nowo_ui_flashes %}
-    {{ include(nowo_ui_partial('flashes', page.bundle), {bundle: page.bundle, trans_domain: 'NowoMaintenanceModeBundle'}) }}
+    {{ include(nowo_ui_partial('flashes', page.bundle), {bundle: page.bundle, trans_domain: 'NowoMaintenanceModeBundle', flashes: null}) }}
 {% endblock %}
 
 {% block nowo_ui_list_row %}

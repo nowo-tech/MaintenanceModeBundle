@@ -806,47 +806,24 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         enabled?: mixed, // null = enable when kernel.debug is true. Set false to disable even in debug. // Default: null
  *         path?: scalar|Param|null, // URL path for the preview (auto-excluded from 503). // Default: "/_maintenance_preview"
  *     },
- *     panel?: array{ // Admin CRUD panel settings.
- *         enabled?: bool|Param, // Expose the Twig CRUD panel controllers. // Default: true
- *         path_prefix?: scalar|Param|null, // URL prefix for the panel routes (also auto-excluded from 503). // Default: "/_maintenance"
+ *     panel?: array{ // Deprecated since 1.10: use web_ui.enabled and web_ui.path_prefix.
+ *         enabled?: bool|Param, // Deprecated: The "nowo_maintenance_mode.panel.enabled.enabled" option is deprecated, use "nowo_maintenance_mode.web_ui.enabled" instead. // Deprecated alias of web_ui.enabled.
+ *         path_prefix?: scalar|Param|null, // Deprecated: The "nowo_maintenance_mode.panel.path_prefix.path_prefix" option is deprecated, use "nowo_maintenance_mode.web_ui.path_prefix" instead. // Deprecated alias of web_ui.path_prefix.
  *     },
- *     web_ui?: array{ // REQ-UI-001 look-and-feel for the admin panel (layout, CSS stack, icons).
- *         enabled?: bool|Param, // When false, panel Twig globals still resolve but hosts may hide chrome; panel routes follow panel.enabled. // Default: true
- *         layout_template?: scalar|Param|null, // Twig layout that panel pages extend (host apps SHOULD set their project layout). Syncs templates.panel_layout. // Default: "@NowoMaintenanceModeBundle/panel/layout.html.twig"
- *         css_framework?: "bootstrap"|"bootstrap4"|"bootstrap5"|"tailwind"|"foundation"|"custom"|"tabler"|"none"|Param, // Host-chosen CSS stack for semantic nowo-ui-* markup. // Default: "custom"
- *         icon_set?: "bootstrap-icons"|"tabler-icons"|"ux_icon"|"svg_inline"|"none"|Param, // Icon strategy for panel actions (panel uses text buttons by default). // Default: "none"
- *         show_page_header?: bool|Param, // Render the bundle <header><h1> on panel pages. Set false when the host layout already prints the page title. // Default: true
- *         document_title?: bool|Param, // Panel pages set the layout {% block title %}. Set false to keep the host layout title (parent()). // Default: true
- *         test_ids?: bool|Param, // Emit data-testid hooks (maintenance-status, maintenance-manual, maintenance-schedule, maintenance-history, maintenance-panel-tabs) for E2E suites. // Default: false
- *         classes?: array{ // Admin chrome CSS class map for panel pages (nav, header, cards, table, empty state, …). Empty string = no class attribute.
- *             nav?: scalar|Param|null, // Default: "nowo-ui-nav"
- *             nav_link?: scalar|Param|null, // Default: ""
- *             page_header?: scalar|Param|null, // Default: "nowo-ui-page-header"
- *             page_title?: scalar|Param|null, // Default: ""
- *             page_intro?: scalar|Param|null, // Default: ""
- *             flash?: scalar|Param|null, // Default: ""
- *             status_line?: scalar|Param|null, // Default: ""
- *             status_on?: scalar|Param|null, // Default: "nowo-ui-status nowo-ui-status--on status on"
- *             status_off?: scalar|Param|null, // Default: "nowo-ui-status nowo-ui-status--off status off"
- *             card?: scalar|Param|null, // Default: "nowo-ui-card card"
- *             section_title?: scalar|Param|null, // Default: ""
- *             form?: scalar|Param|null, // Default: ""
- *             form_actions?: scalar|Param|null, // Default: ""
- *             table_wrap?: scalar|Param|null, // Default: "nowo-ui-card nowo-ui-table-wrap card"
- *             table?: scalar|Param|null, // Default: "nowo-ui-table"
- *             table_head_row?: scalar|Param|null, // Default: ""
- *             table_head_cell?: scalar|Param|null, // Default: ""
- *             table_row?: scalar|Param|null, // Default: ""
- *             table_cell?: scalar|Param|null, // Default: ""
- *             table_cell_muted?: scalar|Param|null, // Default: ""
- *             empty?: scalar|Param|null, // Default: "nowo-ui-empty"
- *             login_error?: scalar|Param|null, // Default: "nowo-ui-error error"
- *         },
- *         partials?: array{ // Partial templates included by panel pages (nav tabs, form field loop, optional history pagination).
- *             nav?: scalar|Param|null, // Panel / History navigation partial (receives active, path_prefix). Alternative shipped: @NowoMaintenanceModeBundle/panel/_nav_tabs.html.twig (UiKit tabs). // Default: "@NowoMaintenanceModeBundle/panel/_nav.html.twig"
- *             form_fields?: scalar|Param|null, // Partial that renders every not-yet-rendered form child (receives form). // Default: "@NowoMaintenanceModeBundle/panel/_form_fields.html.twig"
- *             pagination?: scalar|Param|null, // Optional partial included after the history table (receives entries, path_prefix). null = none. // Default: null
- *         },
+ *     web_ui?: array{ // REQ-UI-003 admin panel UI: pages extend the UiKit scaffolds; theme them once in nowo_ui_kit.theme.
+ *         enabled?: bool|Param, // Expose the admin panel routes (panel, history, password login). // Default: true
+ *         path_prefix?: scalar|Param|null, // URL prefix of the admin panel (always excluded from the 503). // Default: "/_maintenance"
+ *         layout_template?: scalar|Param|null, // Layout the panel scaffolds extend instead of nowo_ui_kit.layouts.admin (null = UiKit layout). It must render the UiKit canonical blocks (nowo_ui_content…); a 1.x layout that renders "body" is bridged (deprecated). The password login uses the guest layout. // Default: null
+ *         templates?: array<string, scalar|Param|null>,
+ *         history_limit?: int|Param, // Most recent history entries listed on the history page. // Default: 100
+ *         history_per_page?: int|Param, // History entries per page (UiKit pagination). // Default: 25
+ *         css_framework?: "bootstrap"|"bootstrap4"|"bootstrap5"|"tailwind"|"foundation"|"custom"|"tabler"|"none"|Param, // Deprecated: The "nowo_maintenance_mode.web_ui.css_framework.css_framework" option is deprecated, set "nowo_ui_kit.css_framework" instead. // Deprecated: set nowo_ui_kit.css_framework (seeded from this key when the host does not set it).
+ *         icon_set?: "bootstrap-icons"|"tabler-icons"|"ux_icon"|"svg_inline"|"none"|Param, // Deprecated: The "nowo_maintenance_mode.web_ui.icon_set.icon_set" option is deprecated, set "nowo_ui_kit.icon_set" instead. // Deprecated: set nowo_ui_kit.icon_set (seeded from this key when the host does not set it).
+ *         show_page_header?: bool|Param, // Deprecated: The "nowo_maintenance_mode.web_ui.show_page_header.show_page_header" option is deprecated and has no effect: the UiKit page_header partial renders the page header. // Deprecated, no effect: the UiKit page_header partial renders the header (hide or restyle it in nowo_ui_kit.theme).
+ *         document_title?: bool|Param, // Deprecated: The "nowo_maintenance_mode.web_ui.document_title.document_title" option is deprecated and has no effect: the scaffolds fill nowo_ui_document_title. // Deprecated, no effect: the scaffolds fill nowo_ui_document_title.
+ *         test_ids?: bool|Param, // Deprecated: The "nowo_maintenance_mode.web_ui.test_ids.test_ids" option is deprecated and has no effect: the data-testid hooks are always rendered. // Deprecated, no effect: the data-testid hooks are always rendered.
+ *         classes?: array<string, scalar|Param|null>,
+ *         partials?: array<string, mixed>,
  *     },
  *     exclusions?: array{ // Requests matching any rule bypass the maintenance page.
  *         paths?: list<scalar|Param|null>,
@@ -875,12 +852,12 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         state_storage?: scalar|Param|null, // Override service id / FQCN for MaintenanceStateStorageInterface. // Default: null
  *         history_storage?: scalar|Param|null, // Override service id / FQCN for MaintenanceHistoryStorageInterface. // Default: null
  *     },
- *     templates?: array{ // Overrideable Twig templates (REQ-TWIG).
- *         page?: scalar|Param|null, // Default: "@NowoMaintenanceModeBundle/maintenance/page.html.twig"
- *         panel_layout?: scalar|Param|null, // Default: "@NowoMaintenanceModeBundle/panel/layout.html.twig"
- *         panel_index?: scalar|Param|null, // Default: "@NowoMaintenanceModeBundle/panel/index.html.twig"
- *         panel_login?: scalar|Param|null, // Default: "@NowoMaintenanceModeBundle/panel/login.html.twig"
- *         panel_history?: scalar|Param|null, // Default: "@NowoMaintenanceModeBundle/panel/history.html.twig"
+ *     templates?: array{ // Public maintenance page template (REQ-TWIG); the panel_* keys are deprecated aliases of web_ui.layout_template / web_ui.templates.
+ *         page?: scalar|Param|null, // Public 503 page. Default: UiKit guest layout + theme tokens, no CDN. Samples: @NowoMaintenanceModeBundle/maintenance/examples/*.html.twig (opt-in, they load CDNs). // Default: "@NowoMaintenanceModeBundle/maintenance/page.html.twig"
+ *         panel_layout?: scalar|Param|null, // Deprecated: The "nowo_maintenance_mode.templates.panel_layout.panel_layout" option is deprecated, use "nowo_maintenance_mode.web_ui.layout_template" instead (null = UiKit layout). // Deprecated alias of web_ui.layout_template.
+ *         panel_index?: scalar|Param|null, // Deprecated: The "nowo_maintenance_mode.templates.panel_index.panel_index" option is deprecated, use "nowo_maintenance_mode.web_ui.templates.index" instead. // Deprecated alias of web_ui.templates.index.
+ *         panel_login?: scalar|Param|null, // Deprecated: The "nowo_maintenance_mode.templates.panel_login.panel_login" option is deprecated, use "nowo_maintenance_mode.web_ui.templates.login" instead. // Deprecated alias of web_ui.templates.login.
+ *         panel_history?: scalar|Param|null, // Deprecated: The "nowo_maintenance_mode.templates.panel_history.panel_history" option is deprecated, use "nowo_maintenance_mode.web_ui.templates.history" instead. // Deprecated alias of web_ui.templates.history.
  *     },
  * }
  * @psalm-type NowoUiKitConfig = array{
@@ -895,6 +872,93 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         cache_ttl?: int|Param, // Seconds to cache the GitHub answer (cache.app). Default 12h. // Default: 43200
  *         default_branch?: scalar|Param|null, // Branch used as compare target when the installed version is already the latest. // Default: "main"
  *         user_agent?: scalar|Param|null, // User-Agent sent to api.github.com. // Default: "nowo-ui-kit-release-check"
+ *     },
+ *     route_links?: array{ // Route (or route prefix) → link map read by nowo_ui_route_link(), e.g. for the page-edge "manual" tab (partials/_edge_tab.html.twig). A prefix matches the route itself or any route starting with "<prefix>_"; the longest prefix wins.
+ *         base_url?: scalar|Param|null, // Prepended to every relative path (paths starting with "/", "//", "http://" or "https://" are used as is). // Default: ""
+ *         default_testid?: scalar|Param|null, // testid returned for entries without their own. // Default: null
+ *         routes?: array<string, Param|string|array{ // Default: []
+ *             path?: scalar|Param|null,
+ *             testid?: scalar|Param|null, // Default: null
+ *         }>,
+ *     },
+ *     appearance?: array{ // Optional site appearance SPI (presets, --nowo-ui-* token emitter, Twig functions). Off by default.
+ *         enabled?: bool|Param, // Default: false
+ *         provider?: scalar|Param|null, // Service id implementing AppearanceProviderInterface (host storage). Null = the config defaults below. // Default: null
+ *         defaults?: array{
+ *             brand_name?: scalar|Param|null, // Default: ""
+ *             brand_eyebrow?: scalar|Param|null, // Default: ""
+ *             preset?: scalar|Param|null, // Preset whose light colours are the default. // Default: "slate"
+ *             preset_dark?: scalar|Param|null, // Preset whose dark colours are the default. // Default: "midnight"
+ *             corner_style?: "sharp"|"soft"|"rounded"|Param, // Default: "soft"
+ *             border_strength?: "subtle"|"medium"|"strong"|Param, // Default: "medium"
+ *             footer_fixed?: bool|Param, // Default: false
+ *         },
+ *         presets?: array<string, array{ // Default: []
+ *             mode?: "light"|"dark"|Param, // Default: "light"
+ *             light?: array{
+ *                 accent?: scalar|Param|null,
+ *                 accent_deep?: scalar|Param|null,
+ *                 danger?: scalar|Param|null,
+ *                 warn?: scalar|Param|null,
+ *                 paper?: scalar|Param|null,
+ *                 ink?: scalar|Param|null,
+ *                 surface?: scalar|Param|null,
+ *             },
+ *             dark?: array{
+ *                 accent?: scalar|Param|null,
+ *                 accent_deep?: scalar|Param|null,
+ *                 danger?: scalar|Param|null,
+ *                 warn?: scalar|Param|null,
+ *                 paper?: scalar|Param|null,
+ *                 ink?: scalar|Param|null,
+ *                 surface?: scalar|Param|null,
+ *             },
+ *         }>,
+ *         builtin_presets?: list<scalar|Param|null>,
+ *         kit_tokens?: bool|Param, // Emit the --nowo-ui-* tokens. False = only the token_aliases are written. // Default: true
+ *         token_aliases?: array<string, list<scalar|Param|null>>,
+ *         selectors?: array{ // Selectors of the three emitted blocks.
+ *             root?: scalar|Param|null, // Default: ":root"
+ *             light?: scalar|Param|null, // Default: ":root, [data-theme=\"light\"]"
+ *             dark?: scalar|Param|null, // Default: "[data-theme=\"dark\"]"
+ *         },
+ *         shadow_rgb_fallback?: scalar|Param|null, // --nowo-ui-shadow-rgb when the light ink colour is not hex ("r g b"). // Default: "15 23 42"
+ *     },
+ *     layouts?: array{ // Layouts the page scaffolds extend (Twig global nowo_ui_layout). Host layouts or one-file bridges must render the canonical nowo_ui_* blocks.
+ *         admin?: scalar|Param|null, // Default: "@NowoUiKit/layout/admin.html.twig"
+ *         guest?: scalar|Param|null, // Default: "@NowoUiKit/layout/guest.html.twig"
+ *     },
+ *     breadcrumbs?: array{ // Page header breadcrumbs: BreadcrumbKit (breadcrumb_render) when installed and enabled here, else the plain trail from PageHeader::breadcrumbs.
+ *         breadcrumb_kit?: bool|Param, // Use BreadcrumbKit when its breadcrumb_render() Twig function exists. // Default: true
+ *         collection?: scalar|Param|null, // BreadcrumbKit collection code (null = its default collection). PageHeader::breadcrumbCollection overrides it. // Default: null
+ *     },
+ *     theme?: array{ // Global theme (REQ-UI-003): semantic slot classes / attributes, partial overrides and --nowo-ui-* tokens, configured once for every bundle.
+ *         framework_defaults?: bool|Param, // false = slots print the semantic nowo-ui-* class and the host classes only (no UiKit framework defaults such as btn / badge / card). Per slot: classes.<slot>: {value: …, framework_defaults: false}. // Default: true
+ *         classes?: array<string, mixed>,
+ *         attributes?: array<string, array<string, mixed>>,
+ *         partials?: array<string, scalar|Param|null>,
+ *         tokens?: array<string, mixed>,
+ *         tokens_dark?: array<string, mixed>,
+ *         confirm_message_in_header?: bool|Param, // Confirm dialogs and the full-page confirm render the message inside the header, under the title (hosts whose dialog header is title + message). View\Confirm::messageInHeader wins when set. // Default: false
+ *         bundles?: array<string, array{ // Default: []
+ *             framework_defaults?: bool|Param, // Override of theme.framework_defaults for this bundle (unset = inherit).
+ *             classes?: array<string, mixed>,
+ *             attributes?: array<string, array<string, mixed>>,
+ *             partials?: array<string, scalar|Param|null>,
+ *             tokens?: array<string, mixed>,
+ *             tokens_dark?: array<string, mixed>,
+ *             pages?: array<string, array{ // Default: []
+ *                 framework_defaults?: bool|Param, // Override of theme.framework_defaults for this page type (unset = inherit).
+ *                 classes?: array<string, mixed>,
+ *                 attributes?: array<string, array<string, mixed>>,
+ *             }>,
+ *         }>,
+ *         pages?: array<string, array{ // Default: []
+ *             framework_defaults?: bool|Param, // Override of theme.framework_defaults for this page type (unset = inherit).
+ *             classes?: array<string, mixed>,
+ *             attributes?: array<string, array<string, mixed>>,
+ *             header_actions_in_filters?: bool|Param, // list only: render the page-header actions at the end of the filter row instead of the page header (ListPage::headerActionsInFilters wins when set; unset = false).
+ *         }>,
  *     },
  * }
  * @psalm-type NowoHotReloadConfig = array{
