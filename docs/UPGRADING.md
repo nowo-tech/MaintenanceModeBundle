@@ -3,6 +3,7 @@
 ## Table of contents
 
 - [Unreleased](#unreleased)
+- [To 1.10.1](#to-1101)
 - [To 1.10.0](#to-1100)
   - [Template contract (1.10)](#template-contract-110)
 - [To 1.9.0](#to-190)
@@ -75,6 +76,14 @@
   - [After upgrading](#after-upgrading-1)
 
 ## Unreleased
+
+## To 1.10.1
+
+From **1.10.0**:
+
+```bash
+composer update nowo-tech/maintenance-mode-bundle
+```
 
 Requires UiKit **^2.2** (`composer require nowo-tech/ui-kit-bundle:^2.2`). No configuration change. What hosts may
 notice:

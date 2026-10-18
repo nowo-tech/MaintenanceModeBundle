@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Table of contents
 
 - [[Unreleased]](#unreleased)
+- [[1.10.1] - 2026-10-18](#1101---2026-10-18)
 - [[1.10.0] - 2026-10-18](#1100---2026-10-18)
 - [[1.9.0] - 2026-10-13](#190---2026-10-13)
 - [[1.8.0] - 2026-10-13](#180---2026-10-13)
@@ -38,6 +39,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.10.1] - 2026-10-18
+
+Requires UiKit ^2.2 (section actions, flash messages, JS-free 503 through UiKit). See [UPGRADING](UPGRADING.md#to-1101).
+
 ### Changed
 
 - Requires `nowo-tech/ui-kit-bundle` **^2.2**. See [UPGRADING](UPGRADING.md#unreleased).
@@ -57,6 +62,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Demo
 
 - Host layouts print the UiKit runtimes through the UiKit `scripts` partial (skipped on JS-free pages).
+
+[1.10.1]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.10.1
 
 ## [1.10.0] - 2026-10-18
 
@@ -465,7 +472,7 @@ First stable release.
 - PHP `>=8.2`, `<8.6` (Symfony **8.x** requires PHP **8.4+**)
 - Symfony floor **7.4** (CI / mandatory minors: **7.4**, **8.0**, **8.1**)
 
-[Unreleased]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.10.0...HEAD
+[Unreleased]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.10.1...HEAD
 [1.5.8]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.7...v1.5.8
 [1.5.7]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.6...v1.5.7
 [1.5.6]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.5...v1.5.6
