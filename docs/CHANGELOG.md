@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Table of contents
 
 - [[Unreleased]](#unreleased)
+- [[1.10.2] - 2026-10-19](#1102---2026-10-19)
 - [[1.10.1] - 2026-10-18](#1101---2026-10-18)
 - [[1.10.0] - 2026-10-18](#1100---2026-10-18)
 - [[1.9.0] - 2026-10-13](#190---2026-10-13)
@@ -39,9 +40,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.10.2] - 2026-10-19
+
+Panel and login fields render with the UiKit form theme (input slots). See [UPGRADING](UPGRADING.md#to-1102).
+
 ### Fixed
 
 - **Panel / login forms:** the message `<textarea>`, the scheduled enable / disable `datetime-local` inputs and the login password field rendered with the host's global form theme only (form_div_layout on most UiKit hosts), so they had no UiKit `input` slot class: unstyled and not full width. The panel sections (`SettingsSection::formThemes`) and the login fields now use the UiKit form theme `@NowoUiKit/form/nowo_ui_layout.html.twig` (`MaintenancePages::FORM_THEME`): textareas get `input_full`, the other fields `input`.
+
+[1.10.2]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.10.2
 
 ## [1.10.1] - 2026-10-18
 
@@ -476,7 +483,7 @@ First stable release.
 - PHP `>=8.2`, `<8.6` (Symfony **8.x** requires PHP **8.4+**)
 - Symfony floor **7.4** (CI / mandatory minors: **7.4**, **8.0**, **8.1**)
 
-[Unreleased]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.10.1...HEAD
+[Unreleased]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.10.2...HEAD
 [1.5.8]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.7...v1.5.8
 [1.5.7]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.6...v1.5.7
 [1.5.6]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.5...v1.5.6
