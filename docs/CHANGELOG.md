@@ -39,6 +39,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Panel / login forms:** the message `<textarea>`, the scheduled enable / disable `datetime-local` inputs and the login password field rendered with the host's global form theme only (form_div_layout on most UiKit hosts), so they had no UiKit `input` slot class: unstyled and not full width. The panel sections (`SettingsSection::formThemes`) and the login fields now use the UiKit form theme `@NowoUiKit/form/nowo_ui_layout.html.twig` (`MaintenancePages::FORM_THEME`): textareas get `input_full`, the other fields `input`.
+
 ## [1.10.1] - 2026-10-18
 
 Requires UiKit ^2.2 (section actions, flash messages, JS-free 503 through UiKit). See [UPGRADING](UPGRADING.md#to-1101).

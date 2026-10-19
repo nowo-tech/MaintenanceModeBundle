@@ -12,6 +12,7 @@ use Nowo\UiKitBundle\View\ListPage;
 use Nowo\UiKitBundle\View\SettingsPage;
 
 use function dirname;
+use function preg_match_all;
 use function substr_count;
 
 /**
@@ -86,6 +87,29 @@ final class PageContractTest extends PageContractTestCase
         foreach (['status', 'manual', 'schedule'] as $section) {
             self::assertStringContainsString('data-testid="maintenance-' . $section . '"', $html);
         }
+    }
+
+    /**
+     * Regression (1.10.1): the panel textarea and datetime-local fields rendered with form_div_layout only (no UiKit
+     * `input` slot class), unstyled and not full width on a UiKit host.
+     */
+    public function testPanelFieldsGetTheUiKitInputSlots(): void
+    {
+        $html = $this->renderPage(new PageFixture('@NowoMaintenanceModeBundle/panel/index.html.twig', PageFixtures::index(PageFixtures::enabledState())))->html;
+
+        // enable form message + schedule form message: full-width input slot
+        self::assertSame(2, preg_match_all('#<textarea [^>]*class="nowo-ui-input nowo-ui-input--full[ "]#', $html));
+        // schedule form: both datetime-local fields carry the input slot
+        self::assertSame(2, preg_match_all('#<input type="datetime-local" [^>]*class="nowo-ui-input[ "]#', $html));
+        self::assertStringContainsString('name="scheduled_enable_at"', $html);
+        self::assertStringContainsString('name="scheduled_disable_at"', $html);
+    }
+
+    public function testLoginPasswordFieldGetsTheUiKitInputSlot(): void
+    {
+        $html = $this->renderPage(new PageFixture('@NowoMaintenanceModeBundle/panel/login.html.twig', PageFixtures::login()))->html;
+
+        self::assertMatchesRegularExpression('#<input type="password" [^>]*class="nowo-ui-input[ "]#', $html);
     }
 
     public function testPanelFlashesComeFromTheSessionNotFromThePeekedOneXVariable(): void

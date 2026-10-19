@@ -38,6 +38,13 @@ final class MaintenancePages
     public const DATE_FORMAT = 'Y-m-d H:i:s';
 
     /**
+     * Form theme of the panel and login forms: the UiKit form theme (UiKit 2.2), so the textarea, datetime-local and
+     * password widgets get the `input` / `input_full` slot classes instead of rendering unstyled on hosts whose
+     * global `twig.form_themes` is form_div_layout.
+     */
+    public const FORM_THEME = '@NowoUiKit/form/nowo_ui_layout.html.twig';
+
+    /**
      * Panel page ({@code $nav}: {@see PanelView::nav()} with {@code panel} active): sections status (no form), manual (enable form + disable action) and schedule (schedule form +
      * clear action) — the section actions are {@see SettingsSection::$actions} (UiKit 2.2); header action Logout when the password gate is on; area nav Panel | History.
      *
@@ -74,8 +81,8 @@ final class MaintenancePages
                 new PageHeader(PanelView::label('panel.title'), PanelView::label('panel.intro'), $actions, tabs: $nav),
                 [
                     new SettingsSection('status', PanelView::label('panel.status')),
-                    new SettingsSection('manual', PanelView::label('panel.manual'), form: $enableForm, intro: PanelView::label('panel.manual.intro'), submitLabel: PanelView::label('panel.enable'), actions: $sectionActions['manual']),
-                    new SettingsSection('schedule', PanelView::label('panel.schedule'), form: $scheduleForm, intro: PanelView::label('panel.schedule.intro'), submitLabel: PanelView::label('panel.save_schedule'), actions: $sectionActions['schedule']),
+                    new SettingsSection('manual', PanelView::label('panel.manual'), form: $enableForm, intro: PanelView::label('panel.manual.intro'), submitLabel: PanelView::label('panel.enable'), formThemes: [self::FORM_THEME], actions: $sectionActions['manual']),
+                    new SettingsSection('schedule', PanelView::label('panel.schedule'), form: $scheduleForm, intro: PanelView::label('panel.schedule.intro'), submitLabel: PanelView::label('panel.save_schedule'), formThemes: [self::FORM_THEME], actions: $sectionActions['schedule']),
                 ],
                 bundle: PanelView::BUNDLE,
                 layout: $layout,

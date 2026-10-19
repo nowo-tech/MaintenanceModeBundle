@@ -77,6 +77,12 @@
 
 ## Unreleased
 
+No configuration change. The panel and login forms now render with the UiKit form theme
+`@NowoUiKit/form/nowo_ui_layout.html.twig` (UiKit `input` / `input_full` slots on the message, schedule and password
+fields), on top of your `twig.form_themes`. Hosts that styled those fields with their own selectors may see the UiKit
+input styling (full-width textareas) instead; customise the `input` / `input_full` slots under
+`nowo_ui_kit.theme.bundles.NowoMaintenanceModeBundle` rather than overriding the template.
+
 ## To 1.10.1
 
 From **1.10.0**:

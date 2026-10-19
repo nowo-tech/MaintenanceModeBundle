@@ -1,11 +1,16 @@
 {#
   Maintenance panel password login (REQ-UI-003): UiKit auth scaffold on the guest layout (nowo_ui_layout.guest).
   Variables: page (View\AuthPage from MaintenancePages::login(): title, intro, password form, error, submit label),
-  and the 1.x variables error, locked, login_form, path_prefix. No data block is filled: the scaffold renders the
-  form rows (REQ-TWIG-003 child loop) and the submit button.
+  and the 1.x variables error, locked, login_form, path_prefix. nowo_ui_auth_fields only applies the UiKit form
+  theme (input slot on the password field; AuthPage has no formThemes) before the scaffold's REQ-TWIG-003 child loop.
 #}
 {% extends '@NowoUiKit/page/auth.html.twig' %}
 
 {% block nowo_ui_flashes %}
     {{ include(nowo_ui_partial('flashes', page.bundle), {bundle: page.bundle, trans_domain: 'NowoMaintenanceModeBundle'}) }}
+{% endblock %}
+
+{% block nowo_ui_auth_fields %}
+    {% form_theme form '@NowoUiKit/form/nowo_ui_layout.html.twig' %}
+    {{ parent() }}
 {% endblock %}
