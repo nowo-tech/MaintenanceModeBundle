@@ -7,6 +7,7 @@
 - [Enable the bundle](#enable-the-bundle)
   - [With Symfony Flex](#with-symfony-flex)
   - [Without Flex](#without-flex)
+- [Twig Extra Bundle (REQ-TWIG-004)](#twig-extra-bundle-req-twig-004)
 - [Next steps](#next-steps)
 
 ## Requirements

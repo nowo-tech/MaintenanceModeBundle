@@ -8,6 +8,19 @@
 | Method | Manual review of every file under `src/` (services, request listener, storages, controllers, forms, commands, Twig extension, DI extension, compiler pass, `Resources/config`) plus regression tests that re-use the same instances across consecutive requests without `reset()` |
 | **Verdict** | ✅ **100% compatible under scenario B** (`reset_kernel false`) — all HTTP services are stateless (`readonly` config only); maintenance state is re-read from storage on every request; auth / bypass decisions live on the current `Request` / session only |
 
+## Table of contents
+
+- [Execution model assumed](#execution-model-assumed)
+- [Summary](#summary)
+- [Services reviewed](#services-reviewed)
+- [Findings](#findings)
+  - [W-01 — Maintenance state is read from disk on every main request (Low, accepted)](#w-01--maintenance-state-is-read-from-disk-on-every-main-request-low-accepted)
+  - [W-02 — History view loads the whole JSONL file into memory (Low, accepted)](#w-02--history-view-loads-the-whole-jsonl-file-into-memory-low-accepted)
+  - [W-03 — Concurrent writes across worker threads are handled correctly (Info)](#w-03--concurrent-writes-across-worker-threads-are-handled-correctly-info)
+  - [W-04 — Access decisions are computed per request (Info)](#w-04--access-decisions-are-computed-per-request-info)
+- [Usage recommendations in worker mode](#usage-recommendations-in-worker-mode)
+- [Re-audit triggers](#re-audit-triggers)
+
 ## Execution model assumed
 
 FrankenPHP worker mode boots the Symfony kernel once per worker and serves many requests with the same container. This audit assumes the **strict** variant: the kernel is **not** rebooted between requests (`reset_kernel false`), so every shared service, static property and PHP global survives from one request to the next. Two scenarios are evaluated:

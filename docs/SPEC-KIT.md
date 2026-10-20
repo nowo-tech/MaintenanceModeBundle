@@ -11,14 +11,15 @@ defines product behaviour and REQ-* traceability, and the normative baseline und
 
 ## Table of contents
 
+- [Purpose](#purpose)
 - [What Spec Kit adds](#what-spec-kit-adds)
 - [Prerequisites — install Specify CLI](#prerequisites--install-specify-cli)
 - [Initialize Spec Kit in this repository](#initialize-spec-kit-in-this-repository)
 - [Folder structure](#folder-structure)
 - [How the layers fit together](#how-the-layers-fit-together)
-- [Baseline backfill](#baseline-backfill-specs001-baseline)
+- [Baseline backfill (`specs/001-baseline/`)](#baseline-backfill-specs001-baseline)
 - [Using Spec Kit in Cursor Agent](#using-spec-kit-in-cursor-agent)
-- [Incremental features](#incremental-features-specs002)
+- [Incremental features (`specs/002+`)](#incremental-features-specs002)
 - [Maintainer checklist](#maintainer-checklist)
 - [Troubleshooting](#troubleshooting)
 - [See also](#see-also)

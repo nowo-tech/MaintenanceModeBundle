@@ -2,7 +2,7 @@
 
 **Baseline spec**: [`spec.md`](spec.md)  
 **Package**: `nowo-tech/maintenance-mode-bundle`  
-**Last audited**: 2026-10-13
+**Last audited**: 2026-10-20
 
 This is a 100% inventory of production files under `src/`: PHP, YAML configuration,
 Twig views, and translations. Every file maps to one or more baseline `FR-*`
@@ -19,11 +19,11 @@ requirements.
 | Attribute and exclusion | 2 |
 | Forms | 7 |
 | Models, service, security, and storage | 12 |
-| Twig extension and chrome defaults | 2 |
+| Twig extension, page views and chrome defaults | 4 |
 | YAML configuration | 3 |
-| Twig views | 21 |
+| Twig views | 17 |
 | Translations | 7 |
-| **Total production files under `src/`** | **68/68** |
+| **Total production files under `src/`** | **66/66** |
 
 ## Bundle, dependency injection, and subscriber
 
@@ -101,6 +101,8 @@ requirements.
 | --- | --- | --- |
 | `Twig/MaintenanceExtension.php` | Exposes maintenance-state helpers and panel globals (incl. `nowo_maintenance_mode_chrome`) to Twig templates. | FR-17, FR-20 |
 | `Twig/PanelChrome.php` | Defaults for the admin chrome class map, partial paths and flags ([spec 002](../002-admin-chrome-hooks/spec.md)). | FR-20 |
+| `Panel/PanelView.php` | Renders the panel pages on the UiKit page contract (per-page template, layout override, Panel / History area nav, legacy layout bridge). | FR-08, FR-21 |
+| `View/MaintenancePages.php` | UiKit view models of the panel, history, login and public maintenance pages (plain data, worker safe). | FR-02, FR-08, FR-21 |
 
 ## YAML configuration
 
@@ -127,14 +129,10 @@ requirements.
 | `Resources/views/maintenance/examples/idea_brand.html.twig` | Brand-oriented maintenance theme. | FR-11, FR-18 |
 | `Resources/views/maintenance/examples/idea_countdown.html.twig` | Scheduled-end countdown maintenance theme. | FR-10, FR-11, FR-18 |
 | `Resources/views/maintenance/examples/idea_updates.html.twig` | Status-update maintenance theme. | FR-11, FR-18 |
-| `Resources/views/panel/layout.html.twig` | Shared panel layout. | FR-08, FR-11 |
-| `Resources/views/panel/base.html.twig` | Panel page shell extending `web_ui.layout_template` (UiKit CSS). | FR-08, FR-11 |
 | `Resources/views/panel/index.html.twig` | Panel dashboard and mutation forms (`form_start` + unrendered `form_row` loop; chrome blocks / class map). | FR-08, FR-11, FR-20 |
-| `Resources/views/panel/_nav.html.twig` | Default Panel / History navigation partial (`web_ui.partials.nav`). | FR-08, FR-20 |
-| `Resources/views/panel/_nav_tabs.html.twig` | Opt-in UiKit tabs navigation partial. | FR-08, FR-20 |
-| `Resources/views/panel/_form_fields.html.twig` | Shared unrendered-field `form_row` loop for panel forms. | FR-08, FR-11 |
 | `Resources/views/panel/history.html.twig` | Panel history page (table / row / empty-state / pagination hooks). | FR-08, FR-11, FR-20 |
 | `Resources/views/panel/login.html.twig` | Panel password-login page (chrome blocks / class map). | FR-08, FR-09, FR-11, FR-20 |
+| `Resources/views/panel/_legacy_layout.html.twig` | Deprecated BC bridge for 1.x `web_ui.layout_template` layouts without `nowo_ui_content` (removed in 2.0). | FR-08, FR-21 |
 
 ## Translations
 
@@ -152,5 +150,5 @@ requirements.
 
 ```bash
 find src -type f | wc -l
-# Expected: 68
+# Expected: 66
 ```

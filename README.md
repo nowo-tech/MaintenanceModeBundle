@@ -119,7 +119,6 @@ make release-check
 
 - [Installation](docs/INSTALLATION.md)
 - [Configuration](docs/CONFIGURATION.md)
-- [PSR evaluation (REQ-CS-007)](docs/PSR.md)
 - [Usage](docs/USAGE.md)
 - [Contributing](docs/CONTRIBUTING.md)
 - [Code of Conduct](CODE_OF_CONDUCT.md)
@@ -133,6 +132,7 @@ make release-check
 
 ### Additional documentation
 
+- [PSR evaluation (REQ-CS-007)](docs/PSR.md)
 - [Demo (FrankenPHP)](docs/DEMO-FRANKENPHP.md)
 - [FrankenPHP worker audit (`reset_kernel false`)](docs/FRANKENPHP-WORKER-AUDIT.md)
 - [Maintenance page examples](docs/MAINTENANCE-PAGE-EXAMPLES.md)

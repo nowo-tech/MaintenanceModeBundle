@@ -40,6 +40,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Documentation: wave-1 REQ compliance — canonical issue templates, README documentation list order (PSR under Additional documentation), CONTRIBUTING Cursor Agent queue settings (REQ-IDE-006), tables of contents on long docs, Spec Kit inventory refresh after the UiKit panel migration (66/66).
+
 ## [1.10.2] - 2026-10-19
 
 Panel and login fields render with the UiKit form theme (input slots). See [UPGRADING](UPGRADING.md#to-1102).
