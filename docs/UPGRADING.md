@@ -78,6 +78,11 @@
 
 ## Unreleased
 
+- **New dependencies:** `symfony/clock`, `psr/clock` and `psr/log` are now required (Composer installs them). With FrameworkBundle, the `clock` and `logger` services are injected automatically; nothing to configure.
+- **Logging:** maintenance state changes are logged at `info`, panel login failures / lockouts at `warning` (no operator names, IPs or secrets). Route them to a dedicated Monolog channel or level if they are too verbose for your production logs.
+- **Tests that freeze time:** `MaintenanceManager`, `MaintenanceRequestSubscriber`, `MaintenancePreviewController` and `PasswordMaintenanceAccessGate` accept an optional `Psr\Clock\ClockInterface` (last constructor argument; `MaintenanceManager` and the gate also take a `LoggerInterface`). Existing positional arguments are unchanged.
+- **Preview route:** `nowo_maintenance_mode_preview` is now a `#[Route]` attribute on `MaintenancePreviewController` (same name, same configurable path). Hosts importing `@NowoMaintenanceModeBundle/Resources/config/routes.yaml` need no change.
+
 ## To 1.10.2
 
 From **1.10.1**:

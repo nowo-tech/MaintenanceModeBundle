@@ -44,6 +44,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Dependencies refreshed (Composer and pnpm/npm lock files of the bundle and its demos, campaign 2026-10-19).
 - `.php-cs-fixer.dist.php`: `new ParallelConfig(2)` (REQ-CS-001).
+- Time-dependent services (`MaintenanceManager`, `MaintenanceRequestSubscriber`, `MaintenancePreviewController`, `PasswordMaintenanceAccessGate`) take an injectable `Psr\Clock\ClockInterface` (the `clock` service; new `symfony/clock` / `psr/clock` requirements) instead of reading the system time directly (REQ-DI-001).
+- `MaintenanceManager` logs enable / disable / schedule / update and `PasswordMaintenanceAccessGate` logs panel login success, failures and lockouts through the injected `logger`, with structured context and no operator names, IPs or secrets; documented in `docs/SECURITY.md` (REQ-OBS-001).
+- The preview route `nowo_maintenance_mode_preview` is declared with `#[Route]` on `MaintenancePreviewController` (same name and configurable path); `routes.yaml` only imports attributes (REQ-SF-004).
+- The request subscriber keeps its tags in the extension because its `kernel.request` priority is configurable (documented exception, REQ-SF-003).
+- CI: new `phpstan` job on every push and pull request (REQ-CS-006).
+- `release-check` runs sequentially from `ensure-up` and adds `check-open-prs` and `check-no-raw-html-form` (REQ-MAKE-002).
+- README documents the `@codeCoverageIgnore` exclusions (filesystem error branches, defensive returns) (REQ-TEST-003).
+
+### Fixed
+
+- `.scripts/check-no-cursor-coauthor.sh` also runs inside git worktrees (`.git` file instead of directory).
 - Documentation: wave-1 REQ compliance — canonical issue templates, README documentation list order (PSR under Additional documentation), CONTRIBUTING Cursor Agent queue settings (REQ-IDE-006), tables of contents on long docs, Spec Kit inventory refresh after the UiKit panel migration (66/66).
 
 ## [1.10.2] - 2026-10-19

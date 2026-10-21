@@ -82,7 +82,7 @@ The bundle does **not** spawn subprocesses or perform third-party HTTP calls (RE
 | Data | Behavior |
 | --- | --- |
 | **History JSONL** | Records enable/disable/schedule actions (operator metadata as configured) — avoid storing secrets |
-| **Symfony logger** | Must never log bypass tokens, password hashes, or raw session auth flags |
+| **Symfony logger** (`logger` service, REQ-OBS-001) | `info` on enable / disable / schedule / clear-schedule / update and on a successful panel login; `warning` on a failed panel password and on a locked-out attempt. Context is structured (`bundle`, `action`, `by_user` boolean) — the operator name, the client IP, passwords, password hashes, bypass tokens and session flags are never logged |
 | **Public 503** | Prefer cacheable/static responses where possible |
 
 ## Dependencies and updates

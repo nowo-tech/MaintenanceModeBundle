@@ -7,10 +7,12 @@ namespace Nowo\MaintenanceModeBundle\Controller;
 use DateTimeImmutable;
 use Nowo\MaintenanceModeBundle\Service\MaintenanceManager;
 use Nowo\MaintenanceModeBundle\View\MaintenancePages;
+use Psr\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Routing\Attribute\Route;
 use Twig\Environment;
 
 use function str_contains;
@@ -32,9 +34,15 @@ final class MaintenancePreviewController
         private readonly ?string $defaultMessage,
         private readonly int $statusCode = Response::HTTP_SERVICE_UNAVAILABLE,
         private readonly int $retryAfter = 3600,
+        private readonly ?ClockInterface $clock = null,
     ) {
     }
 
+    /**
+     * Renders the public maintenance page (or its JSON variant) without enabling maintenance.
+     * The path comes from `nowo_maintenance_mode.preview.path` (container parameter, REQ-SF-004).
+     */
+    #[Route(path: '%nowo.maintenance_mode.preview.path%', name: 'nowo_maintenance_mode_preview', methods: ['GET'])]
     public function __invoke(Request $request): Response
     {
         if (!$this->enabled) {
@@ -85,7 +93,8 @@ final class MaintenancePreviewController
     private function resolveRetryAfter(?DateTimeImmutable $until): int
     {
         if ($until instanceof DateTimeImmutable) {
-            $seconds = $until->getTimestamp() - (new DateTimeImmutable())->getTimestamp();
+            $now     = $this->clock?->now() ?? new DateTimeImmutable();
+            $seconds = $until->getTimestamp() - $now->getTimestamp();
             if ($seconds > 0) {
                 return $seconds;
             }

@@ -142,6 +142,7 @@ make release-check
 
 - Tests: PHPUnit (PHP)
 - PHP: **100%** Lines (run `make coverage-check`)
+- Justified exclusions (`@codeCoverageIgnore`, REQ-TEST-003): filesystem error branches of `FilesystemMaintenanceStateStorage` / `FilesystemMaintenanceHistoryStorage` (directory not creatable, write / rename / read failures that need a broken filesystem) and two defensive early returns in `MaintenanceModeExtension` (controller definitions that `services.yaml` always registers).
 
 ## License and author
 

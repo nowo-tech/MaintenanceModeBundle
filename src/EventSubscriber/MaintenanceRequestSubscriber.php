@@ -10,6 +10,7 @@ use Nowo\MaintenanceModeBundle\Exclusion\MaintenanceExclusionMatcher;
 use Nowo\MaintenanceModeBundle\Model\MaintenanceState;
 use Nowo\MaintenanceModeBundle\Service\MaintenanceManager;
 use Nowo\MaintenanceModeBundle\View\MaintenancePages;
+use Psr\Clock\ClockInterface;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
@@ -62,6 +63,7 @@ final class MaintenanceRequestSubscriber
         private readonly string $bypassQueryParameter = 'maintenance_bypass',
         private readonly string $bypassCookieName = 'nowo_maintenance_bypass',
         private readonly bool $bypassSetCookie = true,
+        private readonly ?ClockInterface $clock = null,
     ) {
     }
 
@@ -99,7 +101,7 @@ final class MaintenanceRequestSubscriber
         }
 
         $state = $this->manager->getState();
-        if (!$state->isEffectivelyEnabled()) {
+        if (!$state->isEffectivelyEnabled($this->now())) {
             return;
         }
 
@@ -231,11 +233,19 @@ final class MaintenanceRequestSubscriber
             || str_contains((string) $request->headers->get('Accept', ''), 'application/json');
     }
 
+    /**
+     * Current time from the injected clock (REQ-DI-001), system time when none is wired.
+     */
+    private function now(): DateTimeImmutable
+    {
+        return $this->clock?->now() ?? new DateTimeImmutable();
+    }
+
     private function resolveRetryAfter(MaintenanceState $state): int
     {
         $until = $state->getScheduledDisableAt();
         if ($until instanceof DateTimeImmutable) {
-            $seconds = $until->getTimestamp() - (new DateTimeImmutable())->getTimestamp();
+            $seconds = $until->getTimestamp() - $this->now()->getTimestamp();
             if ($seconds > 0) {
                 return $seconds;
             }

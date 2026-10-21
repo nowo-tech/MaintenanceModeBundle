@@ -7,7 +7,7 @@ COMPOSE_BIN := $(shell docker compose version >/dev/null 2>&1 && echo "docker co
 COMPOSE     := $(COMPOSE_BIN) -f $(COMPOSE_FILE)
 SERVICE_PHP := php
 
-.PHONY: help up down down-dev build shell install ensure-up test test-coverage coverage-php-percent cs-check cs-fix qa clean release-check release-check-demos demo-smoke composer-sync rector rector-dry phpstan igor update validate assets setup-hooks check-no-cursor-coauthor strip-cursor-coauthor-from-history validate-translations coverage-check check-twig-extra
+.PHONY: help up down down-dev build shell install ensure-up test test-coverage coverage-php-percent cs-check cs-fix qa clean release-check release-check-demos demo-smoke composer-sync rector rector-dry phpstan igor update validate assets setup-hooks check-no-cursor-coauthor strip-cursor-coauthor-from-history validate-translations coverage-check check-twig-extra check-open-prs check-no-raw-html-form
 
 help:
 	@echo "Maintenance Mode Bundle - Development Commands"
@@ -33,7 +33,9 @@ help:
 	@echo "  igor          Run Igor worker-state audit (REQ-CS-008)"
 	@echo "  validate-translations  YAML syntax + key parity (en/es/it/fr/pt/de/nl)"
 	@echo "  qa            Run all QA checks (cs-check + test)"
-	@echo "  release-check Pre-release: Cursor trailer check, cs-fix, cs-check, rector-dry, phpstan, validate-translations, test-coverage, coverage-check, demos"
+	@echo "  release-check Pre-release: ensure-up, co-author/open-PR/Twig checks, cs-fix, cs-check, rector-dry, phpstan, igor, validate-translations, coverage-check, demos"
+	@echo "  check-open-prs Fail if unresolved open GitHub PRs remain (REQ-REL-003)"
+	@echo "  check-no-raw-html-form No raw <form>/<input> in Twig (REQ-TWIG-005)"
 	@echo "  demo-smoke    REQ-TEST-011: boot demo + HTTP 200 (make -C demo demo-smoke)"
 	@echo "  setup-hooks   Install git hooks (.githooks — REQ-MAKE-006 / REQ-GIT-001)"
 	@echo "  check-no-cursor-coauthor  Fail if Cursor co-author trailers exist in history"
@@ -127,7 +129,32 @@ check-twig-extra:
 # Run Igor worker-state audit (REQ-CS-008)
 igor: ensure-up
 	$(COMPOSE) exec -T php composer igor
-release-check: ensure-up check-no-cursor-coauthor check-twig-extra composer-sync cs-fix cs-check rector-dry phpstan igor validate-translations coverage-check release-check-demos
+# REQ-MAKE-002: sequential chain, ensure-up first.
+release-check:
+	@$(MAKE) ensure-up
+	@$(MAKE) check-no-cursor-coauthor
+	@$(MAKE) check-open-prs
+	@$(MAKE) check-twig-extra
+	@$(MAKE) check-no-raw-html-form
+	@$(MAKE) composer-sync
+	@$(MAKE) cs-fix
+	@$(MAKE) cs-check
+	@$(MAKE) rector-dry
+	@$(MAKE) phpstan
+	@$(MAKE) igor
+	@$(MAKE) validate-translations
+	@$(MAKE) coverage-check
+	@$(MAKE) release-check-demos
+
+# REQ-REL-003: fail on unresolved open pull requests.
+check-open-prs:
+	@chmod +x .scripts/check-open-prs.sh
+	@GH_REPO=nowo-tech/MaintenanceModeBundle ./.scripts/check-open-prs.sh
+
+# REQ-TWIG-005: no raw <form>/<input>/<textarea>/<select> in bundle views or demo templates.
+check-no-raw-html-form:
+	@chmod +x .scripts/check-no-raw-html-form.sh
+	@./.scripts/check-no-raw-html-form.sh
 
 release-check-demos:
 	@if [ -f demo/Makefile ]; then $(MAKE) -C demo release-check; else echo "No demo/Makefile — skip release-check-demos"; fi

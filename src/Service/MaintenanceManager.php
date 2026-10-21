@@ -12,19 +12,39 @@ use Nowo\MaintenanceModeBundle\Model\MaintenanceHistoryEntry;
 use Nowo\MaintenanceModeBundle\Model\MaintenanceState;
 use Nowo\MaintenanceModeBundle\Storage\MaintenanceHistoryStorageInterface;
 use Nowo\MaintenanceModeBundle\Storage\MaintenanceStateStorageInterface;
+use Psr\Clock\ClockInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
+use Symfony\Component\Clock\NativeClock;
 
 /**
  * Application service for enabling / disabling / scheduling maintenance.
  */
 final class MaintenanceManager
 {
+    private readonly ClockInterface $clock;
+
+    private readonly LoggerInterface $logger;
+
+    /**
+     * @param MaintenanceStateStorageInterface $stateStorage Persists the current state
+     * @param MaintenanceHistoryStorageInterface $historyStorage Appends toggle/schedule history
+     * @param string|null $defaultMessage Message used when enable() gets none
+     * @param EventDispatcherInterface|null $eventDispatcher Dispatches enabled/disabled/updated events
+     * @param ClockInterface|null $clock Time source (REQ-DI-001); system clock when null
+     * @param LoggerInterface|null $logger Logs state changes without actor names (REQ-OBS-001)
+     */
     public function __construct(
         private readonly MaintenanceStateStorageInterface $stateStorage,
         private readonly MaintenanceHistoryStorageInterface $historyStorage,
         private readonly ?string $defaultMessage = null,
         private readonly ?EventDispatcherInterface $eventDispatcher = null,
+        ?ClockInterface $clock = null,
+        ?LoggerInterface $logger = null,
     ) {
+        $this->clock  = $clock ?? new NativeClock();
+        $this->logger = $logger ?? new NullLogger();
     }
 
     public function getState(): MaintenanceState
@@ -34,12 +54,12 @@ final class MaintenanceManager
 
     public function isEffectivelyEnabled(?DateTimeImmutable $now = null): bool
     {
-        return $this->getState()->isEffectivelyEnabled($now);
+        return $this->getState()->isEffectivelyEnabled($now ?? $this->clock->now());
     }
 
     public function enable(?string $message = null, ?string $updatedBy = null, ?DateTimeImmutable $at = null): MaintenanceState
     {
-        $at ??= new DateTimeImmutable();
+        $at ??= $this->clock->now();
         $state = $this->stateStorage->load()
             ->withEnabled(true)
             ->withActivatedAt($at)
@@ -57,13 +77,14 @@ final class MaintenanceManager
             message: $state->getMessage(),
         ));
         $this->eventDispatcher?->dispatch(new MaintenanceEnabledEvent($state, $updatedBy));
+        $this->logger->info('Maintenance mode enabled.', $this->logContext('enable', $updatedBy));
 
         return $state;
     }
 
     public function disable(?string $updatedBy = null, ?DateTimeImmutable $at = null): MaintenanceState
     {
-        $at ??= new DateTimeImmutable();
+        $at ??= $this->clock->now();
         $state = $this->stateStorage->load()
             ->withEnabled(false)
             ->withDeactivatedAt($at)
@@ -80,6 +101,7 @@ final class MaintenanceManager
             message: $state->getMessage(),
         ));
         $this->eventDispatcher?->dispatch(new MaintenanceDisabledEvent($state, $updatedBy));
+        $this->logger->info('Maintenance mode disabled.', $this->logContext('disable', $updatedBy));
 
         return $state;
     }
@@ -120,7 +142,7 @@ final class MaintenanceManager
         ?string $updatedBy = null,
         string $action = 'update',
     ): MaintenanceState {
-        $at = new DateTimeImmutable();
+        $at = $this->clock->now();
         // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
         $state = $state->withUpdatedBy($updatedBy);
         // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
@@ -134,6 +156,7 @@ final class MaintenanceManager
             context: $state->toArray(),
         ));
         $this->eventDispatcher?->dispatch(new MaintenanceUpdatedEvent($state, $action, $updatedBy));
+        $this->logger->info('Maintenance mode state updated.', $this->logContext($action, $updatedBy));
 
         return $state;
     }
@@ -144,5 +167,15 @@ final class MaintenanceManager
     public function history(int $limit = 50): array
     {
         return $this->historyStorage->list($limit);
+    }
+
+    /**
+     * Structured log context; the actor name is not logged (only whether one was given).
+     *
+     * @return array{bundle: string, action: string, by_user: bool}
+     */
+    private function logContext(string $action, ?string $updatedBy): array
+    {
+        return ['bundle' => 'maintenance_mode', 'action' => $action, 'by_user' => $updatedBy !== null && $updatedBy !== ''];
     }
 }

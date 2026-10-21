@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Nowo\MaintenanceModeBundle\Security;
 
 use Psr\Cache\CacheItemPoolInterface;
+use Psr\Clock\ClockInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Throwable;
@@ -38,6 +40,8 @@ final class PasswordMaintenanceAccessGate implements MaintenanceAccessGateInterf
         private readonly int $maxAttempts = 5,
         private readonly int $lockoutSeconds = 900,
         private readonly ?CacheItemPoolInterface $cache = null,
+        private readonly ?ClockInterface $clock = null,
+        private readonly ?LoggerInterface $logger = null,
     ) {
     }
 
@@ -80,6 +84,8 @@ final class PasswordMaintenanceAccessGate implements MaintenanceAccessGateInterf
         }
 
         if ($this->isLockedOut($request)) {
+            $this->logger?->warning('Maintenance panel login refused: too many failed attempts.', ['bundle' => 'maintenance_mode', 'action' => 'login_locked_out']);
+
             return false;
         }
 
@@ -87,6 +93,7 @@ final class PasswordMaintenanceAccessGate implements MaintenanceAccessGateInterf
         $hash = $this->passwordHash;
         if (!password_verify($password, $hash)) {
             $this->recordFailure($request);
+            $this->logger?->warning('Maintenance panel login failed.', ['bundle' => 'maintenance_mode', 'action' => 'login_failed']);
 
             return false;
         }
@@ -98,6 +105,7 @@ final class PasswordMaintenanceAccessGate implements MaintenanceAccessGateInterf
             $session->set(self::SESSION_KEY, true);
         }
         $this->clearCacheFailures($request);
+        $this->logger?->info('Maintenance panel login succeeded.', ['bundle' => 'maintenance_mode', 'action' => 'login']);
 
         return true;
     }
@@ -109,9 +117,17 @@ final class PasswordMaintenanceAccessGate implements MaintenanceAccessGateInterf
         }
     }
 
+    /**
+     * Current Unix time from the injected clock (REQ-DI-001), system time when none is wired.
+     */
+    private function timestamp(): int
+    {
+        return $this->clock?->now()->getTimestamp() ?? time();
+    }
+
     private function recordFailure(Request $request): void
     {
-        $now = time();
+        $now = $this->timestamp();
         if ($request->hasSession()) {
             $failures   = $this->sessionFailures($request);
             $failures[] = $now;
@@ -178,7 +194,7 @@ final class PasswordMaintenanceAccessGate implements MaintenanceAccessGateInterf
         if (!is_array($failures)) {
             return [];
         }
-        $cutoff = time() - $this->lockoutSeconds;
+        $cutoff = $this->timestamp() - $this->lockoutSeconds;
 
         return array_values(array_filter($failures, static fn (mixed $ts): bool => is_int($ts) && $ts > $cutoff));
     }

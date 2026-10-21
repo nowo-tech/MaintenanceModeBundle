@@ -3,7 +3,7 @@ nowo_maintenance_mode_panel:
     type: attribute
     prefix: '%nowo.maintenance_mode.panel.path_prefix%'
 
+# Preview route (name nowo_maintenance_mode_preview, path from nowo_maintenance_mode.preview.path) is a #[Route] attribute.
 nowo_maintenance_mode_preview:
-    path: '%nowo.maintenance_mode.preview.path%'
-    controller: Nowo\MaintenanceModeBundle\Controller\MaintenancePreviewController
-    methods: [GET]
+    resource: '../../Controller/MaintenancePreviewController.php'
+    type: attribute

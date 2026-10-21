@@ -22,6 +22,7 @@ use Nowo\MaintenanceModeBundle\Storage\MaintenanceHistoryStorageInterface;
 use Nowo\MaintenanceModeBundle\Storage\MaintenanceStateStorageInterface;
 use Nowo\MaintenanceModeBundle\Twig\MaintenanceExtension as TwigMaintenanceExtension;
 use Nowo\MaintenanceModeBundle\Twig\PanelChrome;
+use Psr\Clock\ClockInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -258,7 +259,9 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
             ->setArgument('$enabled', (bool) ($security['password_protection'] ?? true))
             ->setArgument('$maxAttempts', (int) ($security['login_max_attempts'] ?? 5))
             ->setArgument('$lockoutSeconds', (int) ($security['login_lockout_seconds'] ?? 900))
-            ->setArgument('$cache', new Reference('cache.app', ContainerBuilder::IGNORE_ON_INVALID_REFERENCE));
+            ->setArgument('$cache', new Reference('cache.app', ContainerBuilder::IGNORE_ON_INVALID_REFERENCE))
+            ->setArgument('$clock', new Reference(ClockInterface::class, ContainerBuilder::IGNORE_ON_INVALID_REFERENCE))
+            ->setArgument('$logger', new Reference('logger', ContainerBuilder::IGNORE_ON_INVALID_REFERENCE));
 
         $container->setAlias(MaintenanceAccessGateInterface::class, PasswordMaintenanceAccessGate::class)->setPublic(false);
     }
@@ -315,7 +318,9 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
             ->setArgument('$stateStorage', new Reference(MaintenanceStateStorageInterface::class))
             ->setArgument('$historyStorage', new Reference(MaintenanceHistoryStorageInterface::class))
             ->setArgument('$defaultMessage', $config['default_message'])
-            ->setArgument('$eventDispatcher', new Reference('event_dispatcher', ContainerBuilder::IGNORE_ON_INVALID_REFERENCE));
+            ->setArgument('$eventDispatcher', new Reference('event_dispatcher', ContainerBuilder::IGNORE_ON_INVALID_REFERENCE))
+            ->setArgument('$clock', new Reference(ClockInterface::class, ContainerBuilder::IGNORE_ON_INVALID_REFERENCE))
+            ->setArgument('$logger', new Reference('logger', ContainerBuilder::IGNORE_ON_INVALID_REFERENCE));
     }
 
     /**
@@ -339,8 +344,11 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
             ->setArgument('$bypassToken', is_string($security['bypass_token'] ?? null) ? $security['bypass_token'] : null)
             ->setArgument('$bypassQueryParameter', (string) ($security['bypass_query_parameter'] ?? 'maintenance_bypass'))
             ->setArgument('$bypassCookieName', (string) ($security['bypass_cookie_name'] ?? 'nowo_maintenance_bypass'))
-            ->setArgument('$bypassSetCookie', (bool) ($security['bypass_set_cookie'] ?? true));
+            ->setArgument('$bypassSetCookie', (bool) ($security['bypass_set_cookie'] ?? true))
+            ->setArgument('$clock', new Reference(ClockInterface::class, ContainerBuilder::IGNORE_ON_INVALID_REFERENCE));
 
+        // Tagged here instead of #[AsEventListener] because the kernel.request priority is configurable
+        // (`subscriber_priority`), which an attribute cannot read (documented exception to REQ-SF-003).
         $definition->clearTags();
         $definition->addTag('kernel.event_listener', [
             'event'    => 'kernel.request',
@@ -409,6 +417,7 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
             ->setArgument('$defaultMessage', $config['default_message'])
             ->setArgument('$statusCode', (int) $config['status_code'])
             ->setArgument('$retryAfter', (int) $config['retry_after'])
+            ->setArgument('$clock', new Reference(ClockInterface::class, ContainerBuilder::IGNORE_ON_INVALID_REFERENCE))
             ->setPublic(true);
     }
 

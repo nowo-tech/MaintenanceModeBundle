@@ -7,8 +7,11 @@ namespace Nowo\MaintenanceModeBundle\Tests\Unit\Security;
 use Nowo\MaintenanceModeBundle\Security\PasswordMaintenanceAccessGate;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemPoolInterface;
+use Psr\Log\AbstractLogger;
 use RuntimeException;
+use Stringable;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
+use Symfony\Component\Clock\MockClock;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
@@ -203,5 +206,44 @@ final class PasswordMaintenanceAccessGateTest extends TestCase
         self::assertFalse($gate->authenticate($request, 'wrong'));
         self::assertFalse($gate->isLockedOut($request));
         self::assertTrue($gate->authenticate($request, 'secret'));
+    }
+
+    /**
+     * REQ-DI-001 / REQ-OBS-001: lockout windows follow the injected clock; failures, lockouts and
+     * successful logins are logged without the password or the client IP.
+     */
+    public function testLockoutFollowsInjectedClockAndLogsWithoutSecrets(): void
+    {
+        $hash   = password_hash('secret', PASSWORD_BCRYPT);
+        $clock  = new MockClock('2030-01-01 00:00:00');
+        $logger = new class extends AbstractLogger {
+            /** @var list<array{level: mixed, message: string, context: array<mixed>}> */
+            public array $records = [];
+
+            public function log($level, string|Stringable $message, array $context = []): void
+            {
+                $this->records[] = ['level' => $level, 'message' => (string) $message, 'context' => $context];
+            }
+        };
+        $gate    = new PasswordMaintenanceAccessGate($hash, true, 1, 60, null, $clock, $logger);
+        $request = Request::create('/', server: ['REMOTE_ADDR' => '203.0.113.7']);
+        $request->setSession(new Session(new MockArraySessionStorage()));
+
+        self::assertFalse($gate->authenticate($request, 'wrong-password'));
+        self::assertTrue($gate->isLockedOut($request));
+        self::assertFalse($gate->authenticate($request, 'secret'));
+
+        $clock->sleep(61);
+        self::assertFalse($gate->isLockedOut($request));
+        self::assertTrue($gate->authenticate($request, 'secret'));
+
+        self::assertSame(
+            ['login_failed', 'login_locked_out', 'login'],
+            array_map(static fn (array $record): string => $record['context']['action'], $logger->records),
+        );
+        self::assertSame(['warning', 'warning', 'info'], array_column($logger->records, 'level'));
+        $serialized = serialize($logger->records);
+        self::assertStringNotContainsString('wrong-password', $serialized);
+        self::assertStringNotContainsString('203.0.113.7', $serialized);
     }
 }
