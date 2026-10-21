@@ -3,6 +3,7 @@
 ## Table of contents
 
 - [Unreleased](#unreleased)
+- [To 1.11.0](#to-1110)
 - [To 1.10.2](#to-1102)
 - [To 1.10.1](#to-1101)
 - [To 1.10.0](#to-1100)
@@ -77,6 +78,14 @@
   - [After upgrading](#after-upgrading-1)
 
 ## Unreleased
+
+## To 1.11.0
+
+From **1.10.2**:
+
+```bash
+composer update nowo-tech/maintenance-mode-bundle
+```
 
 - **New dependencies:** `symfony/clock`, `psr/clock` and `psr/log` are now required (Composer installs them). With FrameworkBundle, the `clock` and `logger` services are injected automatically; nothing to configure.
 - **Logging:** maintenance state changes are logged at `info`, panel login failures / lockouts at `warning` (no operator names, IPs or secrets). Route them to a dedicated Monolog channel or level if they are too verbose for your production logs.

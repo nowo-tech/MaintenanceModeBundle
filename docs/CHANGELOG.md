@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Table of contents
 
 - [[Unreleased]](#unreleased)
+- [[1.11.0] - 2026-10-21](#1110---2026-10-21)
 - [[1.10.2] - 2026-10-19](#1102---2026-10-19)
 - [[1.10.1] - 2026-10-18](#1101---2026-10-18)
 - [[1.10.0] - 2026-10-18](#1100---2026-10-18)
@@ -40,6 +41,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.11.0] - 2026-10-21
+
+Injectable clock and logger, attribute preview route, CI PHPStan, release-check gates, dependency refresh. See [UPGRADING](UPGRADING.md#to-1110).
+
 ### Changed
 
 - Dependencies refreshed (Composer and pnpm/npm lock files of the bundle and its demos, campaign 2026-10-19).
@@ -56,6 +61,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `.scripts/check-no-cursor-coauthor.sh` also runs inside git worktrees (`.git` file instead of directory).
 - Documentation: wave-1 REQ compliance — canonical issue templates, README documentation list order (PSR under Additional documentation), CONTRIBUTING Cursor Agent queue settings (REQ-IDE-006), tables of contents on long docs, Spec Kit inventory refresh after the UiKit panel migration (66/66).
+
+[1.11.0]: https://github.com/nowo-tech/MaintenanceModeBundle/releases/tag/v1.11.0
 
 ## [1.10.2] - 2026-10-19
 
@@ -500,7 +507,7 @@ First stable release.
 - PHP `>=8.2`, `<8.6` (Symfony **8.x** requires PHP **8.4+**)
 - Symfony floor **7.4** (CI / mandatory minors: **7.4**, **8.0**, **8.1**)
 
-[Unreleased]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.10.2...HEAD
+[Unreleased]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.11.0...HEAD
 [1.5.8]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.7...v1.5.8
 [1.5.7]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.6...v1.5.7
 [1.5.6]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.5...v1.5.6
