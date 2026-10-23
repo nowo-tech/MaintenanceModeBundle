@@ -806,6 +806,17 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         enabled?: mixed, // null = enable when kernel.debug is true. Set false to disable even in debug. // Default: null
  *         path?: scalar|Param|null, // URL path for the preview (auto-excluded from 503). // Default: "/_maintenance_preview"
  *     },
+ *     page?: array{ // Optional parts of the public maintenance page (1.12), so hosts need no template override for them.
+ *         countdown?: bool|Param, // Show a live countdown to the scheduled end (a small nonced script; off = no JavaScript at all). // Default: false
+ *         csp_nonce_attribute?: scalar|Param|null, // Request attribute holding the CSP nonce for the countdown script. // Default: "csp_nonce"
+ *         illustration?: array{ // Image above the badge (asset paths or URLs; webp is offered first when set).
+ *             src?: scalar|Param|null, // Default: null
+ *             webp?: scalar|Param|null, // Default: null
+ *             alt?: scalar|Param|null, // Translation key or text (NowoMaintenanceModeBundle domain falls back to the text). // Default: ""
+ *             width?: int|Param, // Default: null
+ *             height?: int|Param, // Default: null
+ *         },
+ *     },
  *     panel?: array{ // Deprecated since 1.10: use web_ui.enabled and web_ui.path_prefix.
  *         enabled?: bool|Param, // Deprecated: The "nowo_maintenance_mode.panel.enabled.enabled" option is deprecated, use "nowo_maintenance_mode.web_ui.enabled" instead. // Deprecated alias of web_ui.enabled.
  *         path_prefix?: scalar|Param|null, // Deprecated: The "nowo_maintenance_mode.panel.path_prefix.path_prefix" option is deprecated, use "nowo_maintenance_mode.web_ui.path_prefix" instead. // Deprecated alias of web_ui.path_prefix.
@@ -819,6 +830,8 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         history_per_page?: int|Param, // History entries per page (UiKit pagination). // Default: 25
  *         css_framework?: "bootstrap"|"bootstrap4"|"bootstrap5"|"tailwind"|"foundation"|"custom"|"tabler"|"none"|Param, // Deprecated: The "nowo_maintenance_mode.web_ui.css_framework.css_framework" option is deprecated, set "nowo_ui_kit.css_framework" instead. // Deprecated: set nowo_ui_kit.css_framework (seeded from this key when the host does not set it).
  *         icon_set?: "bootstrap-icons"|"tabler-icons"|"ux_icon"|"svg_inline"|"none"|Param, // Deprecated: The "nowo_maintenance_mode.web_ui.icon_set.icon_set" option is deprecated, set "nowo_ui_kit.icon_set" instead. // Deprecated: set nowo_ui_kit.icon_set (seeded from this key when the host does not set it).
+ *         show_preview_link?: bool|Param, // Link to the public page preview under the panel status (1.12; needs preview.enabled). // Default: false
+ *         form_theme?: scalar|Param|null, // Form theme of the panel section forms (1.12), e.g. @NowoUiKit/form/nowo_ui_layout.html.twig; null = the application default. // Default: null
  *         show_page_header?: bool|Param, // Deprecated: The "nowo_maintenance_mode.web_ui.show_page_header.show_page_header" option is deprecated and has no effect: the UiKit page_header partial renders the page header. // Deprecated, no effect: the UiKit page_header partial renders the header (hide or restyle it in nowo_ui_kit.theme).
  *         document_title?: bool|Param, // Deprecated: The "nowo_maintenance_mode.web_ui.document_title.document_title" option is deprecated and has no effect: the scaffolds fill nowo_ui_document_title. // Deprecated, no effect: the scaffolds fill nowo_ui_document_title.
  *         test_ids?: bool|Param, // Deprecated: The "nowo_maintenance_mode.web_ui.test_ids.test_ids" option is deprecated and has no effect: the data-testid hooks are always rendered. // Deprecated, no effect: the data-testid hooks are always rendered.
@@ -961,6 +974,35 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *             attributes?: array<string, array<string, mixed>>,
  *             header_actions_in_filters?: bool|Param, // list only: render the page-header actions at the end of the filter row instead of the page header (ListPage::headerActionsInFilters wins when set; unset = false).
  *         }>,
+ *     },
+ *     error_pages?: array{ // Kit error pages (2.6): templates/bundles/TwigBundle/Exception/error.html.twig = {% extends '@NowoUiKit/error/status.html.twig' %}.
+ *         layout_template?: scalar|Param|null, // Document the status template extends: the kit layout, or a host template extending it (own <head> assets, brand, chat dock…). // Default: "@NowoUiKit/error/layout.html.twig"
+ *         translation_domain?: scalar|Param|null, // Domain of the page texts (e.g. messages). Keys missing there fall back to UiKit's own NowoUiKitBundle error.* texts. // Default: "NowoUiKitBundle"
+ *         translation_prefix?: scalar|Param|null, // Key prefix: <prefix>.<code>.title|lead|hint|image_alt, <prefix>.generic.*, <prefix>.home|retry|back|retry_after|auto_retry|skip_to_content. // Default: "error"
+ *         home_path?: scalar|Param|null, // Href of the "Back to home" button. // Default: "/"
+ *         illustrations?: array<string, Param|string|array{ // Default: []
+ *             path?: scalar|Param|null,
+ *             width?: int|Param, // Default: null
+ *             height?: int|Param, // Default: null
+ *             webp?: bool|Param|null, // Default: null
+ *             extension?: scalar|Param|null, // Default: null
+ *         }>,
+ *         illustration_width?: int|Param, // Default intrinsic width of the illustrations. // Default: 1024
+ *         illustration_height?: int|Param, // Default intrinsic height of the illustrations. // Default: 683
+ *         webp?: bool|Param, // Illustrations ship a .webp next to the fallback image (<source type="image/webp">). // Default: true
+ *         retry_statuses?: list<int|Param>,
+ *         back_link_statuses?: list<int|Param>,
+ *         auto_retry_seconds?: int|Param, // A 5xx on GET reloads itself after this many seconds (REQ-ERROR-001 item 10; 0 = never). Never on POST. // Default: 600
+ *         theme_storage?: scalar|Param|null, // localStorage key of the theme (data-nowo-ui-theme-storage on <html> and the toggle), e.g. the host's beacon-theme. // Default: "nowo-ui-theme"
+ *         theme_toggle?: bool|Param, // Render the light / dark toggle in the top controls. // Default: true
+ *         html_attributes?: array<string, mixed>,
+ *     },
+ *     shell?: array{ // Signed-in app shell (2.6, @NowoUiKit/shell/_open|_close|_shell|_burger.html.twig; Twig global nowo_ui_kit_shell).
+ *         kit_styles?: bool|Param, // Add the kit shell classes (nowo-ui-shell, nowo-ui-header, nowo-ui-aside…) painted by nowo-ui.css and driven by nowo-ui-shell.js. false: only the app_* slot classes (host shell CSS / JS). // Default: true
+ *         sidebar_cookie?: scalar|Param|null, // Cookie holding the desktop aside mode (e.g. beacon_sidebar), read server-side so the first paint is already collapsed / rail; null = expanded unless the template passes collapsed. // Default: null
+ *         sidebar_hidden_value?: scalar|Param|null, // Cookie value of the hidden aside. // Default: "collapsed"
+ *         sidebar_rail_value?: scalar|Param|null, // Cookie value of the icons-only rail. // Default: "rail"
+ *         sidebar_storage?: scalar|Param|null, // localStorage key of the aside mode (data-nowo-ui-sidebar-storage on the shell root; kit_styles + rail only). // Default: null
  *     },
  * }
  * @psalm-type NowoHotReloadConfig = array{
