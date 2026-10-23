@@ -1,7 +1,7 @@
 {#
   Public maintenance page (503 and the dev preview) — REQ-UI-003 unique page on the guest layout
   (page.layout ?? nowo_ui_layout.guest), painted by the UiKit theme slots and --nowo-ui-* tokens. No CDN, no inline
-  styles, no JavaScript (the UiKit scripts are not loaded: nowo_ui_scripts only holds maintenance_scripts, and the
+  styles, no JavaScript unless page.countdown is on (the UiKit scripts are not loaded: nowo_ui_scripts only holds maintenance_scripts, and the
   layout's pre-paint theme boot is skipped with nowo_ui_theme_boot = false), no
   flashes (the 503 never reads or starts the session). Rendered by MaintenanceRequestSubscriber before the firewall:
   keep host overrides free of database, session and security calls.
@@ -21,6 +21,10 @@
    from AuthPage::scripts = false); nowo_ui_theme_boot = false kept for host guest layouts that only read that flag. #}
 {% set nowo_ui_scripts_enabled = (page ?? null) ? page.scripts : false %}
 {% set nowo_ui_theme_boot = false %}
+{# 1.12 options (nowo_maintenance_mode.page): illustration, countdown to the scheduled end. #}
+{% set _mm_page = nowo_maintenance_page ?? {} %}
+{% set _mm_until = (_mm_page.countdown ?? false) and (state ?? null) and state.scheduledDisableAt ? state.scheduledDisableAt : null %}
+{% set _mm_art = _mm_page.illustration ?? {} %}
 
 {% block nowo_ui_document_title %}{% block title %}{{ 'maintenance.page.title'|trans }}{% endblock %}{% endblock %}
 
@@ -42,6 +46,14 @@
     <section class="{{ nowo_ui_class('auth_panel', _b) }} nowo-maintenance-page" data-nowo-ui-page="maintenance" data-nowo-ui-region="panel" data-testid="maintenance-page"{{ nowo_ui_attrs('auth_panel', _b) }}>
         <div class="{{ nowo_ui_class('card_body', _b) }}">
             {%~ block maintenance_brand %}
+            {% if _mm_art.src ?? null %}
+            <figure class="nowo-maintenance-page__figure">
+                <picture>
+                    {% if _mm_art.webp %}<source type="image/webp" srcset="{{ _mm_art.webp starts with '/' or _mm_art.webp matches '{^https?://}' ? _mm_art.webp : asset(_mm_art.webp) }}">{% endif %}
+                    <img class="nowo-maintenance-page__img" src="{{ _mm_art.src starts with '/' or _mm_art.src matches '{^https?://}' ? _mm_art.src : asset(_mm_art.src) }}"{% if _mm_art.width %} width="{{ _mm_art.width }}"{% endif %}{% if _mm_art.height %} height="{{ _mm_art.height }}"{% endif %} alt="{{ _mm_art.alt ? _mm_art.alt|trans : '' }}" decoding="async" fetchpriority="high">
+                </picture>
+            </figure>
+            {% endif %}
             <p class="nowo-ui-auth-panel__brand"><span class="{{ nowo_ui_class('badge_info', _b) }}">{{ 'maintenance.page.badge'|trans }}</span></p>
             {%~ endblock %}
             {%~ block maintenance_heading %}
@@ -56,6 +68,9 @@
         </div>
         <footer class="{{ nowo_ui_class('auth_footer', _b) }}">
             {%~ block maintenance_footer %}
+            {% if _mm_until %}
+            <p class="nowo-maintenance-page__eta" id="nowo-maintenance-countdown" data-testid="maintenance-countdown" data-until="{{ _mm_until|date('c') }}">{{ _mm_until|date('Y-m-d H:i T') }}</p>
+            {% endif %}
             <p>{{ 'maintenance.page.thanks'|trans }}</p>
             {%~ endblock %}
         </footer>
@@ -64,5 +79,23 @@
 {% endblock %}
 
 {% block nowo_ui_scripts %}
-    {%~ block maintenance_scripts %}{% endblock %}
+    {%~ block maintenance_scripts %}
+    {% if _mm_until %}
+        {% set _mm_nonce = (_mm_page.csp_nonce_attribute ?? null) and app.request ?? null ? app.request.attributes.get(_mm_page.csp_nonce_attribute)|default('') : '' %}
+        <script{% if _mm_nonce %} nonce="{{ _mm_nonce }}"{% endif %}>
+        (function () {
+            var el = document.getElementById('nowo-maintenance-countdown');
+            var target = el ? Date.parse(el.getAttribute('data-until') || '') : NaN;
+            if (!el || isNaN(target)) { return; }
+            function pad(n) { return String(n).padStart(2, '0'); }
+            function tick() {
+                var diff = Math.max(0, Math.floor((target - Date.now()) / 1000));
+                el.textContent = pad(Math.floor(diff / 3600)) + ':' + pad(Math.floor((diff % 3600) / 60)) + ':' + pad(diff % 60);
+                if (diff > 0) { window.setTimeout(tick, 1000); }
+            }
+            tick();
+        })();
+        </script>
+    {% endif %}
+    {%~ endblock %}
 {% endblock %}

@@ -126,5 +126,6 @@ panel.status.enabled: ACTIEF
 panel.status.manual: Handmatig
 panel.status.off: uit
 panel.status.on: AAN
+panel.status.preview: Voorbeeld onderhoudspagina
 panel.title: Onderhoudspaneel
 panel.updated_by: Bijgewerkt door

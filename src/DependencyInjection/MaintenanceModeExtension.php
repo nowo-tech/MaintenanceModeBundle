@@ -442,6 +442,10 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
                 'test_ids'         => (bool) ($webUi['test_ids'] ?? false),
                 'classes'          => $webUi['classes'],
                 'partials'         => $webUi['partials'],
+            ])
+            ->setArgument('$page', $config['page'] + [
+                'show_preview_link' => (bool) ($webUi['show_preview_link'] ?? false),
+                'form_theme'        => $webUi['form_theme'] ?? null,
             ]);
     }
 }

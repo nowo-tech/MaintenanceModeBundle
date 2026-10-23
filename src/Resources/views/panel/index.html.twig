@@ -26,8 +26,14 @@
                 <span class="{{ nowo_ui_class(state.effectivelyEnabled ? 'badge_warning' : 'badge_success', _b) }}" data-testid="maintenance-status-effective">{{ (state.effectivelyEnabled ? 'panel.status.on' : 'panel.status.off')|trans }}</span>
             </p>
             {{ include(nowo_ui_partial('detail_list', _b), {items: status_items, bundle: _b}, false) }}
+            {% if nowo_maintenance_page.show_preview_link ?? false %}
+                <p class="nowo-maintenance-panel__preview"><a class="{{ nowo_ui_class('btn_secondary', _b) }}" href="{{ path('nowo_maintenance_mode_preview') }}" target="_blank" rel="noopener noreferrer" data-testid="maintenance-preview-link">{{ 'panel.status.preview'|trans }}</a></p>
+            {% endif %}
         {% else %}
             {#- section form + its actions row (SettingsSection::actions, UiKit 2.2: Disable / Clear schedule) -#}
+            {% if section.form and (nowo_maintenance_page.form_theme ?? null) %}
+                {% form_theme section.form with [nowo_maintenance_page.form_theme] %}
+            {% endif %}
             {{ parent() }}
         {% endif %}
     </div>

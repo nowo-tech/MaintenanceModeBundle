@@ -126,5 +126,6 @@ panel.status.enabled: ATTIVO
 panel.status.manual: Manuale
 panel.status.off: disattivo
 panel.status.on: ATTIVO
+panel.status.preview: Anteprima pagina manutenzione
 panel.title: Pannello manutenzione
 panel.updated_by: Aggiornato da

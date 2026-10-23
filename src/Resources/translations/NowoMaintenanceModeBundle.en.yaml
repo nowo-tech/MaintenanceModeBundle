@@ -126,5 +126,6 @@ panel.status.enabled: ENABLED
 panel.status.manual: Manual
 panel.status.off: off
 panel.status.on: ON
+panel.status.preview: Maintenance page preview
 panel.title: Maintenance panel
 panel.updated_by: Updated by

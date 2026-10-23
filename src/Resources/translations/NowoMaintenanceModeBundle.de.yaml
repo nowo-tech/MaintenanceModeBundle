@@ -126,5 +126,6 @@ panel.status.enabled: AKTIV
 panel.status.manual: Manuell
 panel.status.off: aus
 panel.status.on: AN
+panel.status.preview: Wartungsseite-Vorschau
 panel.title: Wartungs-Panel
 panel.updated_by: Aktualisiert von

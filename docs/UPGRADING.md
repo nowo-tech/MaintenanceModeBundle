@@ -3,6 +3,7 @@
 ## Table of contents
 
 - [Unreleased](#unreleased)
+- [To 1.12.0](#to-1120)
 - [To 1.11.0](#to-1110)
 - [To 1.10.2](#to-1102)
 - [To 1.10.1](#to-1101)
@@ -78,6 +79,12 @@
   - [After upgrading](#after-upgrading-1)
 
 ## Unreleased
+
+## To 1.12.0
+
+From **1.11.0**: `composer update nowo-tech/maintenance-mode-bundle`. Optional: overrides of the public page that only
+add an illustration or a countdown, and panel overrides that only add the preview link or a form theme, can be replaced
+by `page.illustration`, `page.countdown`, `web_ui.show_preview_link` and `web_ui.form_theme` (see CONFIGURATION).
 
 ## To 1.11.0
 

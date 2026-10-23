@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Table of contents
 
 - [[Unreleased]](#unreleased)
+- [[1.12.0] - 2026-10-23](#1120---2026-10-23)
 - [[1.11.0] - 2026-10-21](#1110---2026-10-21)
 - [[1.10.2] - 2026-10-19](#1102---2026-10-19)
 - [[1.10.1] - 2026-10-18](#1101---2026-10-18)
@@ -40,6 +41,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [[1.0.0] - 2026-07-24](#100---2026-07-24)
 
 ## [Unreleased]
+
+## [1.12.0] - 2026-10-23
+
+### Added
+
+- Public page options, so hosts no longer override `maintenance/page.html.twig` for them: `page.illustration` (image
+  above the badge, WebP first) and `page.countdown` (a live countdown to the scheduled end, the script nonced from
+  `page.csp_nonce_attribute`; without it the page still ships no JavaScript).
+- Panel options: `web_ui.show_preview_link` (a link to the public page preview under the status) and
+  `web_ui.form_theme` (form theme of the section forms, e.g. UiKit's `nowo_ui_layout`). New key
+  `panel.status.preview` in the 7 locales.
 
 ## [1.11.0] - 2026-10-21
 

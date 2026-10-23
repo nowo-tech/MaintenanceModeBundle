@@ -11,6 +11,11 @@ Root alias: `nowo_maintenance_mode`.
 | `subscriber_priority` | `31` | `kernel.request` listener priority (default after router so route/controller exclusions work) |
 | `preview.enabled` | `null` (= `kernel.debug`) | Dev preview of the configured public page (like `/_error/503`) |
 | `preview.path` | `/_maintenance_preview` | Preview URL (auto-excluded from 503) |
+| `page.countdown` | `false` | *1.12*: live countdown to the scheduled end on the public page (a small script with the CSP nonce of `page.csp_nonce_attribute`); off = no JavaScript at all |
+| `page.csp_nonce_attribute` | `csp_nonce` | *1.12*: request attribute holding the CSP nonce for the countdown script |
+| `page.illustration.src` / `webp` / `alt` / `width` / `height` | `null` / `null` / `''` / `null` / `null` | *1.12*: image above the badge (asset path or URL; `webp` offered first; `alt` is a translation key or text) |
+| `web_ui.show_preview_link` | `false` | *1.12*: link to the public page preview (`preview.path`) under the panel status |
+| `web_ui.form_theme` | `null` | *1.12*: form theme of the panel section forms, e.g. `@NowoUiKit/form/nowo_ui_layout.html.twig` |
 | `web_ui.enabled` | `true` | Register the admin panel (panel, history, password login). *Since 1.10* also replaces `panel.enabled` |
 | `web_ui.path_prefix` | `/_maintenance` | Panel URL prefix (auto-excluded, segment-aware: `/_maintenance` and `/_maintenance/…`, not `/_maintenance-public`) |
 | `web_ui.layout_template` | `null` | Layout the panel scaffolds extend instead of `nowo_ui_kit.layouts.admin` (null = UiKit layout). Must render the UiKit canonical blocks; a 1.x layout that renders `body` is wrapped in a deprecated bridge. The password login always uses `nowo_ui_kit.layouts.guest` |

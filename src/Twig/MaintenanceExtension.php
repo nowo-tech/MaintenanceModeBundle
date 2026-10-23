@@ -20,8 +20,18 @@ final class MaintenanceExtension extends AbstractExtension implements GlobalsInt
      */
     private readonly array $chrome;
 
+    /** Optional page parts and panel options (1.12), exposed as `nowo_maintenance_page`. */
+    public const PAGE_DEFAULTS = [
+        'countdown'           => false,
+        'csp_nonce_attribute' => 'csp_nonce',
+        'illustration'        => ['src' => null, 'webp' => null, 'alt' => '', 'width' => null, 'height' => null],
+        'show_preview_link'   => false,
+        'form_theme'          => null,
+    ];
+
     /**
      * @param array<string, mixed> $chrome Admin chrome hooks (see PanelChrome::DEFAULTS); missing keys fall back to defaults
+     * @param array<string, mixed> $page `page.*` and the panel options `show_preview_link` / `form_theme` (1.12)
      */
     public function __construct(
         private readonly MaintenanceManager $manager,
@@ -29,6 +39,7 @@ final class MaintenanceExtension extends AbstractExtension implements GlobalsInt
         private readonly string $cssFramework = 'custom',
         private readonly string $iconSet = 'none',
         array $chrome = PanelChrome::DEFAULTS,
+        private readonly array $page = self::PAGE_DEFAULTS,
     ) {
         $classes  = is_array($chrome['classes'] ?? null) ? $chrome['classes'] : [];
         $partials = is_array($chrome['partials'] ?? null) ? $chrome['partials'] : [];
@@ -66,6 +77,8 @@ final class MaintenanceExtension extends AbstractExtension implements GlobalsInt
             'nowo_maintenance_mode_css_framework'   => $this->cssFramework,
             'nowo_maintenance_mode_icon_set'        => $this->iconSet,
             'nowo_maintenance_mode_chrome'          => $this->chrome,
+            // 1.12: not deprecated — the optional page parts and panel options.
+            'nowo_maintenance_page' => array_replace(self::PAGE_DEFAULTS, $this->page),
         ];
     }
 

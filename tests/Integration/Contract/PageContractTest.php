@@ -49,6 +49,8 @@ final class PageContractTest extends PageContractTestCase
             'host/maintenance.html.twig' => "{% extends '@NowoMaintenanceModeBundle/maintenance/page.html.twig' %}{% block maintenance_heading %}<h1>Acme is upgrading</h1>{% endblock %}{% block maintenance_styles %}<link rel=\"stylesheet\" href=\"/css/acme-maintenance.css\">{% endblock %}{% block maintenance_scripts %}<script src=\"/js/acme.js\" defer></script>{% endblock %}",
             // templates.page on the host's auth scaffold with the `page` view model.
             'host/maintenance_auth.html.twig' => "{% extends '@NowoUiKit/page/auth.html.twig' %}",
+            // web_ui.form_theme (1.12): a host form theme for the panel section forms.
+            'host/form_theme.html.twig' => "{% use 'form_div_layout.html.twig' %}{% block form_widget_simple %}<input data-host-form-theme type=\"{{ type|default('text') }}\" {{ block('widget_attributes') }}>{% endblock %}",
         ];
     }
 
@@ -194,6 +196,36 @@ final class PageContractTest extends PageContractTestCase
 
         $default = $this->renderPage(new PageFixture('@NowoMaintenanceModeBundle/maintenance/page.html.twig', PageFixtures::maintenance()))->html;
         self::assertStringContainsString('We&#039;re making a few gentle improvements.', $default);
+    }
+
+    public function testPublicPageIllustrationAndCountdownOptions(): void
+    {
+        $context                          = PageFixtures::maintenance('Back soon');
+        $context['nowo_maintenance_page'] = ['countdown' => true, 'csp_nonce_attribute' => 'csp_nonce', 'illustration' => ['src' => '/img/503.png', 'webp' => '/img/503.webp', 'alt' => 'Closed sign', 'width' => 896, 'height' => 597]];
+        $html                             = $this->renderPage(new PageFixture('@NowoMaintenanceModeBundle/maintenance/page.html.twig', $context))->html;
+
+        self::assertStringContainsString('<source type="image/webp" srcset="/img/503.webp">', $html);
+        self::assertStringContainsString('<img class="nowo-maintenance-page__img" src="/img/503.png" width="896" height="597" alt="Closed sign"', $html);
+        self::assertMatchesRegularExpression('#data-testid="maintenance-countdown" data-until="2099-10-18T14:30:00[^"]*">2099-10-18 14:30#', $html);
+        self::assertStringContainsString("getElementById('nowo-maintenance-countdown')", $html);
+
+        $plain = $this->renderPage(new PageFixture('@NowoMaintenanceModeBundle/maintenance/page.html.twig', PageFixtures::maintenance() + ['nowo_maintenance_page' => ['countdown' => false]]))->html;
+        self::assertStringNotContainsString('<script', $plain, 'no countdown, no JavaScript');
+        self::assertStringNotContainsString('<figure', $plain);
+    }
+
+    public function testPanelPreviewLinkAndFormThemeOptions(): void
+    {
+        $context                          = PageFixtures::index(PageFixtures::enabledState());
+        $context['nowo_maintenance_page'] = ['show_preview_link' => true, 'form_theme' => 'host/form_theme.html.twig'];
+        $html                             = $this->renderPage(new PageFixture('@NowoMaintenanceModeBundle/panel/index.html.twig', $context))->html;
+
+        self::assertMatchesRegularExpression('#<a class="[^"]*" href="[^"]*preview" target="_blank" rel="noopener noreferrer" data-testid="maintenance-preview-link">Maintenance page preview</a>#', $html);
+        self::assertStringContainsString('data-host-form-theme', $html);
+
+        $default = $this->renderPage(new PageFixture('@NowoMaintenanceModeBundle/panel/index.html.twig', PageFixtures::index(PageFixtures::enabledState())))->html;
+        self::assertStringNotContainsString('maintenance-preview-link', $default);
+        self::assertStringNotContainsString('data-host-form-theme', $default);
     }
 
     public function testPublicPageHooksAndAuthScaffoldOverride(): void
