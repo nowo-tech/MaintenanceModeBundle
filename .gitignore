@@ -29,3 +29,6 @@
 
 # Cursor local sandbox (machine-specific; REQ-IDE-005)
 .cursor/sandbox.json
+
+# Playwright intermediate captures (REQ-DEMO-013: only WebP is committed)
+/docs/images/demo/*.png

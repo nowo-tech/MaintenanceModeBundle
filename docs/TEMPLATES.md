@@ -106,8 +106,8 @@ tokens (REQ-DEMO-013, WebP):
 
 | Page | Screenshot |
 | --- | --- |
-| Panel (`page/settings`) | ![Maintenance panel](images/demo/panel.webp) |
-| History (`page/list`, page 1 of 2) | ![Maintenance history](images/demo/history.webp) |
-| Password login (`page/auth`, wrong password) | ![Panel login](images/demo/login.webp) |
+| Panel (`page/settings`, maintenance enabled) | ![Maintenance panel](images/demo/panel.webp) |
 | Public 503 (unique page, guest layout) | ![Public maintenance page](images/demo/maintenance-page.webp) |
-| Public 503 on a phone (390 px) | ![Public maintenance page on mobile](images/demo/maintenance-page-mobile.webp) |
+
+Both are captured by `demo/symfony8/e2e/tests/screenshots.spec.ts`; refresh them with
+`make -C demo/symfony8 demo-screenshots`.

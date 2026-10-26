@@ -16,6 +16,7 @@
 3. Start the dev container: `make up` then `make install`.
 4. Run tests: `make test`, `make cs-check`, `make phpstan`, `make igor`.
 5. Pre-release: `make release-check`.
+6. Demo e2e (REQ-DEMO-013): `make -C demo/symfony8 test-e2e` (Playwright against the FrankenPHP demo) and `make -C demo/symfony8 demo-screenshots` (refreshes the README WebP screenshots in `docs/images/demo/`).
 
 ## Code style
 

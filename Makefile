@@ -7,7 +7,7 @@ COMPOSE_BIN := $(shell docker compose version >/dev/null 2>&1 && echo "docker co
 COMPOSE     := $(COMPOSE_BIN) -f $(COMPOSE_FILE)
 SERVICE_PHP := php
 
-.PHONY: help up down down-dev build shell install ensure-up test test-coverage coverage-php-percent cs-check cs-fix qa clean release-check release-check-demos demo-smoke composer-sync rector rector-dry phpstan igor update validate assets setup-hooks check-no-cursor-coauthor strip-cursor-coauthor-from-history validate-translations coverage-check check-twig-extra check-open-prs check-no-raw-html-form
+.PHONY: help up down down-dev build shell install ensure-up test test-coverage coverage-php-percent cs-check cs-fix qa clean release-check release-check-demos demo-smoke composer-sync rector rector-dry phpstan igor update validate assets setup-hooks check-no-cursor-coauthor strip-cursor-coauthor-from-history validate-translations coverage-check check-twig-extra check-open-prs check-no-raw-html-form test-e2e demo-screenshots
 
 help:
 	@echo "Maintenance Mode Bundle - Development Commands"
@@ -37,6 +37,8 @@ help:
 	@echo "  check-open-prs Fail if unresolved open GitHub PRs remain (REQ-REL-003)"
 	@echo "  check-no-raw-html-form No raw <form>/<input> in Twig (REQ-TWIG-005)"
 	@echo "  demo-smoke    REQ-TEST-011: boot demo + HTTP 200 (make -C demo demo-smoke)"
+	@echo "  test-e2e      REQ-DEMO-013: Playwright e2e against demo/symfony8"
+	@echo "  demo-screenshots REQ-DEMO-013: refresh docs/images/demo/*.webp"
 	@echo "  setup-hooks   Install git hooks (.githooks — REQ-MAKE-006 / REQ-GIT-001)"
 	@echo "  check-no-cursor-coauthor  Fail if Cursor co-author trailers exist in history"
 	@echo "  strip-cursor-coauthor-from-history  Rewrite history to remove Cursor trailers"
@@ -161,6 +163,13 @@ release-check-demos:
 
 demo-smoke:
 	@if [ -f demo/Makefile ]; then $(MAKE) -C demo demo-smoke; else echo "No demo/Makefile — skip demo-smoke"; fi
+
+# REQ-DEMO-013: Playwright e2e + README screenshots (demo/symfony8)
+test-e2e:
+	$(MAKE) -C demo/symfony8 test-e2e
+
+demo-screenshots:
+	$(MAKE) -C demo/symfony8 demo-screenshots
 
 composer-sync: ensure-up
 	$(COMPOSE) exec -T $(SERVICE_PHP) composer validate --strict

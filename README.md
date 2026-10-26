@@ -12,22 +12,18 @@ This bundle is **FrankenPHP worker mode friendly** — including when the kernel
 
 <table>
   <tr>
-    <td align="center" width="34%">
-      <img src="docs/images/demo/panel.webp" alt="Maintenance panel on the UiKit settings scaffold: demo masthead, Panel / History tabs, Logout header action, Schedule saved flash, Status card with ENABLED / ON badges and state details, Manual control card (message, Enable / Disable maintenance), Schedule card (scheduled disable set, Save / Clear schedule), Symfony web debug toolbar" />
-      <br><sub>Panel (<code>page/settings</code>)</sub>
+    <td align="center" width="50%">
+      <img src="docs/images/demo/panel.webp" alt="Maintenance panel in the demo: masthead, Panel / History tabs, Maintenance enabled flash, Status card with ENABLED / ON badges and the operator message, Manual control card (message, Enable / Disable maintenance), Schedule card, Symfony web debug toolbar" />
+      <br /><sub>Admin panel — maintenance switched on with an operator message</sub>
     </td>
-    <td align="center" width="33%">
-      <img src="docs/images/demo/maintenance-page.webp" alt="Public 503 maintenance page on the demo guest layout: Be right back badge, heading, the operator message and reassurance in a UiKit auth panel painted by the theme tokens, no CDN and no JavaScript; web debug toolbar shows 503" />
-      <br><sub>Public 503 (UiKit guest layout, no JS)</sub>
-    </td>
-    <td align="center" width="33%">
-      <img src="docs/images/demo/history.webp" alt="Maintenance history on the UiKit list scaffold: when / action badge / actor / message columns, 25 of 30 entries and UiKit pagination" />
-      <br><sub>History (<code>page/list</code>)</sub>
+    <td align="center" width="50%">
+      <img src="docs/images/demo/maintenance-page.webp" alt="Public 503 maintenance page in the demo: Be right back badge, heading, the operator message and reassurance on the UiKit guest layout, no CDN and no JavaScript; web debug toolbar shows HTTP 503" />
+      <br /><sub>Public HTTP 503 page — what visitors see meanwhile</sub>
     </td>
   </tr>
 </table>
 
-Demo: `demo/symfony8` (FrankenPHP) — host layouts `templates/layouts/{admin,guest}.html.twig`, UiKit theme tokens, password `maintenance`. More: [login](docs/images/demo/login.webp) and [mobile 503](docs/images/demo/maintenance-page-mobile.webp) in [TEMPLATES.md](docs/TEMPLATES.md#screenshots).
+Demo: `demo/symfony8` (FrankenPHP) — host layouts `templates/layouts/{admin,guest}.html.twig`, UiKit theme tokens, password `maintenance`. Screenshots are captured by the demo Playwright suite (`make -C demo/symfony8 demo-screenshots`).
 
 ## Features
 
@@ -101,6 +97,13 @@ Runs **FrankenPHP + Caddy** (`FRANKENPHP_MODE=worker` by default). Panel passwor
 ```bash
 make -C demo help
 make -C demo up-symfony8
+```
+
+Playwright e2e + README screenshots (**REQ-DEMO-013**, Playwright runs in the official Docker image):
+
+```bash
+make -C demo/symfony8 test-e2e           # password gate, enable → 503 + exclusions, disable → site restored
+make -C demo/symfony8 demo-screenshots   # refreshes docs/images/demo/*.webp
 ```
 
 ## Development
