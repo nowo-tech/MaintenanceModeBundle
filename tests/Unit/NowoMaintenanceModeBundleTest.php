@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Nowo\MaintenanceModeBundle\Tests\Unit;
 
+use Nowo\MaintenanceModeBundle\DependencyInjection\Compiler\CsrfProtectionPass;
 use Nowo\MaintenanceModeBundle\DependencyInjection\MaintenanceModeExtension;
 use Nowo\MaintenanceModeBundle\NowoMaintenanceModeBundle;
 use PHPUnit\Framework\TestCase;
@@ -26,5 +27,9 @@ final class NowoMaintenanceModeBundleTest extends TestCase
         (new NowoMaintenanceModeBundle())->build($container);
 
         self::assertNotEmpty($container->getCompilerPassConfig()->getPasses());
+        self::assertContains(
+            CsrfProtectionPass::class,
+            array_map(static fn (object $pass): string => $pass::class, $container->getCompilerPassConfig()->getPasses()),
+        );
     }
 }

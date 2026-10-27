@@ -42,6 +42,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- CSRF fails closed also when only form CSRF is disabled: new `CsrfProtectionPass` makes the container refuse to compile while the panel (`web_ui.enabled: true`) is registered and `security.csrf.token_manager` or `form.type_extension.csrf` is missing, or `framework.form.csrf_protection` is false. The controller already denied mutations without a token manager, but with `framework.form.csrf_protection: false` the token manager exists while the panel forms (`AbstractMaintenanceFormType` declares its own CSRF options) skipped validation, so enable / disable / schedule accepted tokenless cross-site POSTs. See [UPGRADING](UPGRADING.md#unreleased) and [SECURITY](SECURITY.md#mitigations).
+
 ## [1.12.0] - 2026-10-23
 
 ### Added

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Nowo\MaintenanceModeBundle;
 
+use Nowo\MaintenanceModeBundle\DependencyInjection\Compiler\CsrfProtectionPass;
 use Nowo\MaintenanceModeBundle\DependencyInjection\Compiler\TwigPathsPass;
 use Nowo\MaintenanceModeBundle\DependencyInjection\MaintenanceModeExtension;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -18,6 +19,7 @@ final class NowoMaintenanceModeBundle extends Bundle
     {
         parent::build($container);
         $container->addCompilerPass(new TwigPathsPass());
+        $container->addCompilerPass(new CsrfProtectionPass());
     }
 
     public function getContainerExtension(): ?ExtensionInterface

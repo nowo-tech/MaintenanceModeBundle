@@ -60,7 +60,7 @@ The bundle does **not** spawn subprocesses or perform third-party HTTP calls (RE
 | **Session fixation** | Session id is migrated (`migrate(true)`) after a successful panel password login |
 | **Password brute force** | `security.login_max_attempts` / `login_lockout_seconds` (default 5 per 15 min, per session and per client IP through `cache.app`); locked-out attempts get 429 without verifying the password |
 | **Bypass cookie** | Cookie holds `HMAC-SHA256(bypass_token)`, never the raw token; HttpOnly, Secure on HTTPS |
-| **CSRF** | Panel POSTs require CSRF (**fail-closed**, REQ-SEC-005): if `CsrfTokenManagerInterface` is missing, mutations are denied. Needs `symfony/security-csrf` (FrameworkBundle CSRF) |
+| **CSRF** | Panel POSTs require CSRF (**fail-closed**, REQ-SEC-005): if `CsrfTokenManagerInterface` is missing, mutations are denied. Needs `symfony/security-csrf` (FrameworkBundle CSRF). In addition `CsrfProtectionPass` refuses to compile the container while the panel is enabled without `security.csrf.token_manager` + `form.type_extension.csrf`, or with `framework.form.csrf_protection: false` (the token manager then exists but the panel forms, which declare their own CSRF options, would skip validation) |
 | **Bypass token** | Soft QA escape hatch via shared secret; rotate often; prefer IP allowlists + trusted proxies |
 | **Public page leakage** | Do not advertise panel URL or login on the public 503 page; use `exclusions.*` for ops endpoints |
 | **Over-broad exclusions** | Panel prefix and `exclusions.path_prefixes` match whole path segments (`/api` exempts `/api` and `/api/…`, not `/apix` or `/api-docs`); a trailing `*` (`/api*`) opts into a raw string prefix |
