@@ -49,6 +49,7 @@ final class PanelViewTest extends TestCase
         self::assertFalse($panel->items[1]->active);
         self::assertSame('/_maintenance/history', $panel->items[1]->href);
         self::assertSame(['data-testid' => 'maintenance-panel-tabs'], $panel->attributes);
+        self::assertSame(['tabler:tool', 'tabler:history'], [$panel->items[0]->icon, $panel->items[1]->icon]);
         self::assertTrue($view->nav('history')->items[1]->active);
     }
 

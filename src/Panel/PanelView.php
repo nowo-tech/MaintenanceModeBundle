@@ -117,8 +117,8 @@ final readonly class PanelView implements AreaNavProviderInterface
     public function nav(string $current): AreaNav
     {
         return new AreaNav([
-            new AreaNavItem(self::label('panel.nav.panel'), $this->indexHref(), $current === 'panel', ['data-testid' => 'maintenance-nav-panel']),
-            new AreaNavItem(self::label('panel.nav.history'), $this->href('/history'), $current === 'history', ['data-testid' => 'maintenance-nav-history']),
+            new AreaNavItem(self::label('panel.nav.panel'), $this->indexHref(), $current === 'panel', ['data-testid' => 'maintenance-nav-panel'], 'tabler:tool'),
+            new AreaNavItem(self::label('panel.nav.history'), $this->href('/history'), $current === 'history', ['data-testid' => 'maintenance-nav-history'], 'tabler:history'),
         ], self::label('panel.nav.aria_label'), ['data-testid' => 'maintenance-panel-tabs']);
     }
 

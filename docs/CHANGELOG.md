@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Table of contents
 
 - [[Unreleased]](#unreleased)
+- [[1.14.0] - 2026-10-28](#1140---2026-10-28)
 - [[1.13.0] - 2026-10-28](#1130---2026-10-28)
 - [[1.12.0] - 2026-10-23](#1120---2026-10-23)
 - [[1.11.0] - 2026-10-21](#1110---2026-10-21)
@@ -42,6 +43,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [[1.0.0] - 2026-07-24](#100---2026-07-24)
 
 ## [Unreleased]
+
+## [1.14.0] - 2026-10-28
+
+Tab icons (NowoUiKitBundle 2.17)
+
+### Added
+
+- **Tab icons**: the panel tabs (Panel, History) carry an icon (UiKit 2.17 `icon`, Tabler names), so they follow the
+  host's tab style (`data-tab-style` on `<html>`: text, icon and text, or icon only). Without that attribute the tabs
+  look as before. Icons need NowoUiKitBundle **2.17** or later; older 2.x versions ignore them.
 
 ## [1.13.0] - 2026-10-28
 
