@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Table of contents
 
 - [[Unreleased]](#unreleased)
+- [[1.14.1] - 2026-10-28](#1141---2026-10-28)
 - [[1.14.0] - 2026-10-28](#1140---2026-10-28)
 - [[1.13.0] - 2026-10-28](#1130---2026-10-28)
 - [[1.12.0] - 2026-10-23](#1120---2026-10-23)
@@ -43,6 +44,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [[1.0.0] - 2026-07-24](#100---2026-07-24)
 
 ## [Unreleased]
+
+## [1.14.1] - 2026-10-28
+
+Dependency update
+
+### Changed
+
+- **Dependencies updated** within their constraints: PHPStan 2.3.3, Rector 2.8.1, Symfony polyfills (development). No change in the bundle's behaviour or configuration.
 
 ## [1.14.0] - 2026-10-28
 

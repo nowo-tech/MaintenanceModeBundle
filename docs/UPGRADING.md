@@ -3,6 +3,7 @@
 ## Table of contents
 
 - [Unreleased](#unreleased)
+- [To 1.14.1](#to-1141)
 - [To 1.14.0](#to-1140)
 - [To 1.13.0](#to-1130)
   - [Panel requires form CSRF protection at compile time](#panel-requires-form-csrf-protection-at-compile-time)
@@ -82,6 +83,10 @@
   - [After upgrading](#after-upgrading-1)
 
 ## Unreleased
+
+## To 1.14.1
+
+From **1.14.0**: no change needed (development dependencies updated).
 
 ## To 1.14.0
 
