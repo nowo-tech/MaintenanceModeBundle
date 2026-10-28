@@ -3,6 +3,8 @@
 ## Table of contents
 
 - [Unreleased](#unreleased)
+- [To 1.13.0](#to-1130)
+  - [Panel requires form CSRF protection at compile time](#panel-requires-form-csrf-protection-at-compile-time)
 - [To 1.12.0](#to-1120)
 - [To 1.11.0](#to-1110)
 - [To 1.10.2](#to-1102)
@@ -79,6 +81,14 @@
   - [After upgrading](#after-upgrading-1)
 
 ## Unreleased
+
+## To 1.13.0
+
+From **1.12.0**:
+
+```bash
+composer update nowo-tech/maintenance-mode-bundle
+```
 
 ### Panel requires form CSRF protection at compile time
 
