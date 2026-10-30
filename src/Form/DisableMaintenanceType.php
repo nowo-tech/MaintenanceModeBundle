@@ -16,8 +16,9 @@ final class DisableMaintenanceType extends AbstractMaintenanceFormType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         // Hidden marker so unnamed forms with only CSRF still submit (HttpFoundation handler).
-        $builder->add('confirmed', HiddenType::class, [
-            'data' => '1',
+        $this->addField($builder, 'confirmed', HiddenType::class, [
+            'label' => null, // hidden: no FormKit convention label key
+            'data'  => '1',
         ]);
     }
 

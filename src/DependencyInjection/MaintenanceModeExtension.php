@@ -9,6 +9,8 @@ use Nowo\MaintenanceModeBundle\Controller\MaintenancePanelController;
 use Nowo\MaintenanceModeBundle\Controller\MaintenancePreviewController;
 use Nowo\MaintenanceModeBundle\EventSubscriber\MaintenanceRequestSubscriber;
 use Nowo\MaintenanceModeBundle\Exclusion\MaintenanceExclusionMatcher;
+use Nowo\MaintenanceModeBundle\Form\AbstractMaintenanceFormType;
+use Nowo\MaintenanceModeBundle\NowoMaintenanceModeBundle;
 use Nowo\MaintenanceModeBundle\Panel\PanelView;
 use Nowo\MaintenanceModeBundle\Security\AllowAllMaintenanceModeAccessChecker;
 use Nowo\MaintenanceModeBundle\Security\ConfigurableMaintenanceModeAccessChecker;
@@ -49,6 +51,52 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
     public function prepend(ContainerBuilder $container): void
     {
         $this->prependUiKitDefaults($container);
+        $this->prependFormKitDefaults($container);
+    }
+
+    /**
+     * Registers the `maintenance_mode` FormKit profile of the panel forms (REQ-TWIG-005 rule 11) unless the host
+     * defines `nowo_form_kit.profiles.maintenance_mode` itself. The profile adds no classes and no convention label /
+     * placeholder / help keys: the forms render exactly their explicit options until a host themes the profile.
+     */
+    private function prependFormKitDefaults(ContainerBuilder $container): void
+    {
+        if (!$container->hasExtension('nowo_form_kit')) {
+            return;
+        }
+
+        $configs = $container->getExtensionConfig('nowo_form_kit');
+        foreach ($configs as $cfg) {
+            $profiles = $cfg['profiles'] ?? null;
+            if (is_array($profiles) && array_key_exists(AbstractMaintenanceFormType::FORM_KIT_PROFILE, $profiles)) {
+                return;
+            }
+        }
+
+        $seed = ['profiles' => [AbstractMaintenanceFormType::FORM_KIT_PROFILE => self::formKitProfile()]];
+        if ($configs === []) {
+            // No FormKit config in the host: keep FormKit's implicit `default` profile as the default one (a config
+            // that only lists this profile would otherwise make it the default of every host form).
+            $seed['default_profile']     = 'default';
+            $seed['profiles']['default'] = ['alias' => 'default'];
+        }
+
+        $container->prependExtensionConfig('nowo_form_kit', $seed);
+    }
+
+    /**
+     * Default `nowo_form_kit.profiles.maintenance_mode` (REQ-UI-003 "Form theme" row).
+     *
+     * @return array<string, mixed>
+     */
+    public static function formKitProfile(): array
+    {
+        return [
+            'alias'              => AbstractMaintenanceFormType::FORM_KIT_PROFILE,
+            'translation_domain' => NowoMaintenanceModeBundle::TRANSLATION_DOMAIN,
+            'auto_placeholder'   => false,
+            'auto_help'          => false,
+        ];
     }
 
     /**

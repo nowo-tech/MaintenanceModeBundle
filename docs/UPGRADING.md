@@ -3,6 +3,7 @@
 ## Table of contents
 
 - [Unreleased](#unreleased)
+- [To 1.15.0](#to-1150)
 - [To 1.14.2](#to-1142)
 - [To 1.14.1](#to-1141)
 - [To 1.14.0](#to-1140)
@@ -84,6 +85,13 @@
   - [After upgrading](#after-upgrading-1)
 
 ## Unreleased
+
+## To 1.15.0
+
+`nowo-tech/form-kit-bundle` (`^2.14`) is now required. Register `Nowo\FormKitBundle\NowoFormKitBundle` in
+`config/bundles.php` if Flex did not (the forms still render without it, but the profile is only applied with it).
+Templates, block names, form names, field names and ids are unchanged: no override needs an update. To theme the panel
+forms, configure `nowo_form_kit.profiles.maintenance_mode` (see [CONFIGURATION](CONFIGURATION.md#formkit-profile-req-twig-005)).
 
 ## To 1.14.2
 

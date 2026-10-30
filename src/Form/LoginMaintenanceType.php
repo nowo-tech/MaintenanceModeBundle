@@ -15,7 +15,7 @@ final class LoginMaintenanceType extends AbstractMaintenanceFormType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder->add('password', PasswordType::class, [
+        $this->addField($builder, 'password', PasswordType::class, [
             'required'     => true,
             'label'        => 'panel.login.password',
             'always_empty' => true,
