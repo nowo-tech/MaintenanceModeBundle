@@ -3,6 +3,7 @@
 ## Table of contents
 
 - [Unreleased](#unreleased)
+- [To 1.14.2](#to-1142)
 - [To 1.14.1](#to-1141)
 - [To 1.14.0](#to-1140)
 - [To 1.13.0](#to-1130)
@@ -83,6 +84,8 @@
   - [After upgrading](#after-upgrading-1)
 
 ## Unreleased
+
+## To 1.14.2
 
 No change needed when `config/routes.yaml` imports `@NowoMaintenanceModeBundle/Resources/config/routes.yaml` (see [INSTALLATION](INSTALLATION.md)). If the panel answered on your site without that import (Symfony >= 7.3 with the default `controllers: { resource: routing.controllers }`), add the import: the unprefixed copies (`/`, `/login`, `/enable`…) are gone.
 
