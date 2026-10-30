@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Table of contents
 
 - [[Unreleased]](#unreleased)
+- [[1.14.2] - 2026-10-30](#1142---2026-10-30)
 - [[1.14.1] - 2026-10-28](#1141---2026-10-28)
 - [[1.14.0] - 2026-10-28](#1140---2026-10-28)
 - [[1.13.0] - 2026-10-28](#1130---2026-10-28)
@@ -44,6 +45,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [[1.0.0] - 2026-07-24](#100---2026-07-24)
 
 ## [Unreleased]
+
+## [1.14.2] - 2026-10-30
+
+Bundle routes are opt-in again on Symfony >= 7.3 (REQ-SF-004 rule 7). See [UPGRADING](UPGRADING.md#to-1142).
+
+### Security
+
+- **Panel and preview routes registered without being imported (REQ-SF-004 rule 7).** On Symfony >= 7.3 every autoconfigured `#[Route]` controller gets the `routing.controller` tag, so a host whose `config/routes.yaml` holds the default `controllers: { resource: routing.controllers }` loaded the panel routes **without `web_ui.path_prefix`** — the panel on `/` (over the host home page), `/login`, `/enable`, `/disable`, `/schedule`, `/history`…, outside any firewall or `access_control` rule written for the panel path — and the preview route, even when the host never imported `@NowoMaintenanceModeBundle/Resources/config/routes.yaml`. The controllers are no longer autoconfigured (explicit `controller.service_arguments` tag); the routes exist only where the host imports `routes.yaml`. Regression test with a kernel that only loads `routing.controllers`.
 
 ## [1.14.1] - 2026-10-28
 

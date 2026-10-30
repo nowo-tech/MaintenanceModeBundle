@@ -24,9 +24,14 @@ final class MaintenanceTestKernel extends Kernel
 
     /**
      * @param array<string, mixed> $bundleConfig extra nowo_maintenance_mode config
+     * @param bool $importBundleRoutes whether the host imports the bundle routes.yaml (the Symfony default
+     *                                 `routing.controllers` resource is always imported)
      */
-    public function __construct(private readonly string $dir, private readonly array $bundleConfig = [])
-    {
+    public function __construct(
+        private readonly string $dir,
+        private readonly array $bundleConfig = [],
+        private readonly bool $importBundleRoutes = true,
+    ) {
         parent::__construct('test', false);
     }
 
@@ -83,7 +88,11 @@ final class MaintenanceTestKernel extends Kernel
 
     protected function configureRoutes(RoutingConfigurator $routes): void
     {
-        $routes->import('@NowoMaintenanceModeBundle/Resources/config/routes.yaml');
+        // The Symfony default `controllers: { resource: routing.controllers }` of a Flex host.
+        $routes->import('routing.controllers');
+        if ($this->importBundleRoutes) {
+            $routes->import('@NowoMaintenanceModeBundle/Resources/config/routes.yaml');
+        }
         $routes->add('app_home', '/')->controller([$this, 'home']);
     }
 }
