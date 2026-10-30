@@ -45,6 +45,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- **Panel and preview routes registered without being imported (REQ-SF-004 rule 7).** On Symfony >= 7.3 every autoconfigured `#[Route]` controller gets the `routing.controller` tag, so a host whose `config/routes.yaml` holds the default `controllers: { resource: routing.controllers }` loaded the panel routes **without `web_ui.path_prefix`** — the panel on `/` (over the host home page), `/login`, `/enable`, `/disable`, `/schedule`, `/history`…, outside any firewall or `access_control` rule written for the panel path — and the preview route, even when the host never imported `@NowoMaintenanceModeBundle/Resources/config/routes.yaml`. The controllers are no longer autoconfigured (explicit `controller.service_arguments` tag); the routes exist only where the host imports `routes.yaml`. Regression test with a kernel that only loads `routing.controllers`.
+
 ## [1.14.1] - 2026-10-28
 
 Dependency update

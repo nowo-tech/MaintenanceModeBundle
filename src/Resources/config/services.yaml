@@ -40,10 +40,15 @@ services:
     # Panel renderer + UiKit area-nav provider (area maintenance_mode; autoconfigured tag nowo_ui_kit.area_nav_provider).
     Nowo\MaintenanceModeBundle\Panel\PanelView: ~
 
+    # Controllers are not autoconfigured (REQ-SF-004 rule 7): on Symfony >= 7.3 autoconfiguration tags every #[Route]
+    # class with `routing.controller`, and the host's default `routing.controllers` resource would then load the panel
+    # and preview routes without the host importing routes.yaml (the panel at `/` instead of web_ui.path_prefix).
     Nowo\MaintenanceModeBundle\Controller\MaintenancePanelController:
         public: true
+        autoconfigure: false
         tags: ['controller.service_arguments']
 
     Nowo\MaintenanceModeBundle\Controller\MaintenancePreviewController:
         public: true
+        autoconfigure: false
         tags: ['controller.service_arguments']
