@@ -15,7 +15,7 @@ final class EnableMaintenanceType extends AbstractMaintenanceFormType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder->add('message', TextareaType::class, [
+        $this->addField($builder, 'message', TextareaType::class, [
             'required' => false,
             'label'    => 'panel.message',
             'attr'     => ['rows' => 3],

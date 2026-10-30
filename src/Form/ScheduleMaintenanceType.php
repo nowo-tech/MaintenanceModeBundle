@@ -16,26 +16,25 @@ final class ScheduleMaintenanceType extends AbstractMaintenanceFormType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder
-            ->add('scheduled_enable_at', DateTimeType::class, [
-                'required' => false,
-                'widget'   => 'single_text',
-                'input'    => 'datetime_immutable',
-                'html5'    => true,
-                'label'    => 'panel.scheduled_enable',
-            ])
-            ->add('scheduled_disable_at', DateTimeType::class, [
-                'required' => false,
-                'widget'   => 'single_text',
-                'input'    => 'datetime_immutable',
-                'html5'    => true,
-                'label'    => 'panel.scheduled_disable',
-            ])
-            ->add('message', TextareaType::class, [
-                'required' => false,
-                'label'    => 'panel.message',
-                'attr'     => ['rows' => 2],
-            ]);
+        $this->addField($builder, 'scheduled_enable_at', DateTimeType::class, [
+            'required' => false,
+            'widget'   => 'single_text',
+            'input'    => 'datetime_immutable',
+            'html5'    => true,
+            'label'    => 'panel.scheduled_enable',
+        ]);
+        $this->addField($builder, 'scheduled_disable_at', DateTimeType::class, [
+            'required' => false,
+            'widget'   => 'single_text',
+            'input'    => 'datetime_immutable',
+            'html5'    => true,
+            'label'    => 'panel.scheduled_disable',
+        ]);
+        $this->addField($builder, 'message', TextareaType::class, [
+            'required' => false,
+            'label'    => 'panel.message',
+            'attr'     => ['rows' => 2],
+        ]);
     }
 
     protected function csrfTokenId(): string

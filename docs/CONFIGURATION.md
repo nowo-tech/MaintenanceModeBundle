@@ -66,3 +66,24 @@ The canonical key wins when both are set. Twig globals `nowo_maintenance_mode_la
 deprecated (kept for 1.x host templates, not read by the bundle pages).
 
 Profiles (`default_profile` / `profiles`) are **not** used: maintenance state is global (REQ-CFG-001 N/A).
+
+## FormKit profile (REQ-TWIG-005)
+
+The panel forms are Symfony Form Types built with FormKit (`#[FormKitConfig('maintenance_mode')]`), rendered with
+`form_start` / the `{% for child in form %}{% if not child.rendered %}{{ form_row(child) }}{% endif %}{% endfor %}` loop
+/ `form_end` — never raw `<form>` / `<input>` (keep it that way in overrides). Their field options come from the FormKit
+profile `nowo_form_kit.profiles.maintenance_mode`, which the bundle prepends when FormKitBundle is registered:
+
+```yaml
+nowo_form_kit:
+    profiles:
+        maintenance_mode:
+            alias: maintenance_mode
+            translation_domain: NowoMaintenanceModeBundle
+            auto_placeholder: false   # the forms set their labels explicitly
+            auto_help: false
+```
+
+Define `profiles.maintenance_mode` in your own `nowo_form_kit` config to theme the forms (for example
+`defaults: { attr: { class: 'form-control' } }` or `field_types`); the bundle then does not prepend its default. The
+stock profile adds no classes: the host form theme and the UiKit scaffolds style the rows.

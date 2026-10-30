@@ -15,8 +15,9 @@ final class ClearScheduleType extends AbstractMaintenanceFormType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder->add('confirmed', HiddenType::class, [
-            'data' => '1',
+        $this->addField($builder, 'confirmed', HiddenType::class, [
+            'label' => null, // hidden: no FormKit convention label key
+            'data'  => '1',
         ]);
     }
 

@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Table of contents
 
 - [[Unreleased]](#unreleased)
+- [[1.15.0] - 2026-10-30](#1150---2026-10-30)
 - [[1.14.2] - 2026-10-30](#1142---2026-10-30)
 - [[1.14.1] - 2026-10-28](#1141---2026-10-28)
 - [[1.14.0] - 2026-10-28](#1140---2026-10-28)
@@ -45,6 +46,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [[1.0.0] - 2026-07-24](#100---2026-07-24)
 
 ## [Unreleased]
+
+## [1.15.0] - 2026-10-30
+
+The panel forms are FormKit Types (REQ-TWIG-005 rule 11). See [UPGRADING](UPGRADING.md#to-1150).
+
+### Changed
+
+- **FormKit is a required dependency** (`nowo-tech/form-kit-bundle` `^2.14`). Every panel form type extends
+  `AbstractMaintenanceFormType`, which carries `#[FormKitConfig('maintenance_mode')]` + `FormOptionsTrait` and adds its
+  fields through FormKit's option merger.
+- **FormKit profile `nowo_form_kit.profiles.maintenance_mode`** (REQ-UI-003 "Form theme" row), prepended by the
+  extension when FormKitBundle is registered and the host does not define it: translation domain
+  `NowoMaintenanceModeBundle`, no classes, no convention label / placeholder / help keys — the forms render exactly as
+  in 1.14 until a host themes the profile. When the host has no `nowo_form_kit` config at all, FormKit's implicit
+  `default` profile stays the default one. Without FormKitBundle in the kernel the forms keep their explicit options.
 
 ## [1.14.2] - 2026-10-30
 
