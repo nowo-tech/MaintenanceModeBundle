@@ -2,7 +2,7 @@
 
 **Baseline spec**: [`spec.md`](spec.md)  
 **Package**: `nowo-tech/maintenance-mode-bundle`  
-**Last audited**: 2026-10-20
+**Last audited**: 2026-11-01 (v1.15.0)
 
 This is a 100% inventory of production files under `src/`: PHP, YAML configuration,
 Twig views, and translations. Every file maps to one or more baseline `FR-*`
@@ -12,7 +12,7 @@ requirements.
 
 | Category | Files |
 | --- | ---: |
-| Bundle, dependency injection, and subscriber | 5 |
+| Bundle, dependency injection, and subscriber | 6 |
 | Commands | 4 |
 | Controllers | 2 |
 | Events | 3 |
@@ -23,16 +23,17 @@ requirements.
 | YAML configuration | 3 |
 | Twig views | 17 |
 | Translations | 7 |
-| **Total production files under `src/`** | **66/66** |
+| **Total production files under `src/`** | **67/67** |
 
 ## Bundle, dependency injection, and subscriber
 
 | Path | Responsibility | Spec FR-* IDs |
 | --- | --- | --- |
-| `NowoMaintenanceModeBundle.php` | Registers the bundle extension and Twig compiler pass. | FR-11 |
+| `NowoMaintenanceModeBundle.php` | Registers the bundle extension and the Twig paths and CSRF protection compiler passes. | FR-11, FR-22 |
 | `DependencyInjection/Configuration.php` | Defines the `nowo_maintenance_mode` configuration tree. | FR-01–FR-12, FR-15–FR-18 |
-| `DependencyInjection/MaintenanceModeExtension.php` | Wires storage, manager, subscriber, controllers, commands, and Twig services. | FR-05–FR-09, FR-12–FR-18 |
+| `DependencyInjection/MaintenanceModeExtension.php` | Wires storage, manager, subscriber, controllers, commands, and Twig services; prepends the FormKit `maintenance_mode` profile. | FR-05–FR-09, FR-12–FR-18, FR-23 |
 | `DependencyInjection/Compiler/TwigPathsPass.php` | Registers the bundle Twig namespace and application override paths. | FR-11 |
+| `DependencyInjection/Compiler/CsrfProtectionPass.php` | Refuses to compile the container while the panel is enabled without the CSRF token manager or form CSRF protection (fail closed, REQ-SEC-005). | FR-08, FR-22 |
 | `EventSubscriber/MaintenanceRequestSubscriber.php` | Intercepts applicable main requests and returns the maintenance response. | FR-01–FR-04, FR-12, FR-15 |
 
 ## Commands
@@ -55,7 +56,7 @@ requirements.
 
 | Path | Responsibility | Spec FR-* IDs |
 | --- | --- | --- |
-| `Form/AbstractMaintenanceFormType.php` | Shared CSRF / translation defaults for panel forms (empty block prefix). | FR-08 |
+| `Form/AbstractMaintenanceFormType.php` | Shared CSRF / translation defaults for panel forms (empty block prefix); `#[FormKitConfig('maintenance_mode')]` + `FormOptionsTrait`. | FR-08, FR-23 |
 | `Form/EnableMaintenanceType.php` | Enable form (message). | FR-08 |
 | `Form/DisableMaintenanceType.php` | Disable form (CSRF only). | FR-08 |
 | `Form/ScheduleMaintenanceType.php` | Schedule form (windows + message). | FR-08, FR-10 |
@@ -101,15 +102,15 @@ requirements.
 | --- | --- | --- |
 | `Twig/MaintenanceExtension.php` | Exposes maintenance-state helpers and panel globals (incl. `nowo_maintenance_mode_chrome`) to Twig templates. | FR-17, FR-20 |
 | `Twig/PanelChrome.php` | Defaults for the admin chrome class map, partial paths and flags ([spec 002](../002-admin-chrome-hooks/spec.md)). | FR-20 |
-| `Panel/PanelView.php` | Renders the panel pages on the UiKit page contract (per-page template, layout override, Panel / History area nav, legacy layout bridge). | FR-08, FR-21 |
+| `Panel/PanelView.php` | Renders the panel pages on the UiKit page contract (per-page template, layout override, Panel / History area nav with tab icons, legacy layout bridge). | FR-08, FR-21 |
 | `View/MaintenancePages.php` | UiKit view models of the panel, history, login and public maintenance pages (plain data, worker safe). | FR-02, FR-08, FR-21 |
 
 ## YAML configuration
 
 | Path | Responsibility | Spec FR-* IDs |
 | --- | --- | --- |
-| `Resources/config/services.yaml` | Defines and autowires bundle services. | FR-05–FR-09, FR-13–FR-17 |
-| `Resources/config/routes.yaml` | Imports panel and preview routes. | FR-08, FR-14 |
+| `Resources/config/services.yaml` | Defines and autowires bundle services; controllers are not autoconfigured (explicit `controller.service_arguments`), so routes stay opt-in. | FR-05–FR-09, FR-13–FR-17, FR-24 |
+| `Resources/config/routes.yaml` | Imports panel and preview routes (the only way they are registered). | FR-08, FR-14, FR-24 |
 | `Resources/config/packages/nowo_maintenance_mode.yaml` | Provides the default bundle configuration. | FR-01–FR-12, FR-14–FR-17 |
 
 ## Twig views
@@ -150,5 +151,5 @@ requirements.
 
 ```bash
 find src -type f | wc -l
-# Expected: 66
+# Expected: 67
 ```
