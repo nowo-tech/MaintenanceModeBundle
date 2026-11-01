@@ -123,7 +123,8 @@ Every Nowo bundle with Spec Kit must ship:
 
 ```bash
 find src -type f | wc -l
-# Must match code-inventory.md: 53/53 production files for this bundle
+# Must match code-inventory.md: 67/67 production files for this bundle
+make check-spec-inventory   # also run by make release-check: rows, no stale rows, totals
 ```
 
 When you change product behaviour:

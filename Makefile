@@ -7,7 +7,7 @@ COMPOSE_BIN := $(shell docker compose version >/dev/null 2>&1 && echo "docker co
 COMPOSE     := $(COMPOSE_BIN) -f $(COMPOSE_FILE)
 SERVICE_PHP := php
 
-.PHONY: help up down down-dev build shell install ensure-up test test-coverage coverage-php-percent cs-check cs-fix qa clean release-check release-check-demos demo-smoke composer-sync rector rector-dry phpstan igor update validate assets setup-hooks check-no-cursor-coauthor strip-cursor-coauthor-from-history validate-translations coverage-check check-twig-extra check-open-prs check-no-raw-html-form test-e2e demo-screenshots
+.PHONY: help up down down-dev build shell install ensure-up test test-coverage coverage-php-percent cs-check cs-fix qa clean release-check release-check-demos demo-smoke composer-sync rector rector-dry phpstan igor update validate assets setup-hooks check-no-cursor-coauthor strip-cursor-coauthor-from-history validate-translations coverage-check check-twig-extra check-open-prs check-no-raw-html-form check-spec-inventory test-e2e demo-screenshots
 
 help:
 	@echo "Maintenance Mode Bundle - Development Commands"
@@ -33,9 +33,10 @@ help:
 	@echo "  igor          Run Igor worker-state audit (REQ-CS-008)"
 	@echo "  validate-translations  YAML syntax + key parity (en/es/it/fr/pt/de/nl)"
 	@echo "  qa            Run all QA checks (cs-check + test)"
-	@echo "  release-check Pre-release: ensure-up, co-author/open-PR/Twig checks, cs-fix, cs-check, rector-dry, phpstan, igor, validate-translations, coverage-check, demos"
+	@echo "  release-check Pre-release: ensure-up, co-author/open-PR/Twig/Spec Kit inventory checks, cs-fix, cs-check, rector-dry, phpstan, igor, validate-translations, coverage-check, demos"
 	@echo "  check-open-prs Fail if unresolved open GitHub PRs remain (REQ-REL-003)"
 	@echo "  check-no-raw-html-form No raw <form>/<input> in Twig (REQ-TWIG-005)"
+	@echo "  check-spec-inventory Fail if specs/001-baseline/code-inventory.md does not map every src/ file (REQ-SPECKIT-001)"
 	@echo "  demo-smoke    REQ-TEST-011: boot demo + HTTP 200 (make -C demo demo-smoke)"
 	@echo "  test-e2e      REQ-DEMO-013: Playwright e2e against demo/symfony8"
 	@echo "  demo-screenshots REQ-DEMO-013: refresh docs/images/demo/*.webp"
@@ -138,6 +139,7 @@ release-check:
 	@$(MAKE) check-open-prs
 	@$(MAKE) check-twig-extra
 	@$(MAKE) check-no-raw-html-form
+	@$(MAKE) check-spec-inventory
 	@$(MAKE) composer-sync
 	@$(MAKE) cs-fix
 	@$(MAKE) cs-check
@@ -157,6 +159,11 @@ check-open-prs:
 check-no-raw-html-form:
 	@chmod +x .scripts/check-no-raw-html-form.sh
 	@./.scripts/check-no-raw-html-form.sh
+
+# REQ-SPECKIT-001: the Spec Kit inventory maps 100% of src/ (rows, no stale rows, totals).
+check-spec-inventory:
+	@chmod +x .scripts/check-spec-inventory.sh
+	@./.scripts/check-spec-inventory.sh
 
 release-check-demos:
 	@if [ -f demo/Makefile ]; then $(MAKE) -C demo release-check; else echo "No demo/Makefile — skip release-check-demos"; fi

@@ -47,6 +47,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Spec Kit inventory complete again** (REQ-SPECKIT-001): `specs/001-baseline/code-inventory.md` maps
+  `DependencyInjection/Compiler/CsrfProtectionPass.php` (67/67 files). The baseline spec documents the 1.12–1.15
+  behaviour (FR-22 CSRF fail-closed pass, FR-23 FormKit profile, FR-24 opt-in routes; illustration, countdown, preview
+  link, form theme and tab icons in FR-02 / FR-08 / FR-21) and is re-dated 2026-11-01.
+- **`make check-spec-inventory`**, run by `make release-check`: fails when a file under `src/` has no inventory row,
+  a row points at a missing file, or the totals differ from `find src -type f | wc -l`. No runtime change.
+
 ## [1.15.0] - 2026-10-30
 
 The panel forms are FormKit Types (REQ-TWIG-005 rule 11). See [UPGRADING](UPGRADING.md#to-1150).
