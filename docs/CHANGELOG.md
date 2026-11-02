@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Table of contents
 
 - [[Unreleased]](#unreleased)
+- [[1.15.1] - 2026-11-02](#1151---2026-11-02)
 - [[1.15.0] - 2026-10-30](#1150---2026-10-30)
 - [[1.14.2] - 2026-10-30](#1142---2026-10-30)
 - [[1.14.1] - 2026-10-28](#1141---2026-10-28)
@@ -46,6 +47,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [[1.0.0] - 2026-07-24](#100---2026-07-24)
 
 ## [Unreleased]
+
+## [1.15.1] - 2026-11-02
+
+Spec Kit inventory complete and checked in release-check; no runtime change. See [UPGRADING](https://github.com/nowo-tech/MaintenanceModeBundle/blob/v1.15.1/docs/UPGRADING.md#to-1151).
 
 ### Changed
 
@@ -582,7 +587,7 @@ First stable release.
 - PHP `>=8.2`, `<8.6` (Symfony **8.x** requires PHP **8.4+**)
 - Symfony floor **7.4** (CI / mandatory minors: **7.4**, **8.0**, **8.1**)
 
-[Unreleased]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.13.0...HEAD
+[Unreleased]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.15.1...HEAD
 [1.5.8]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.7...v1.5.8
 [1.5.7]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.6...v1.5.7
 [1.5.6]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.5...v1.5.6
