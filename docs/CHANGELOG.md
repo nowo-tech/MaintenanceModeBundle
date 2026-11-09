@@ -48,6 +48,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Docs: new USAGE section "Using it from a DDD / hexagonal application" (where the bundle sits in a hexagonal host, the ports, events and DTOs to build an anti-corruption layer on, and the known limitations).
+
 ## [1.15.1] - 2026-11-02
 
 Spec Kit inventory complete and checked in release-check; no runtime change. See [UPGRADING](https://github.com/nowo-tech/MaintenanceModeBundle/blob/v1.15.1/docs/UPGRADING.md#to-1151).

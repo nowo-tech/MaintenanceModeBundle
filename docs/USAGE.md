@@ -13,6 +13,10 @@
 - [Programmatic API](#programmatic-api)
   - [Twig](#twig)
 - [Custom storage / access gate](#custom-storage--access-gate)
+- [Using it from a DDD / hexagonal application](#using-it-from-a-ddd--hexagonal-application)
+  - [Keep the domain free of the bundle](#keep-the-domain-free-of-the-bundle)
+  - [Adapter sketch](#adapter-sketch)
+  - [Known limitations](#known-limitations)
 - [Twig overrides](#twig-overrides)
 
 ## Public maintenance page
@@ -247,6 +251,92 @@ Implement:
 - `Nowo\MaintenanceModeBundle\Storage\MaintenanceHistoryStorageInterface`
 - `Nowo\MaintenanceModeBundle\Security\MaintenanceAccessGateInterface`
 - `Nowo\MaintenanceModeBundle\Security\MaintenanceModeAccessCheckerInterface` (optional custom `access_checker`)
+
+## Using it from a DDD / hexagonal application
+
+MaintenanceModeBundle is an **infrastructure / presentation** concern: a `kernel.request` listener that returns a 503
+page, an optional admin panel, CLI commands and Twig helpers. It has **no Doctrine dependency and no host entities**:
+its state (`Model\MaintenanceState`) and history (`Model\MaintenanceHistoryEntry`) are small value objects stored
+behind two ports (filesystem JSON/JSONL by default). Your domain never needs to import a bundle class.
+
+### Keep the domain free of the bundle
+
+- Define your own port in the application layer (e.g. `App\Application\Port\SiteAvailability`) and implement it in
+  infrastructure with `Nowo\MaintenanceModeBundle\Service\MaintenanceManager` (`enable()`, `disable()`, `schedule()`,
+  `clearSchedule()`, `isEffectivelyEnabled()`, `getState()`, `history()`).
+- React to changes with the events dispatched by `MaintenanceManager`, translating them into your own events:
+  `Event\MaintenanceEnabledEvent` and `Event\MaintenanceDisabledEvent` (`$state`, `$actor`), and
+  `Event\MaintenanceUpdatedEvent` (`$state`, `$action` = `schedule` | `clear_schedule` | `update`, `$actor`).
+- Store state where your infrastructure lives by implementing
+  `Storage\MaintenanceStateStorageInterface` (`load(): MaintenanceState`, `save(MaintenanceState)`) and
+  `Storage\MaintenanceHistoryStorageInterface` (`append(MaintenanceHistoryEntry)`, `list(int $limit = 50)`), then set
+  `storage.state_storage` / `storage.history_storage`. `MaintenanceState::toArray()` / `fromArray()` give you a stable
+  array shape to persist.
+- Plug your authorisation in through `security.access_checker` (`Security\MaintenanceModeAccessCheckerInterface`) and
+  `security.access_gate` (`Security\MaintenanceAccessGateInterface`).
+- Keep endpoints that must stay up (health checks, webhooks) out of the 503 with `exclusions.*`,
+  `#[ExcludeFromMaintenance]` or the route default `ExcludeFromMaintenance::ROUTE_DEFAULT`.
+
+### Adapter sketch
+
+```php
+namespace App\Infrastructure\Maintenance;
+
+use App\Application\Port\SiteAvailability;
+use Nowo\MaintenanceModeBundle\Service\MaintenanceManager;
+
+final class NowoSiteAvailability implements SiteAvailability
+{
+    public function __construct(private MaintenanceManager $maintenance) {}
+
+    public function takeDown(string $reason, string $actorId): void
+    {
+        $this->maintenance->enable($reason, $actorId);
+    }
+
+    public function bringUp(string $actorId): void
+    {
+        $this->maintenance->disable($actorId);
+    }
+
+    public function isDown(): bool
+    {
+        return $this->maintenance->isEffectivelyEnabled();
+    }
+}
+```
+
+```php
+namespace App\Infrastructure\Maintenance;
+
+use App\Domain\Event\SiteWentDown;
+use Nowo\MaintenanceModeBundle\Event\MaintenanceEnabledEvent;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
+use Symfony\Component\Messenger\MessageBusInterface;
+
+#[AsEventListener]
+final class MaintenanceEventTranslator
+{
+    public function __construct(private MessageBusInterface $bus) {}
+
+    public function __invoke(MaintenanceEnabledEvent $event): void
+    {
+        $this->bus->dispatch(new SiteWentDown($event->state->getMessage(), $event->actor));
+    }
+}
+```
+
+### Known limitations
+
+- `MaintenanceManager` is a `final` class without an interface; wrap it behind your own port (as above) and double
+  that port in tests.
+- Scheduled windows (`schedule()`) take effect at read time through `MaintenanceState::isEffectivelyEnabled()`; no
+  event is dispatched when a scheduled window starts or ends.
+- Panel actions record the actor as `panel`, and a custom access checker is called with `canAccess(null)`; resolve the
+  current user yourself (e.g. from the security token) inside your checker.
+- The request listener does not guard `MaintenanceStateStorageInterface::load()`: a custom storage that throws turns
+  every request into an error, so catch failures inside your adapter and return a sensible `MaintenanceState`.
+- State writes are load-modify-save with no optimistic locking (last write wins).
 
 ## Twig overrides
 
