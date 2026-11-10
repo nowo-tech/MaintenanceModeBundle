@@ -24,7 +24,10 @@ final class MaintenanceState
         private ?DateTimeImmutable $scheduledDisableAt = null,
         private ?string $message = null,
         private ?string $updatedBy = null,
+        private bool $startedBySchedule = false,
     ) {
+        // The marker only means something while maintenance is on.
+        $this->startedBySchedule = $enabled && $startedBySchedule;
     }
 
     public function isEnabled(): bool
@@ -62,10 +65,33 @@ final class MaintenanceState
         return $this->updatedBy;
     }
 
+    /**
+     * Whether the stored `enabled` flag was set by the schedule tick (MaintenanceManagerInterface::applySchedule())
+     * rather than by a manual enable. Always false while maintenance is off.
+     */
+    public function isStartedBySchedule(): bool
+    {
+        return $this->startedBySchedule;
+    }
+
     public function withEnabled(bool $enabled): self
     {
         $clone          = clone $this;
         $clone->enabled = $enabled;
+        if (!$enabled) {
+            $clone->startedBySchedule = false;
+        }
+
+        return $clone;
+    }
+
+    /**
+     * Ignored (stays false) while maintenance is off.
+     */
+    public function withStartedBySchedule(bool $startedBySchedule): self
+    {
+        $clone                    = clone $this;
+        $clone->startedBySchedule = $clone->enabled && $startedBySchedule;
 
         return $clone;
     }
@@ -158,7 +184,8 @@ final class MaintenanceState
      *     scheduled_enable_at: ?string,
      *     scheduled_disable_at: ?string,
      *     message: ?string,
-     *     updated_by: ?string
+     *     updated_by: ?string,
+     *     started_by_schedule: bool
      * }
      */
     public function toArray(): array
@@ -171,10 +198,14 @@ final class MaintenanceState
             'scheduled_disable_at' => $this->scheduledDisableAt?->format(DATE_ATOM),
             'message'              => $this->message,
             'updated_by'           => $this->updatedBy,
+            'started_by_schedule'  => $this->startedBySchedule,
         ];
     }
 
     /**
+     * A state written before 1.16.1 has no `started_by_schedule` key and reads as a manual enable (fail-closed: a
+     * schedule edit then never switches it off; Disable does).
+     *
      * @param array<string, mixed> $data
      */
     public static function fromArray(array $data): self
@@ -187,6 +218,7 @@ final class MaintenanceState
             scheduledDisableAt: self::parseDate($data['scheduled_disable_at'] ?? null),
             message: isset($data['message']) && is_string($data['message']) ? $data['message'] : null,
             updatedBy: isset($data['updated_by']) && is_string($data['updated_by']) ? $data['updated_by'] : null,
+            startedBySchedule: ($data['started_by_schedule'] ?? false) === true,
         );
     }
 

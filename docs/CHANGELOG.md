@@ -49,6 +49,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Target 1.16.1.
+
+### Fixed
+
+- Schedule ownership (KH-M-L5, KH-M-L6): `applySchedule()` (`nowo:maintenance-mode:tick`) now stores an explicit `started_by_schedule` marker when it switches a window on, and `enable()` / `disable()` clear it. `schedule()` / `clearSchedule()` use the marker instead of comparing `activatedAt` with the start to the second, so a manual enable whose time matches a start scheduled later (`enable(at: $start)` then `schedule(enableAt: $start)`) is no longer ended by a later clear or move, and a running window whose start moved within the past (or lost its seconds on a panel re-save) is still ended by Clear schedule. `activatedAt` stays the instant maintenance really went on.
+
 ## [1.16.0] - 2026-11-10
 
 Target 1.16.0.

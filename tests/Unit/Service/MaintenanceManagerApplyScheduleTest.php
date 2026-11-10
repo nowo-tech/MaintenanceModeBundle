@@ -260,6 +260,141 @@ final class MaintenanceManagerApplyScheduleTest extends TestCase
         self::assertEquals($start, $state->getScheduledEnableAt());
     }
 
+    public function testTheTickMarksTheStateAndManualWritesClearTheMarker(): void
+    {
+        $manager = $this->tickedWindow('2026-11-10T10:30:00+00:00');
+        self::assertTrue($this->stateStorage->state->isStartedBySchedule());
+        self::assertTrue($this->stateStorage->state->toArray()['started_by_schedule']);
+
+        self::assertFalse($manager->enable('Manual', 'ops')->isStartedBySchedule());
+
+        $manager = $this->tickedWindow('2026-11-10T10:30:00+00:00');
+        self::assertFalse($manager->disable('ops')->isStartedBySchedule());
+    }
+
+    public function testTheTickAtTheWindowEndClearsTheMarker(): void
+    {
+        $this->tickedWindow('2026-11-10T10:30:00+00:00');
+
+        $state = $this->manager->applySchedule(new DateTimeImmutable('2026-11-10T12:00:00+00:00'));
+
+        self::assertInstanceOf(MaintenanceState::class, $state);
+        self::assertFalse($state->isEnabled());
+        self::assertFalse($state->isStartedBySchedule());
+    }
+
+    /**
+     * KH-M-L5: enable(at: $start) followed by schedule(enableAt: $start) in the same second is still a manual enable.
+     */
+    public function testAManualEnableAtTheSameSecondAsALaterStartIsNotEndedByClear(): void
+    {
+        $start   = new DateTimeImmutable('2026-11-10T10:00:00+00:00');
+        $manager = new MaintenanceManager($this->stateStorage, $this->historyStorage, 'Default', $this->dispatcher, new MockClock('2026-11-10T10:30:00+00:00'));
+        $manager->enable('Manual', 'ops', $start);
+        $manager->schedule($start, new DateTimeImmutable('2026-11-10T12:00:00+00:00'), updatedBy: 'ops');
+        self::assertEquals($start, $this->stateStorage->state->getActivatedAt());
+        $count = count($this->dispatcher->events);
+
+        $state = $manager->clearSchedule('ops');
+
+        self::assertTrue($state->isEnabled());
+        self::assertTrue($state->isEffectivelyEnabled(new DateTimeImmutable('2026-11-11T00:00:00+00:00')));
+        self::assertCount($count + 1, $this->dispatcher->events);
+        self::assertInstanceOf(MaintenanceUpdatedEvent::class, $this->dispatcher->events[$count]);
+    }
+
+    public function testAManualEnableAtTheSameSecondAsALaterStartIsNotEndedByMovingIt(): void
+    {
+        $start   = new DateTimeImmutable('2026-11-10T10:00:00+00:00');
+        $manager = new MaintenanceManager($this->stateStorage, $this->historyStorage, 'Default', $this->dispatcher, new MockClock('2026-11-10T10:30:00+00:00'));
+        $manager->enable('Manual', 'ops', $start);
+        $manager->schedule($start, updatedBy: 'ops');
+
+        $state = $manager->schedule(new DateTimeImmutable('2026-11-11T10:00:00+00:00'), updatedBy: 'ops', clearMissing: true);
+
+        self::assertTrue($state->isEnabled());
+        self::assertTrue($state->isEffectivelyEnabled(new DateTimeImmutable('2026-11-10T10:30:00+00:00')));
+        self::assertNotInstanceOf(MaintenanceDisabledEvent::class, $this->dispatcher->events[count($this->dispatcher->events) - 1]);
+    }
+
+    public function testAManualEnableInsideATickedWindowSurvivesClear(): void
+    {
+        $manager = $this->tickedWindow('2026-11-10T10:30:00+00:00');
+        $manager->enable('Manual', 'ops', new DateTimeImmutable('2026-11-10T10:00:00+00:00'));
+        $manager->schedule(new DateTimeImmutable('2026-11-10T10:00:00+00:00'), new DateTimeImmutable('2026-11-10T12:00:00+00:00'), updatedBy: 'ops');
+
+        self::assertTrue($manager->clearSchedule('ops')->isEnabled());
+    }
+
+    /**
+     * KH-M-L6: moving the start of a running window to another past time keeps it owned; Clear then ends it.
+     */
+    public function testMovingTheStartOfATickedWindowWithinThePastKeepsItOwned(): void
+    {
+        $manager = $this->tickedWindow('2026-11-10T10:30:00+00:00');
+
+        $state = $manager->schedule(
+            new DateTimeImmutable('2026-11-10T10:15:00+00:00'),
+            new DateTimeImmutable('2026-11-10T12:00:00+00:00'),
+            updatedBy: 'ops',
+            clearMissing: true,
+        );
+
+        self::assertTrue($state->isEnabled());
+        self::assertTrue($state->isStartedBySchedule());
+        // activatedAt stays the instant maintenance really went on.
+        self::assertEquals(new DateTimeImmutable('2026-11-10T10:00:00+00:00'), $state->getActivatedAt());
+
+        $state = $manager->clearSchedule('ops');
+
+        self::assertFalse($state->isEnabled());
+        self::assertFalse($state->isEffectivelyEnabled(new DateTimeImmutable('2026-11-11T00:00:00+00:00')));
+        self::assertInstanceOf(MaintenanceDisabledEvent::class, $this->dispatcher->events[count($this->dispatcher->events) - 1]);
+    }
+
+    /**
+     * KH-M-L6: a start with seconds (API / CLI) re-saved through the minute-precision panel form stays owned.
+     */
+    public function testReSavingAStartWithSecondsAtMinutePrecisionKeepsItOwned(): void
+    {
+        $this->stateStorage->state = (new MaintenanceState())
+            ->withScheduledEnableAt(new DateTimeImmutable('2026-11-10T10:00:30+00:00'))
+            ->withScheduledDisableAt(new DateTimeImmutable('2026-11-10T12:00:00+00:00'));
+        $manager = new MaintenanceManager($this->stateStorage, $this->historyStorage, 'Default', $this->dispatcher, new MockClock('2026-11-10T10:30:00+00:00'));
+        self::assertInstanceOf(MaintenanceState::class, $manager->applySchedule(new DateTimeImmutable('2026-11-10T10:01:00+00:00')));
+
+        $state = $manager->schedule(
+            new DateTimeImmutable('2026-11-10T10:00:00+00:00'),
+            new DateTimeImmutable('2026-11-10T12:00:00+00:00'),
+            updatedBy: 'ops',
+            clearMissing: true,
+        );
+        self::assertTrue($state->isStartedBySchedule());
+
+        $state = $manager->clearSchedule('ops');
+
+        self::assertFalse($state->isEnabled());
+        self::assertFalse($state->isEffectivelyEnabled(new DateTimeImmutable('2026-11-11T00:00:00+00:00')));
+    }
+
+    /**
+     * A window a 1.16.0 tick started has no marker and reads as manual (fail-closed): Clear leaves it on, Disable ends it.
+     */
+    public function testA1160StateWithoutMarkerFailsClosed(): void
+    {
+        $this->stateStorage->state = MaintenanceState::fromArray([
+            'enabled'              => true,
+            'activated_at'         => '2026-11-10T10:00:00+00:00',
+            'scheduled_enable_at'  => '2026-11-10T10:00:00+00:00',
+            'scheduled_disable_at' => '2026-11-10T12:00:00+00:00',
+            'updated_by'           => 'schedule',
+        ]);
+        $manager = new MaintenanceManager($this->stateStorage, $this->historyStorage, 'Default', $this->dispatcher, new MockClock('2026-11-10T10:30:00+00:00'));
+
+        self::assertTrue($manager->clearSchedule('ops')->isEnabled());
+        self::assertFalse($manager->disable('ops')->isEffectivelyEnabled(new DateTimeImmutable('2026-11-10T10:30:00+00:00')));
+    }
+
     /**
      * A 10:00-12:00 window started by the tick at 10:00; the manager's clock is at $now.
      */

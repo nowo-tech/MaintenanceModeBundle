@@ -211,7 +211,9 @@ start / end of a window as an enable / disable (actor `schedule`, history contex
 - The tick itself never changes whether maintenance is effectively on. A started window keeps its bounds, so the panel
   still shows it.
 - Editing the schedule keeps working as without the tick: clearing or moving a window the tick started ends it at once
-  (`MaintenanceDisabledEvent`, actor = the editor); extending its end keeps it on. **Disable** always ends it.
+  (`MaintenanceDisabledEvent`, actor = the editor); extending its end or moving its start within the past keeps it on.
+  **Disable** always ends it. The tick marks the state it switched on (`started_by_schedule: true`); a manual
+  **Enable** or **Disable** clears the marker, so a schedule edit never ends a maintenance that was turned on by hand.
 - A window that starts and ends between two ticks dispatches nothing. When no message was scheduled, the tick stores
   `default_message`.
 - **Run the tick on one node only** (one cron entry, or a Scheduler transport consumed once). It re-reads the state

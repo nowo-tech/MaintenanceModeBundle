@@ -95,15 +95,16 @@ final class MaintenanceManager implements MaintenanceManagerInterface
         $context = ['trigger' => self::ACTOR_SCHEDULE];
 
         if ($effective) {
-            // A window started (scheduledEnableAt <= now): enabled, activatedAt = the start, both bounds kept, so the
-            // panel still shows the window and schedule() / clearSchedule() can move or end it (see isScheduleOwned()).
+            // A window started (scheduledEnableAt <= now): enabled, activatedAt = the start, both bounds kept and
+            // marked startedBySchedule, so the panel still shows the window and schedule() / clearSchedule() can move
+            // or end it (see isScheduleOwned()).
             return $this->writeEnabled(
                 $state,
                 $state->getMessage() ?? $this->defaultMessage,
                 $actor,
                 $state->getScheduledEnableAt() ?? $now,
                 $context,
-                keepStart: true,
+                bySchedule: true,
             );
         }
 
@@ -146,18 +147,14 @@ final class MaintenanceManager implements MaintenanceManagerInterface
     }
 
     /**
-     * Whether the stored `enabled` flag was set by {@see applySchedule()} for a window that is still stored: the tick
-     * writes activatedAt = scheduledEnableAt and keeps the start, while enable() always clears the start.
+     * Whether the stored `enabled` flag was set by {@see applySchedule()}: the tick stores the explicit
+     * `startedBySchedule` marker, which enable() and disable() clear. No timestamp comparison, so a manual enable at
+     * the same second as a later start (KH-M-L5) or a start moved within the past (KH-M-L6) is classified correctly.
+     * A state written before 1.16.1 has no marker and reads as manual (fail-closed).
      */
     private function isScheduleOwned(MaintenanceState $state): bool
     {
-        $start = $state->getScheduledEnableAt();
-        $at    = $state->getActivatedAt();
-
-        return $state->isEnabled()
-            && $start instanceof DateTimeImmutable
-            && $at instanceof DateTimeImmutable
-            && $start->getTimestamp() === $at->getTimestamp();
+        return $state->isStartedBySchedule();
     }
 
     /**
@@ -175,7 +172,8 @@ final class MaintenanceManager implements MaintenanceManagerInterface
         $now       = $this->clock->now();
         $candidate = $state->withEnabled(false);
         if ($candidate->isEffectivelyEnabled($now)) {
-            // Still inside the (edited) window: stays on, still owned by the schedule.
+            // Still inside the (edited) window: stays on, still owned by the schedule (the marker is kept; activatedAt
+            // stays the instant maintenance really went on, even when the start moved).
             return $this->update($state, $updatedBy, $action);
         }
 
@@ -221,15 +219,17 @@ final class MaintenanceManager implements MaintenanceManagerInterface
     /**
      * @param array<string, mixed> $context History entry context
      */
-    private function writeEnabled(MaintenanceState $base, ?string $message, ?string $updatedBy, DateTimeImmutable $at, array $context = [], bool $keepStart = false): MaintenanceState
+    private function writeEnabled(MaintenanceState $base, ?string $message, ?string $updatedBy, DateTimeImmutable $at, array $context = [], bool $bySchedule = false): MaintenanceState
     {
+        // bySchedule: the tick keeps the window's start and marks the state; a manual enable clears both.
         $state = $base
             ->withEnabled(true)
+            ->withStartedBySchedule($bySchedule)
             ->withActivatedAt($at)
             ->withDeactivatedAt(null)
             ->withMessage($message)
             ->withUpdatedBy($updatedBy);
-        if (!$keepStart) {
+        if (!$bySchedule) {
             $state = $state->withScheduledEnableAt(null);
         }
 
