@@ -3,6 +3,7 @@
 ## Table of contents
 
 - [Unreleased](#unreleased)
+- [To 1.16.1](#to-1161)
 - [To 1.16.0](#to-1160)
   - [To 1.16.0](#to-1160-1)
 - [To 1.15.1](#to-1151)
@@ -88,6 +89,26 @@
   - [After upgrading](#after-upgrading-1)
 
 ## Unreleased
+
+## To 1.16.1
+
+From **1.16.0**:
+
+```bash
+composer update nowo-tech/maintenance-mode-bundle
+```
+
+Patch; no configuration change.
+
+- **The state file gains a field.** `started_by_schedule` (bool) is written next to `enabled`; it is true only while the
+  tick's scheduled window is on. 1.16.0 files read fine: a missing field reads as `false`, i.e. as a manual enable
+  (fail-closed). The only effect is on a window a 1.16.0 tick started that is still running when you upgrade: a schedule
+  edit no longer switches it off (Clear schedule leaves maintenance on with no end), so end it with **Disable**, or let
+  the tick / its stored end close it. Any write after the upgrade stores the field.
+- **Custom state storage.** Persist `MaintenanceState::toArray()` as a whole (or the new key) and build states with
+  `fromArray()`; a storage that drops the key makes every tick-started window look manual (same fail-closed effect).
+  `MaintenanceState::__construct()` gains a last optional `startedBySchedule` argument, `isStartedBySchedule()` and
+  `withStartedBySchedule()`; the marker is always false while `enabled` is false.
 
 ## To 1.16.0
 

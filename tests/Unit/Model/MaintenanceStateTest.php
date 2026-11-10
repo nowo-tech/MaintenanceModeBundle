@@ -116,4 +116,45 @@ final class MaintenanceStateTest extends TestCase
         self::assertTrue($modified->isEnabled());
         self::assertSame('Hi', $modified->getMessage());
     }
+
+    public function testStartedByScheduleMarkerRoundTripsAndDefaultsToManual(): void
+    {
+        $state = (new MaintenanceState())->withEnabled(true)->withStartedBySchedule(true);
+
+        self::assertTrue($state->isStartedBySchedule());
+        self::assertTrue($state->toArray()['started_by_schedule']);
+        self::assertTrue(MaintenanceState::fromArray($state->toArray())->isStartedBySchedule());
+        self::assertFalse((new MaintenanceState())->toArray()['started_by_schedule']);
+    }
+
+    public function testMarkerIsAlwaysFalseWhileMaintenanceIsOff(): void
+    {
+        self::assertFalse((new MaintenanceState(enabled: false, startedBySchedule: true))->isStartedBySchedule());
+        self::assertTrue((new MaintenanceState(enabled: true, startedBySchedule: true))->isStartedBySchedule());
+        self::assertFalse((new MaintenanceState())->withStartedBySchedule(true)->isStartedBySchedule());
+
+        $off = (new MaintenanceState())->withEnabled(true)->withStartedBySchedule(true)->withEnabled(false);
+        self::assertFalse($off->isStartedBySchedule());
+        // Switching back on by hand does not bring the marker back.
+        self::assertFalse($off->withEnabled(true)->isStartedBySchedule());
+        self::assertFalse(MaintenanceState::fromArray(['enabled' => false, 'started_by_schedule' => true])->isStartedBySchedule());
+    }
+
+    public function testStateWithoutMarkerReadsAsManual(): void
+    {
+        // A 1.16.0 file of a window the tick started: no marker, activated_at equal to the start.
+        $legacy = MaintenanceState::fromArray([
+            'enabled'              => true,
+            'activated_at'         => '2026-11-10T10:00:00+00:00',
+            'scheduled_enable_at'  => '2026-11-10T10:00:00+00:00',
+            'scheduled_disable_at' => '2026-11-10T12:00:00+00:00',
+            'updated_by'           => 'schedule',
+        ]);
+
+        self::assertTrue($legacy->isEnabled());
+        self::assertFalse($legacy->isStartedBySchedule());
+        // Only a literal true counts.
+        self::assertFalse(MaintenanceState::fromArray(['enabled' => true, 'started_by_schedule' => 'yes'])->isStartedBySchedule());
+        self::assertFalse(MaintenanceState::fromArray(['enabled' => true, 'started_by_schedule' => 1])->isStartedBySchedule());
+    }
 }
