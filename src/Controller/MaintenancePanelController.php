@@ -13,10 +13,11 @@ use Nowo\MaintenanceModeBundle\Form\LogoutMaintenanceType;
 use Nowo\MaintenanceModeBundle\Form\ScheduleMaintenanceType;
 use Nowo\MaintenanceModeBundle\Model\MaintenanceState;
 use Nowo\MaintenanceModeBundle\Panel\PanelView;
+use Nowo\MaintenanceModeBundle\Security\ActorResolverInterface;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceAccessGateInterface;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceModeAccessCheckerInterface;
 use Nowo\MaintenanceModeBundle\Security\PasswordMaintenanceAccessGate;
-use Nowo\MaintenanceModeBundle\Service\MaintenanceManager;
+use Nowo\MaintenanceModeBundle\Service\MaintenanceManagerInterface;
 use Nowo\MaintenanceModeBundle\View\MaintenancePages;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
@@ -25,6 +26,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\FlashBagAwareSessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 use function array_merge;
@@ -46,8 +48,12 @@ final class MaintenancePanelController
     public const CSRF_LOGIN          = 'nowo_maintenance_login';
     public const CSRF_LOGOUT         = 'nowo_maintenance_logout';
 
+    /**
+     * @param ActorResolverInterface|null $actorResolver Actor recorded for panel writes; null = "panel" (1.x)
+     * @param TokenStorageInterface|null $tokenStorage Source of the user passed to the access checker; null = none
+     */
     public function __construct(
-        private readonly MaintenanceManager $manager,
+        private readonly MaintenanceManagerInterface $manager,
         private readonly MaintenanceAccessGateInterface $accessGate,
         private readonly FormFactoryInterface $formFactory,
         private readonly PanelView $view,
@@ -56,6 +62,8 @@ final class MaintenancePanelController
         private readonly bool $allowUnauthenticated = true,
         private readonly int $historyLimit = 100,
         private readonly int $historyPerPage = 25,
+        private readonly ?ActorResolverInterface $actorResolver = null,
+        private readonly ?TokenStorageInterface $tokenStorage = null,
     ) {
         $this->pathPrefix = $view->pathPrefix;
     }
@@ -121,7 +129,7 @@ final class MaintenancePanelController
         $data    = $form->getData() ?? [];
         $message = isset($data['message']) && is_string($data['message']) ? $data['message'] : '';
         // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
-        $this->manager->enable($message !== '' ? $message : null, 'panel');
+        $this->manager->enable($message !== '' ? $message : null, $this->actor($request));
         $this->flash($request, 'success', 'panel.flash.enabled');
 
         return new RedirectResponse($this->pathPrefix);
@@ -142,7 +150,7 @@ final class MaintenancePanelController
         // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
 
         // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
-        $this->manager->disable('panel');
+        $this->manager->disable($this->actor($request));
         $this->flash($request, 'success', 'panel.flash.disabled');
 
         return new RedirectResponse($this->pathPrefix);
@@ -168,7 +176,7 @@ final class MaintenancePanelController
             enableAt: $data['scheduled_enable_at'] ?? null,
             disableAt: $data['scheduled_disable_at'] ?? null,
             message: $message !== '' ? $message : null,
-            updatedBy: 'panel',
+            updatedBy: $this->actor($request),
             clearMissing: true,
         );
         $this->flash($request, 'success', 'panel.flash.schedule_saved');
@@ -192,7 +200,7 @@ final class MaintenancePanelController
         // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
 
         // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
-        $this->manager->clearSchedule('panel');
+        $this->manager->clearSchedule($this->actor($request));
         $this->flash($request, 'success', 'panel.flash.schedule_cleared');
 
         return new RedirectResponse($this->pathPrefix);
@@ -287,11 +295,26 @@ final class MaintenancePanelController
             return null;
         }
 
-        if (!$this->accessChecker instanceof MaintenanceModeAccessCheckerInterface || !$this->accessChecker->canAccess(null)) {
+        if (!$this->accessChecker instanceof MaintenanceModeAccessCheckerInterface || !$this->accessChecker->canAccess($this->currentUser())) {
             return new Response('Access denied.', Response::HTTP_FORBIDDEN);
         }
 
         return null;
+    }
+
+    private function actor(Request $request): ?string
+    {
+        return $this->actorResolver instanceof ActorResolverInterface
+            ? $this->actorResolver->resolveActor($request)
+            : ActorResolverInterface::PANEL;
+    }
+
+    /**
+     * The authenticated user from the security token, or null (anonymous, or no SecurityBundle).
+     */
+    private function currentUser(): ?object
+    {
+        return $this->tokenStorage?->getToken()?->getUser();
     }
 
     /**

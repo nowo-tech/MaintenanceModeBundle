@@ -6,7 +6,7 @@ namespace Nowo\MaintenanceModeBundle\Command;
 
 use DateTimeImmutable;
 use Exception;
-use Nowo\MaintenanceModeBundle\Service\MaintenanceManager;
+use Nowo\MaintenanceModeBundle\Service\MaintenanceManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -28,7 +28,7 @@ use const DATE_ATOM;
 final class EnableCommand extends Command
 {
     public function __construct(
-        private readonly MaintenanceManager $manager,
+        private readonly MaintenanceManagerInterface $manager,
     ) {
         parent::__construct();
     }

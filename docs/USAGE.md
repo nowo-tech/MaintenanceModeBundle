@@ -200,14 +200,23 @@ Migration notes: [UPGRADING — Template contract (1.10)](UPGRADING.md#template-
 php bin/console nowo:maintenance-mode:enable -m "Deploy in progress" --until="2026-07-24T18:00:00+00:00"
 php bin/console nowo:maintenance-mode:status   # exit 2 when effectively on (handy in scripts)
 php bin/console nowo:maintenance-mode:disable
+php bin/console nowo:maintenance-mode:tick     # apply a scheduled window that started / ended (cron, every minute)
 ```
+
+Scheduled windows (`schedule()`, panel "Schedule") work at read time without any job. Run `tick` from cron (`* * * * *
+php bin/console nowo:maintenance-mode:tick`) or Symfony Scheduler when listeners must hear about them: it writes the
+start / end of a window as an enable / disable (actor `schedule`, history context `trigger: schedule`) and so dispatches
+`MaintenanceEnabledEvent` / `MaintenanceDisabledEvent`. It never changes whether maintenance is effectively on. A window
+that starts and ends between two ticks dispatches nothing.
 
 ## Programmatic API
 
-```php
-use Nowo\MaintenanceModeBundle\Service\MaintenanceManager;
+Type-hint `Nowo\MaintenanceModeBundle\Service\MaintenanceManagerInterface` (autowired to `MaintenanceManager`):
 
-public function __construct(private MaintenanceManager $maintenance) {}
+```php
+use Nowo\MaintenanceModeBundle\Service\MaintenanceManagerInterface;
+
+public function __construct(private MaintenanceManagerInterface $maintenance) {}
 
 public function takeDown(): void
 {
@@ -250,7 +259,15 @@ Implement:
 - `Nowo\MaintenanceModeBundle\Storage\MaintenanceStateStorageInterface`
 - `Nowo\MaintenanceModeBundle\Storage\MaintenanceHistoryStorageInterface`
 - `Nowo\MaintenanceModeBundle\Security\MaintenanceAccessGateInterface`
-- `Nowo\MaintenanceModeBundle\Security\MaintenanceModeAccessCheckerInterface` (optional custom `access_checker`)
+- `Nowo\MaintenanceModeBundle\Security\MaintenanceModeAccessCheckerInterface` (optional custom `access_checker`); the
+  panel passes it the user of the security token (`null` when anonymous or without SecurityBundle)
+- `Nowo\MaintenanceModeBundle\Security\ActorResolverInterface` (optional `security.actor_resolver`): the actor stored
+  as `updatedBy`, in history and in events for panel writes. Default `panel`; `SecurityTokenActorResolver` stores the
+  logged-in user identifier
+
+`MaintenanceStateStorageInterface::load()` contract: return a default `MaintenanceState` when there is no data yet and
+throw only on a real failure. When it throws, the request listener logs the error and applies `storage.on_error`
+(`fail_open` by default: the site is served as if maintenance were off; `fail_closed` serves the maintenance page).
 
 ## Using it from a DDD / hexagonal application
 
@@ -262,11 +279,16 @@ behind two ports (filesystem JSON/JSONL by default). Your domain never needs to 
 ### Keep the domain free of the bundle
 
 - Define your own port in the application layer (e.g. `App\Application\Port\SiteAvailability`) and implement it in
-  infrastructure with `Nowo\MaintenanceModeBundle\Service\MaintenanceManager` (`enable()`, `disable()`, `schedule()`,
-  `clearSchedule()`, `isEffectivelyEnabled()`, `getState()`, `history()`).
+  infrastructure with `Nowo\MaintenanceModeBundle\Service\MaintenanceManagerInterface` (`enable()`, `disable()`,
+  `schedule()`, `clearSchedule()`, `applySchedule()`, `isEffectivelyEnabled()`, `getState()`, `history()`); double the
+  interface in your infrastructure tests.
 - React to changes with the events dispatched by `MaintenanceManager`, translating them into your own events:
   `Event\MaintenanceEnabledEvent` and `Event\MaintenanceDisabledEvent` (`$state`, `$actor`), and
-  `Event\MaintenanceUpdatedEvent` (`$state`, `$action` = `schedule` | `clear_schedule` | `update`, `$actor`).
+  `Event\MaintenanceUpdatedEvent` (`$state`, `$action` = `schedule` | `clear_schedule` | `update`, `$actor`). Run
+  `nowo:maintenance-mode:tick` so scheduled windows dispatch the enabled / disabled events too (actor `schedule`).
+- Panel writes carry the actor from `Security\ActorResolverInterface` (`security.actor_resolver`; set it to
+  `Security\SecurityTokenActorResolver` to record the user identifier), and your access checker receives the token
+  user.
 - Store state where your infrastructure lives by implementing
   `Storage\MaintenanceStateStorageInterface` (`load(): MaintenanceState`, `save(MaintenanceState)`) and
   `Storage\MaintenanceHistoryStorageInterface` (`append(MaintenanceHistoryEntry)`, `list(int $limit = 50)`), then set
@@ -283,11 +305,11 @@ behind two ports (filesystem JSON/JSONL by default). Your domain never needs to 
 namespace App\Infrastructure\Maintenance;
 
 use App\Application\Port\SiteAvailability;
-use Nowo\MaintenanceModeBundle\Service\MaintenanceManager;
+use Nowo\MaintenanceModeBundle\Service\MaintenanceManagerInterface;
 
 final class NowoSiteAvailability implements SiteAvailability
 {
-    public function __construct(private MaintenanceManager $maintenance) {}
+    public function __construct(private MaintenanceManagerInterface $maintenance) {}
 
     public function takeDown(string $reason, string $actorId): void
     {
@@ -328,14 +350,10 @@ final class MaintenanceEventTranslator
 
 ### Known limitations
 
-- `MaintenanceManager` is a `final` class without an interface; wrap it behind your own port (as above) and double
-  that port in tests.
-- Scheduled windows (`schedule()`) take effect at read time through `MaintenanceState::isEffectivelyEnabled()`; no
-  event is dispatched when a scheduled window starts or ends.
-- Panel actions record the actor as `panel`, and a custom access checker is called with `canAccess(null)`; resolve the
-  current user yourself (e.g. from the security token) inside your checker.
-- The request listener does not guard `MaintenanceStateStorageInterface::load()`: a custom storage that throws turns
-  every request into an error, so catch failures inside your adapter and return a sensible `MaintenanceState`.
+- Scheduled windows dispatch events only when `nowo:maintenance-mode:tick` runs (cron / Scheduler); a window that
+  starts and ends between two ticks dispatches nothing.
+- The Twig helpers (`nowo_maintenance_is_enabled()`, `nowo_maintenance_state()`) and the panel do not guard a throwing
+  state storage; only the request listener applies `storage.on_error`.
 - State writes are load-modify-save with no optimistic locking (last write wins).
 
 ## Twig overrides

@@ -3,6 +3,7 @@
 ## Table of contents
 
 - [Unreleased](#unreleased)
+  - [To 1.16.0](#to-1160)
 - [To 1.15.1](#to-1151)
 - [To 1.15.0](#to-1150)
 - [To 1.14.2](#to-1142)
@@ -86,6 +87,22 @@
   - [After upgrading](#after-upgrading-1)
 
 ## Unreleased
+
+### To 1.16.0
+
+Additive; nothing to change unless one of these applies:
+
+- **Type-hint the interface.** Prefer `Nowo\MaintenanceModeBundle\Service\MaintenanceManagerInterface` over the
+  `final` `MaintenanceManager` in host services; the class is unchanged and still autowirable.
+- **Custom access checker.** `canAccess()` now receives the user of the security token (it always got `null`). If your
+  checker treated `null` as "deny", or read the user itself, check it still does what you want; anonymous requests and
+  apps without SecurityBundle still pass `null`.
+- **Throwing state storage.** The request listener now logs the error and serves the request (`storage.on_error:
+  fail_open`) instead of a 500. Use `fail_closed` to serve the maintenance page instead, or `rethrow` for 1.x.
+- **Scheduled-window events.** Add `* * * * * php bin/console nowo:maintenance-mode:tick` (or a Scheduler task) if your
+  listeners must hear about scheduled windows; without it nothing changes.
+- **Real actor in panel history.** Set `security.actor_resolver: Nowo\MaintenanceModeBundle\Security\SecurityTokenActorResolver`
+  to store the user identifier instead of `panel` (it becomes personal data in the history file and events).
 
 ## To 1.15.1
 

@@ -8,9 +8,10 @@ use DateTimeImmutable;
 use Nowo\MaintenanceModeBundle\Attribute\ExcludeFromMaintenance;
 use Nowo\MaintenanceModeBundle\Exclusion\MaintenanceExclusionMatcher;
 use Nowo\MaintenanceModeBundle\Model\MaintenanceState;
-use Nowo\MaintenanceModeBundle\Service\MaintenanceManager;
+use Nowo\MaintenanceModeBundle\Service\MaintenanceManagerInterface;
 use Nowo\MaintenanceModeBundle\View\MaintenancePages;
 use Psr\Clock\ClockInterface;
+use Psr\Log\LoggerInterface;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
@@ -50,9 +51,22 @@ final class MaintenanceRequestSubscriber
      */
     private const BYPASS_COOKIE_CONTEXT = 'nowo_maintenance_mode.bypass_cookie.v1';
 
+    /** `storage.on_error`: serve the request as if maintenance were off (default). */
+    public const ON_ERROR_FAIL_OPEN = 'fail_open';
+
+    /** `storage.on_error`: serve the maintenance page. */
+    public const ON_ERROR_FAIL_CLOSED = 'fail_closed';
+
+    /** `storage.on_error`: let the storage exception through (1.x behaviour). */
+    public const ON_ERROR_RETHROW = 'rethrow';
+
+    /**
+     * @param string $onStorageError What to do when the state storage throws (see the ON_ERROR_* constants)
+     * @param LoggerInterface|null $logger Receives the storage failure (error level)
+     */
     public function __construct(
         private readonly bool $enabled,
-        private readonly MaintenanceManager $manager,
+        private readonly MaintenanceManagerInterface $manager,
         private readonly MaintenanceExclusionMatcher $exclusionMatcher,
         private readonly ?Environment $twig,
         private readonly string $template,
@@ -64,6 +78,8 @@ final class MaintenanceRequestSubscriber
         private readonly string $bypassCookieName = 'nowo_maintenance_bypass',
         private readonly bool $bypassSetCookie = true,
         private readonly ?ClockInterface $clock = null,
+        private readonly string $onStorageError = self::ON_ERROR_FAIL_OPEN,
+        private readonly ?LoggerInterface $logger = null,
     ) {
     }
 
@@ -100,8 +116,8 @@ final class MaintenanceRequestSubscriber
             return;
         }
 
-        $state = $this->manager->getState();
-        if (!$state->isEffectivelyEnabled($this->now())) {
+        $state = $this->loadState();
+        if (!$state instanceof MaintenanceState || !$state->isEffectivelyEnabled($this->now())) {
             return;
         }
 
@@ -126,6 +142,30 @@ final class MaintenanceRequestSubscriber
                 ->withSecure($event->getRequest()->isSecure())
                 ->withPath('/'),
         );
+    }
+
+    /**
+     * Reads the state; a throwing storage (database down, often the reason for maintenance) must not turn every
+     * request into a 500. fail_open returns null (request served), fail_closed an enabled state with the default
+     * message (maintenance page), rethrow lets the exception through.
+     */
+    private function loadState(): ?MaintenanceState
+    {
+        try {
+            return $this->manager->getState();
+        } catch (Throwable $e) {
+            if ($this->onStorageError === self::ON_ERROR_RETHROW) {
+                throw $e;
+            }
+
+            $this->logger?->error('Maintenance mode state could not be loaded; applying storage.on_error.', [
+                'bundle'    => 'maintenance_mode',
+                'on_error'  => $this->onStorageError,
+                'exception' => $e,
+            ]);
+
+            return $this->onStorageError === self::ON_ERROR_FAIL_CLOSED ? new MaintenanceState(enabled: true) : null;
+        }
     }
 
     /**

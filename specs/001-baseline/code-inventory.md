@@ -44,6 +44,7 @@ requirements.
 | `Command/DisableCommand.php` | Disables maintenance mode from the CLI. | FR-13 |
 | `Command/StatusCommand.php` | Reports effective maintenance status for deployment and operations scripts. | FR-13 |
 | `Command/HashPasswordCommand.php` | Generates a password hash for panel protection. | FR-09 |
+| `Command/TickCommand.php` | Materialises a scheduled window that started or ended (cron / Scheduler). | FR-13, FR-26 |
 
 ## Controllers
 
@@ -86,6 +87,10 @@ requirements.
 | `Model/MaintenanceState.php` | Represents state and evaluates scheduled maintenance windows. | FR-05, FR-10 |
 | `Model/MaintenanceHistoryEntry.php` | Represents an append-only history entry. | FR-05 |
 | `Service/MaintenanceManager.php` | Enables, disables, updates, reads state, records history, and dispatches events. | FR-05, FR-15 |
+| `Service/MaintenanceManagerInterface.php` | Application API of the bundle (type-hinted inside the bundle and by hosts). | FR-05, FR-25, FR-26 |
+| `Security/ActorResolverInterface.php` | Actor recorded for panel writes. | FR-27 |
+| `Security/StaticActorResolver.php` | Default actor resolver (`panel`). | FR-27 |
+| `Security/SecurityTokenActorResolver.php` | Opt-in actor resolver: the logged-in user identifier. | FR-27 |
 | `Security/MaintenanceAccessGateInterface.php` | Defines the replaceable panel authorization contract. | FR-09 |
 | `Security/PasswordMaintenanceAccessGate.php` | Implements the default password and session gate. | FR-09 |
 | `Security/MaintenanceModeAccessCheckerInterface.php` | Role / custom access-checker contract for the panel (REQ-UI-002). | FR-08, FR-09 |

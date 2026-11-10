@@ -33,6 +33,9 @@ services:
 
     Nowo\MaintenanceModeBundle\Service\MaintenanceManager: ~
 
+    # Application API (pattern: type-hint the interface; a host alias or decorator replaces it everywhere).
+    Nowo\MaintenanceModeBundle\Service\MaintenanceManagerInterface: '@Nowo\MaintenanceModeBundle\Service\MaintenanceManager'
+
     Nowo\MaintenanceModeBundle\Twig\MaintenanceExtension: ~
 
     Nowo\MaintenanceModeBundle\EventSubscriber\MaintenanceRequestSubscriber: ~

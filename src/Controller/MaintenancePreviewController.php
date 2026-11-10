@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Nowo\MaintenanceModeBundle\Controller;
 
 use DateTimeImmutable;
-use Nowo\MaintenanceModeBundle\Service\MaintenanceManager;
+use Nowo\MaintenanceModeBundle\Service\MaintenanceManagerInterface;
 use Nowo\MaintenanceModeBundle\View\MaintenancePages;
 use Psr\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -28,7 +28,7 @@ final class MaintenancePreviewController
 {
     public function __construct(
         private readonly bool $enabled,
-        private readonly MaintenanceManager $manager,
+        private readonly MaintenanceManagerInterface $manager,
         private readonly Environment $twig,
         private readonly string $template,
         private readonly ?string $defaultMessage,

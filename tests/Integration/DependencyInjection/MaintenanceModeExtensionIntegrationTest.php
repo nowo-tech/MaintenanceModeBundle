@@ -11,12 +11,16 @@ use Nowo\MaintenanceModeBundle\DependencyInjection\MaintenanceModeExtension;
 use Nowo\MaintenanceModeBundle\EventSubscriber\MaintenanceRequestSubscriber;
 use Nowo\MaintenanceModeBundle\Exclusion\MaintenanceExclusionMatcher;
 use Nowo\MaintenanceModeBundle\Panel\PanelView;
+use Nowo\MaintenanceModeBundle\Security\ActorResolverInterface;
 use Nowo\MaintenanceModeBundle\Security\AllowAllMaintenanceModeAccessChecker;
 use Nowo\MaintenanceModeBundle\Security\ConfigurableMaintenanceModeAccessChecker;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceAccessGateInterface;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceModeAccessCheckerInterface;
 use Nowo\MaintenanceModeBundle\Security\PasswordMaintenanceAccessGate;
+use Nowo\MaintenanceModeBundle\Security\SecurityTokenActorResolver;
+use Nowo\MaintenanceModeBundle\Security\StaticActorResolver;
 use Nowo\MaintenanceModeBundle\Service\MaintenanceManager;
+use Nowo\MaintenanceModeBundle\Service\MaintenanceManagerInterface;
 use Nowo\MaintenanceModeBundle\Storage\FilesystemMaintenanceStateStorage;
 use Nowo\MaintenanceModeBundle\Storage\MaintenanceHistoryStorageInterface;
 use Nowo\MaintenanceModeBundle\Storage\MaintenanceStateStorageInterface;
@@ -150,6 +154,45 @@ final class MaintenanceModeExtensionIntegrationTest extends TestCase
 
         self::assertTrue($container->hasDefinition(MaintenancePanelController::class));
         self::assertTrue($container->hasDefinition('nowo_maintenance_mode.access_checker.default'));
+    }
+
+    public function testLoadAliasesTheManagerInterfaceAndTheDefaultActorResolver(): void
+    {
+        $container = new ContainerBuilder();
+        $container->setParameter('kernel.project_dir', sys_get_temp_dir());
+
+        (new MaintenanceModeExtension())->load([[
+            'panel'    => ['enabled' => true],
+            'security' => ['allow_unauthenticated' => true],
+        ]], $container);
+
+        self::assertSame(MaintenanceManager::class, (string) $container->getAlias(MaintenanceManagerInterface::class));
+        self::assertFalse($container->getAlias(MaintenanceManagerInterface::class)->isPublic());
+        self::assertSame(StaticActorResolver::class, (string) $container->getAlias(ActorResolverInterface::class));
+
+        $panel = $container->getDefinition(MaintenancePanelController::class);
+        self::assertSame(MaintenanceManagerInterface::class, (string) $panel->getArgument('$manager'));
+        self::assertSame(ActorResolverInterface::class, (string) $panel->getArgument('$actorResolver'));
+        self::assertSame('security.token_storage', (string) $panel->getArgument('$tokenStorage'));
+
+        $subscriber = $container->getDefinition(MaintenanceRequestSubscriber::class);
+        self::assertSame(MaintenanceManagerInterface::class, (string) $subscriber->getArgument('$manager'));
+        self::assertSame('fail_open', $subscriber->getArgument('$onStorageError'));
+    }
+
+    public function testLoadUsesConfiguredActorResolverAndStorageErrorMode(): void
+    {
+        $container = new ContainerBuilder();
+        $container->setParameter('kernel.project_dir', sys_get_temp_dir());
+
+        (new MaintenanceModeExtension())->load([[
+            'panel'    => ['enabled' => false],
+            'security' => ['actor_resolver' => SecurityTokenActorResolver::class],
+            'storage'  => ['on_error' => 'fail_closed'],
+        ]], $container);
+
+        self::assertSame(SecurityTokenActorResolver::class, (string) $container->getAlias(ActorResolverInterface::class));
+        self::assertSame('fail_closed', $container->getDefinition(MaintenanceRequestSubscriber::class)->getArgument('$onStorageError'));
     }
 
     public function testLoadUsesCustomAccessCheckerServiceId(): void
