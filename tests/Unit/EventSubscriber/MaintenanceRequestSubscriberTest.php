@@ -15,7 +15,11 @@ use Nowo\MaintenanceModeBundle\Storage\MaintenanceHistoryStorageInterface;
 use Nowo\MaintenanceModeBundle\Storage\MaintenanceStateStorageInterface;
 use Nowo\UiKitBundle\View\AuthPage;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\AbstractLogger;
 use ReflectionMethod;
+use RuntimeException;
+use Stringable;
+use Symfony\Component\Clock\MockClock;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -511,6 +515,89 @@ final class MaintenanceRequestSubscriberTest extends TestCase
         self::assertInstanceOf(JsonResponse::class, $event->getResponse());
     }
 
+    public function testStorageFailureFailsClosedByDefaultWithTheDefaultMessageAndLogs(): void
+    {
+        $logger     = new RecordingLogger();
+        $subscriber = $this->createFailingSubscriber(null, $logger, 'Back soon');
+
+        $event = $this->createMainRequestEvent('/page');
+        $subscriber->onKernelRequest($event);
+
+        $response = $event->getResponse();
+        self::assertSame(503, $response?->getStatusCode());
+        self::assertSame('3600', $response->headers->get('Retry-After'));
+        self::assertStringContainsString('Back soon', (string) $response->getContent());
+        self::assertCount(1, $logger->records);
+        self::assertSame('error', $logger->records[0]['level']);
+        self::assertSame('fail_closed', $logger->records[0]['context']['on_error']);
+        self::assertInstanceOf(RuntimeException::class, $logger->records[0]['context']['exception']);
+    }
+
+    public function testStorageFailureFailOpenServesTheRequest(): void
+    {
+        $subscriber = $this->createFailingSubscriber(MaintenanceRequestSubscriber::ON_ERROR_FAIL_OPEN);
+
+        $event = $this->createMainRequestEvent('/page');
+        $subscriber->onKernelRequest($event);
+
+        self::assertNull($event->getResponse());
+    }
+
+    public function testStorageFailureIsLoggedAtMostOncePerInterval(): void
+    {
+        $logger     = new RecordingLogger();
+        $clock      = new MockClock('2026-11-10 10:00:00');
+        $subscriber = $this->createFailingSubscriber(null, $logger, clock: $clock);
+
+        $subscriber->onKernelRequest($this->createMainRequestEvent('/a'));
+        $subscriber->onKernelRequest($this->createMainRequestEvent('/b'));
+        $clock->sleep(MaintenanceRequestSubscriber::ERROR_LOG_INTERVAL - 1);
+        $subscriber->onKernelRequest($this->createMainRequestEvent('/c'));
+        self::assertCount(1, $logger->records);
+
+        $clock->sleep(1);
+        $subscriber->onKernelRequest($this->createMainRequestEvent('/d'));
+        self::assertCount(2, $logger->records);
+    }
+
+    public function testStorageFailureRethrowKeepsTheOldBehaviour(): void
+    {
+        $subscriber = $this->createFailingSubscriber(MaintenanceRequestSubscriber::ON_ERROR_RETHROW);
+
+        $this->expectException(RuntimeException::class);
+        $subscriber->onKernelRequest($this->createMainRequestEvent('/page'));
+    }
+
+    private function createFailingSubscriber(?string $onError, ?RecordingLogger $logger = null, ?string $defaultMessage = null, ?MockClock $clock = null): MaintenanceRequestSubscriber
+    {
+        $stateStorage = new class implements MaintenanceStateStorageInterface {
+            public function load(): MaintenanceState
+            {
+                throw new RuntimeException('database down');
+            }
+
+            public function save(MaintenanceState $state): void
+            {
+            }
+        };
+        $historyStorage = new class implements MaintenanceHistoryStorageInterface {
+            public function append(MaintenanceHistoryEntry $entry): void
+            {
+            }
+
+            public function list(int $limit = 50): array
+            {
+                return [];
+            }
+        };
+
+        $manager = new MaintenanceManager($stateStorage, $historyStorage);
+
+        return $onError === null
+            ? new MaintenanceRequestSubscriber(true, $manager, new MaintenanceExclusionMatcher(), null, 'page.html.twig', clock: $clock, logger: $logger, defaultMessage: $defaultMessage)
+            : new MaintenanceRequestSubscriber(true, $manager, new MaintenanceExclusionMatcher(), null, 'page.html.twig', clock: $clock, onStorageError: $onError, logger: $logger, defaultMessage: $defaultMessage);
+    }
+
     private function createSubscriber(
         MaintenanceState $state,
         ?Environment $twig,
@@ -606,5 +693,20 @@ final class PlainDemoController
     public function ok(): Response
     {
         return new Response('ok');
+    }
+}
+
+/** @internal */
+final class RecordingLogger extends AbstractLogger
+{
+    /** @var list<array{level: mixed, message: string, context: array<string, mixed>}> */
+    public array $records = [];
+
+    /**
+     * @param array<string, mixed> $context
+     */
+    public function log($level, string|Stringable $message, array $context = []): void
+    {
+        $this->records[] = ['level' => $level, 'message' => (string) $message, 'context' => $context];
     }
 }

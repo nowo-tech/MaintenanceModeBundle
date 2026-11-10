@@ -12,12 +12,15 @@ use Nowo\MaintenanceModeBundle\Exclusion\MaintenanceExclusionMatcher;
 use Nowo\MaintenanceModeBundle\Form\AbstractMaintenanceFormType;
 use Nowo\MaintenanceModeBundle\NowoMaintenanceModeBundle;
 use Nowo\MaintenanceModeBundle\Panel\PanelView;
+use Nowo\MaintenanceModeBundle\Security\ActorResolverInterface;
 use Nowo\MaintenanceModeBundle\Security\AllowAllMaintenanceModeAccessChecker;
 use Nowo\MaintenanceModeBundle\Security\ConfigurableMaintenanceModeAccessChecker;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceAccessGateInterface;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceModeAccessCheckerInterface;
 use Nowo\MaintenanceModeBundle\Security\PasswordMaintenanceAccessGate;
+use Nowo\MaintenanceModeBundle\Security\StaticActorResolver;
 use Nowo\MaintenanceModeBundle\Service\MaintenanceManager;
+use Nowo\MaintenanceModeBundle\Service\MaintenanceManagerInterface;
 use Nowo\MaintenanceModeBundle\Storage\FilesystemMaintenanceHistoryStorage;
 use Nowo\MaintenanceModeBundle\Storage\FilesystemMaintenanceStateStorage;
 use Nowo\MaintenanceModeBundle\Storage\MaintenanceHistoryStorageInterface;
@@ -205,6 +208,7 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
         $this->configureExclusions($container, $config);
         $this->configureAccessGate($container, $config['security']);
         $this->registerAccessChecker($container, $config['security']);
+        $this->configureActorResolver($container, $config['security']);
         $this->configureManager($container, $config);
         $this->configureSubscriber($container, $config);
         $this->configurePanel($container, $config, $pathPrefix, $pageTemplates);
@@ -338,6 +342,21 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
     }
 
     /**
+     * `security.actor_resolver` (service id) or the static "panel" resolver (1.x actor).
+     *
+     * @param array<string, mixed> $security
+     */
+    private function configureActorResolver(ContainerBuilder $container, array $security): void
+    {
+        $resolverId = $security['actor_resolver'] ?? null;
+
+        $container->setAlias(
+            ActorResolverInterface::class,
+            is_string($resolverId) && $resolverId !== '' ? $resolverId : StaticActorResolver::class,
+        )->setPublic(false);
+    }
+
+    /**
      * Prefer kernel.bundles: ContainerBuilder::hasExtension() can be false while SecurityBundle
      * is already registered (e.g. during early Flex cache:clear boots).
      */
@@ -382,7 +401,7 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
         $definition = $container->getDefinition(MaintenanceRequestSubscriber::class);
         $definition
             ->setArgument('$enabled', (bool) $config['enabled'])
-            ->setArgument('$manager', new Reference(MaintenanceManager::class))
+            ->setArgument('$manager', new Reference(MaintenanceManagerInterface::class))
             ->setArgument('$exclusionMatcher', new Reference(MaintenanceExclusionMatcher::class))
             ->setArgument('$twig', new Reference('twig', ContainerBuilder::IGNORE_ON_INVALID_REFERENCE))
             ->setArgument('$template', $config['templates']['page'])
@@ -393,7 +412,10 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
             ->setArgument('$bypassQueryParameter', (string) ($security['bypass_query_parameter'] ?? 'maintenance_bypass'))
             ->setArgument('$bypassCookieName', (string) ($security['bypass_cookie_name'] ?? 'nowo_maintenance_bypass'))
             ->setArgument('$bypassSetCookie', (bool) ($security['bypass_set_cookie'] ?? true))
-            ->setArgument('$clock', new Reference(ClockInterface::class, ContainerBuilder::IGNORE_ON_INVALID_REFERENCE));
+            ->setArgument('$clock', new Reference(ClockInterface::class, ContainerBuilder::IGNORE_ON_INVALID_REFERENCE))
+            ->setArgument('$onStorageError', (string) ($config['storage']['on_error'] ?? MaintenanceRequestSubscriber::ON_ERROR_FAIL_CLOSED))
+            ->setArgument('$logger', new Reference('logger', ContainerBuilder::IGNORE_ON_INVALID_REFERENCE))
+            ->setArgument('$defaultMessage', $config['default_message']);
 
         // Tagged here instead of #[AsEventListener] because the kernel.request priority is configurable
         // (`subscriber_priority`), which an attribute cannot read (documented exception to REQ-SF-003).
@@ -434,7 +456,7 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
             ->setArgument('$templates', $pageTemplates);
 
         $container->getDefinition(MaintenancePanelController::class)
-            ->setArgument('$manager', new Reference(MaintenanceManager::class))
+            ->setArgument('$manager', new Reference(MaintenanceManagerInterface::class))
             ->setArgument('$accessGate', new Reference(MaintenanceAccessGateInterface::class))
             ->setArgument('$formFactory', new Reference('form.factory'))
             ->setArgument('$view', new Reference(PanelView::class))
@@ -443,6 +465,8 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
             ->setArgument('$allowUnauthenticated', (bool) $config['security']['allow_unauthenticated'])
             ->setArgument('$historyLimit', (int) $config['web_ui']['history_limit'])
             ->setArgument('$historyPerPage', (int) $config['web_ui']['history_per_page'])
+            ->setArgument('$actorResolver', new Reference(ActorResolverInterface::class))
+            ->setArgument('$tokenStorage', new Reference('security.token_storage', ContainerBuilder::IGNORE_ON_INVALID_REFERENCE))
             ->setPublic(true);
     }
 
@@ -459,7 +483,7 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
 
         $container->getDefinition(MaintenancePreviewController::class)
             ->setArgument('$enabled', $enabled)
-            ->setArgument('$manager', new Reference(MaintenanceManager::class))
+            ->setArgument('$manager', new Reference(MaintenanceManagerInterface::class))
             ->setArgument('$twig', new Reference('twig'))
             ->setArgument('$template', $config['templates']['page'])
             ->setArgument('$defaultMessage', $config['default_message'])

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Nowo\MaintenanceModeBundle\Command;
 
-use Nowo\MaintenanceModeBundle\Service\MaintenanceManager;
+use Nowo\MaintenanceModeBundle\Service\MaintenanceManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -27,7 +27,7 @@ use const JSON_UNESCAPED_UNICODE;
 final class StatusCommand extends Command
 {
     public function __construct(
-        private readonly MaintenanceManager $manager,
+        private readonly MaintenanceManagerInterface $manager,
     ) {
         parent::__construct();
     }

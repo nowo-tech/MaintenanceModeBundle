@@ -9,6 +9,7 @@ use Nowo\MaintenanceModeBundle\Controller\MaintenancePanelController;
 use Nowo\MaintenanceModeBundle\Model\MaintenanceHistoryEntry;
 use Nowo\MaintenanceModeBundle\Model\MaintenanceState;
 use Nowo\MaintenanceModeBundle\Panel\PanelView;
+use Nowo\MaintenanceModeBundle\Security\ActorResolverInterface;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceAccessGateInterface;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceModeAccessCheckerInterface;
 use Nowo\MaintenanceModeBundle\Security\PasswordMaintenanceAccessGate;
@@ -30,11 +31,16 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Symfony\Component\Security\Core\User\InMemoryUser;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Twig\Environment;
 
+use function array_shift;
 use function count;
+use function str_repeat;
 
 use const PASSWORD_BCRYPT;
 
@@ -612,6 +618,128 @@ final class MaintenancePanelControllerTest extends TestCase
 
         self::assertSame(Response::HTTP_OK, $response->getStatusCode());
         self::assertSame('<html>ok</html>', $response->getContent());
+    }
+
+    public function testPanelWritesRecordPanelActorByDefault(): void
+    {
+        $this->accessGate->method('isGranted')->willReturn(true);
+        $this->csrfTokenManager->method('isTokenValid')->willReturn(true);
+
+        $this->createController()->enable(Request::create('/_maintenance/enable', 'POST', ['message' => 'x', '_token' => 'valid']));
+
+        self::assertSame('panel', $this->stateStorage->state->getUpdatedBy());
+        self::assertSame('panel', $this->historyStorage->entries[0]->getActor());
+    }
+
+    public function testPanelWritesUseTheActorResolver(): void
+    {
+        $this->accessGate->method('isGranted')->willReturn(true);
+        $this->csrfTokenManager->method('isTokenValid')->willReturn(true);
+        $resolver = new class implements ActorResolverInterface {
+            public function resolveActor(Request $request): string
+            {
+                return 'user-42';
+            }
+        };
+        $controller = new MaintenancePanelController(
+            $this->manager,
+            $this->accessGate,
+            $this->formFactory,
+            new PanelView($this->twig),
+            $this->csrfTokenManager,
+            actorResolver: $resolver,
+        );
+
+        $controller->enable(Request::create('/_maintenance/enable', 'POST', ['message' => 'x', '_token' => 'valid']));
+        $controller->schedule(Request::create('/_maintenance/schedule', 'POST', [
+            'scheduled_enable_at'  => '2026-07-25T08:00',
+            'scheduled_disable_at' => '2026-07-25T18:00',
+            'message'              => 'Planned',
+            '_token'               => 'valid',
+        ]));
+        $controller->clearSchedule(Request::create('/_maintenance/clear-schedule', 'POST', ['confirmed' => '1', '_token' => 'valid']));
+        $controller->disable(Request::create('/_maintenance/disable', 'POST', ['confirmed' => '1', '_token' => 'valid']));
+
+        self::assertCount(4, $this->historyStorage->entries);
+        foreach ($this->historyStorage->entries as $entry) {
+            self::assertSame('user-42', $entry->getActor());
+        }
+        self::assertSame('user-42', $this->stateStorage->state->getUpdatedBy());
+    }
+
+    public function testHostResolverOutputIsNormalised(): void
+    {
+        $this->accessGate->method('isGranted')->willReturn(true);
+        $this->csrfTokenManager->method('isTokenValid')->willReturn(true);
+        $actors   = ["evil\nname" . str_repeat('x', 200), "\x01", null];
+        $resolver = new class($actors) implements ActorResolverInterface {
+            /** @param list<string|null> $actors */
+            public function __construct(private array $actors)
+            {
+            }
+
+            public function resolveActor(Request $request): ?string
+            {
+                return array_shift($this->actors);
+            }
+        };
+        $controller = new MaintenancePanelController(
+            $this->manager,
+            $this->accessGate,
+            $this->formFactory,
+            new PanelView($this->twig),
+            $this->csrfTokenManager,
+            actorResolver: $resolver,
+        );
+
+        for ($i = 0; $i < 3; ++$i) {
+            $controller->enable(Request::create('/_maintenance/enable', 'POST', ['message' => 'x', '_token' => 'valid']));
+        }
+
+        self::assertSame('evilname' . str_repeat('x', 120), $this->historyStorage->entries[0]->getActor());
+        self::assertSame('panel', $this->historyStorage->entries[1]->getActor());
+        self::assertNull($this->historyStorage->entries[2]->getActor());
+    }
+
+    public function testAccessCheckerReceivesTheTokenUser(): void
+    {
+        $user    = new InMemoryUser('alice', null, ['ROLE_ADMIN']);
+        $storage = new TokenStorage();
+        $storage->setToken(new UsernamePasswordToken($user, 'main', ['ROLE_ADMIN']));
+        $checker = $this->createMock(MaintenanceModeAccessCheckerInterface::class);
+        $checker->expects(self::once())->method('canAccess')->with(self::identicalTo($user))->willReturn(false);
+
+        $controller = new MaintenancePanelController(
+            $this->manager,
+            $this->accessGate,
+            $this->formFactory,
+            new PanelView($this->twig),
+            $this->csrfTokenManager,
+            $checker,
+            false,
+            tokenStorage: $storage,
+        );
+
+        self::assertSame(Response::HTTP_FORBIDDEN, $controller->index(Request::create('/_maintenance'))->getStatusCode());
+    }
+
+    public function testAccessCheckerReceivesNullWithoutAToken(): void
+    {
+        $checker = $this->createMock(MaintenanceModeAccessCheckerInterface::class);
+        $checker->expects(self::once())->method('canAccess')->with(null)->willReturn(false);
+
+        $controller = new MaintenancePanelController(
+            $this->manager,
+            $this->accessGate,
+            $this->formFactory,
+            new PanelView($this->twig),
+            $this->csrfTokenManager,
+            $checker,
+            false,
+            tokenStorage: new TokenStorage(),
+        );
+
+        self::assertSame(Response::HTTP_FORBIDDEN, $controller->index(Request::create('/_maintenance'))->getStatusCode());
     }
 
     private function createController(?string $defaultMessage = null): MaintenancePanelController

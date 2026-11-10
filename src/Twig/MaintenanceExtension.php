@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Nowo\MaintenanceModeBundle\Twig;
 
 use Nowo\MaintenanceModeBundle\Model\MaintenanceState;
-use Nowo\MaintenanceModeBundle\Service\MaintenanceManager;
+use Nowo\MaintenanceModeBundle\Service\MaintenanceManagerInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
 use Twig\TwigFunction;
@@ -34,7 +34,7 @@ final class MaintenanceExtension extends AbstractExtension implements GlobalsInt
      * @param array<string, mixed> $page `page.*` and the panel options `show_preview_link` / `form_theme` (1.12)
      */
     public function __construct(
-        private readonly MaintenanceManager $manager,
+        private readonly MaintenanceManagerInterface $manager,
         private readonly ?string $layoutTemplate = null,
         private readonly string $cssFramework = 'custom',
         private readonly string $iconSet = 'none',

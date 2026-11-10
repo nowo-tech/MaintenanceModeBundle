@@ -36,6 +36,10 @@ Maintenance Mode Bundle puts a Symfony application into **maintenance mode** (HT
 | FR-22 | The container refuses to compile while the panel (`web_ui.enabled: true`) is registered without `security.csrf.token_manager`, `form.type_extension.csrf`, or with `framework.form.csrf_protection: false` (`CsrfProtectionPass`, fail closed — REQ-SEC-005). |
 | FR-23 | Panel forms are FormKit Types (`#[FormKitConfig('maintenance_mode')]`); the extension prepends `nowo_form_kit.profiles.maintenance_mode` when FormKitBundle is registered and the host does not define it, with defaults that keep the rendered forms unchanged (REQ-TWIG-005 rule 11). |
 | FR-24 | Panel and preview routes are opt-in: they exist only where the host imports `@NowoMaintenanceModeBundle/Resources/config/routes.yaml`; the controllers are not autoconfigured, so `routing.controllers` does not load them (REQ-SF-004 rule 7). |
+| FR-25 | `Service\MaintenanceManagerInterface` is the application API (aliased to `MaintenanceManager`); the bundle's listener, controllers, commands and Twig extension depend on the interface. |
+| FR-26 | `MaintenanceManagerInterface::applySchedule()` and `nowo:maintenance-mode:tick` materialise a scheduled window that started or ended (history + `MaintenanceEnabledEvent` / `MaintenanceDisabledEvent`, actor `schedule`) without changing the effective state; a started window keeps its bounds, the tick skips when the state changed before its save, and clearing / moving a window it started ends it. `disable()` clears a past start. |
+| FR-27 | Panel writes record the actor from `Security\ActorResolverInterface` (`security.actor_resolver`; default `panel`, opt-in `SecurityTokenActorResolver`; every actor normalised to 1-128 printable characters); the access checker receives the token user (null when anonymous or without SecurityBundle). |
+| FR-28 | A throwing state storage never turns every request into a 500: the request listener logs the error and applies `storage.on_error` (`fail_closed` default with `default_message`, `fail_open`, `rethrow`), logging at most once a minute. |
 
 ## User scenarios
 
@@ -108,3 +112,7 @@ make test-coverage
 - FR-22: `tests/Unit/DependencyInjection/Compiler/CsrfProtectionPassTest.php`
 - FR-23: `tests/Unit/Form/FormKitProfileTest.php`
 - FR-24: `tests/Integration/Kernel/HostRoutingControllersKernelTest.php`
+- FR-25: `tests/Integration/DependencyInjection/MaintenanceModeExtensionIntegrationTest.php`
+- FR-26: `tests/Unit/Service/MaintenanceManagerApplyScheduleTest.php`, `tests/Unit/Command/TickCommandTest.php`
+- FR-27: `tests/Unit/Security/ActorResolverTest.php`, `tests/Unit/Controller/MaintenancePanelControllerTest.php`
+- FR-28: `tests/Unit/EventSubscriber/MaintenanceRequestSubscriberTest.php`

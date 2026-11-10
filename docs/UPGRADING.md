@@ -3,6 +3,7 @@
 ## Table of contents
 
 - [Unreleased](#unreleased)
+  - [To 1.16.0](#to-1160)
 - [To 1.15.1](#to-1151)
 - [To 1.15.0](#to-1150)
 - [To 1.14.2](#to-1142)
@@ -86,6 +87,27 @@
   - [After upgrading](#after-upgrading-1)
 
 ## Unreleased
+
+### To 1.16.0
+
+Additive; check these:
+
+- **Throwing state storage: 1.15 gave a 500, 1.16 gives a 503.** The request listener now logs the error (at most once
+  a minute) and serves the maintenance page (`storage.on_error: fail_closed`, with `default_message`). `rethrow` keeps
+  the 1.15 500. `fail_open` serves the live site as if maintenance were off: use it only when the state storage is
+  independent of the application's database, because it can expose the site during maintenance.
+- **Custom access checker: review its non-null branch.** `canAccess()` now receives the user of the security token (it
+  always got `null`), so the branch of your checker for a non-null user runs for the first time, for **every** logged-in
+  user, admins or not. Make sure that branch checks roles or permissions and does not treat "a user is logged in" as
+  "allowed". Anonymous requests and apps without SecurityBundle still pass `null`.
+- **Type-hint the interface.** Prefer `Nowo\MaintenanceModeBundle\Service\MaintenanceManagerInterface` over the
+  `final` `MaintenanceManager` in host services; the class is unchanged and still autowirable.
+- **Scheduled-window events.** Add `* * * * * php bin/console nowo:maintenance-mode:tick` (or a Scheduler task) on
+  **one node** if your listeners must hear about scheduled windows; without it nothing changes.
+- **`disable()` during a started window** now also clears the past start, so maintenance stays off (1.15 kept it on with
+  no end).
+- **Real actor in panel history.** Set `security.actor_resolver: Nowo\MaintenanceModeBundle\Security\SecurityTokenActorResolver`
+  to store the user identifier instead of `panel` (it becomes personal data in the history file and events).
 
 ## To 1.15.1
 

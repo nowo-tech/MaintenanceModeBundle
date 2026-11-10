@@ -60,6 +60,7 @@ Worker demo: `demo/symfony8/docker/frankenphp/Caddyfile` declares a `worker` blo
 | `Exclusion\MaintenanceExclusionMatcher` | yes | none (`readonly` lists) | ✅ | ✅ |
 | `Security\PasswordMaintenanceAccessGate` | yes | none; authorization flag lives in the user session | ✅ | ✅ |
 | `nowo_maintenance_mode.access_checker.default` (`ConfigurableMaintenanceModeAccessChecker`) / `.allow_all` | yes | none (`final readonly`) | ✅ | ✅ |
+| `Security\StaticActorResolver` / `Security\SecurityTokenActorResolver` | yes | none (`final readonly`; the token is read per call) | ✅ | ✅ |
 | `Twig\MaintenanceExtension` | yes | none; globals are compile-time config strings | ✅ | ✅ |
 | `Controller\MaintenancePanelController` | yes (public) | none | ✅ | ✅ |
 | `Controller\MaintenancePreviewController` | yes (public) | none | ✅ | ✅ |

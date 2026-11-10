@@ -48,8 +48,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Target 1.16.0.
+
+### Added
+
+- `Service\MaintenanceManagerInterface`: the application API (aliased to `MaintenanceManager`, which stays `final`). The request listener, panel and preview controllers, commands and Twig extension now depend on the interface, so a host alias or decorator replaces the manager everywhere.
+- Scheduled-window events: `MaintenanceManagerInterface::applySchedule()` and the `nowo:maintenance-mode:tick` command (cron / Symfony Scheduler, one node) write a window that started or ended as an enable / disable with actor `schedule` (history context `trigger: schedule`), so `MaintenanceEnabledEvent` / `MaintenanceDisabledEvent` fire. The tick never changes the effective state, keeps a started window's bounds, and skips when the state changed between its read and its write. Clearing or moving a window the tick started ends it (`MaintenanceDisabledEvent`); extending it keeps it on.
+- `Security\ActorResolverInterface` (`security.actor_resolver`): the actor recorded for panel writes. Default `StaticActorResolver` (`panel`, as before); opt-in `SecurityTokenActorResolver` records the logged-in user identifier. Every resolved actor is normalised (controls, tab / newline and format characters dropped, at most 128 characters; `panel` when nothing is left).
+- `storage.on_error` (`fail_closed` default, `fail_open`, `rethrow`): a state storage that throws no longer turns every request into a 500; the listener logs the error (level error, at most once a minute per process) and applies the mode. `fail_closed` serves the maintenance page with `default_message`.
+
 ### Changed
 
+- The panel passes the security token user to `MaintenanceModeAccessCheckerInterface::canAccess()` (it always passed `null`). The built-in checkers ignore the argument; `null` is still passed when anonymous or without SecurityBundle.
+- A throwing `MaintenanceStateStorageInterface::load()` in the request listener now serves the 503 maintenance page (`fail_closed`) instead of a 500; set `storage.on_error: rethrow` for the old behaviour.
+
+### Fixed
+
+- `disable()` during a scheduled window that had already started (start in the past) left maintenance on with no end; it now also clears a past start (a future start is kept).
 - Docs: new USAGE section "Using it from a DDD / hexagonal application" (where the bundle sits in a hexagonal host, the ports, events and DTOs to build an anti-corruption layer on, and the known limitations).
 
 ## [1.15.1] - 2026-11-02

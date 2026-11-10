@@ -19,9 +19,9 @@ use Psr\Log\NullLogger;
 use Symfony\Component\Clock\NativeClock;
 
 /**
- * Application service for enabling / disabling / scheduling maintenance.
+ * Application service for enabling / disabling / scheduling maintenance (default {@see MaintenanceManagerInterface}).
  */
-final class MaintenanceManager
+final class MaintenanceManager implements MaintenanceManagerInterface
 {
     private readonly ClockInterface $clock;
 
@@ -59,51 +59,59 @@ final class MaintenanceManager
 
     public function enable(?string $message = null, ?string $updatedBy = null, ?DateTimeImmutable $at = null): MaintenanceState
     {
-        $at ??= $this->clock->now();
-        $state = $this->stateStorage->load()
-            ->withEnabled(true)
-            ->withActivatedAt($at)
-            ->withDeactivatedAt(null)
-            ->withMessage($message ?? $this->defaultMessage)
-            ->withUpdatedBy($updatedBy)
-            ->withScheduledEnableAt(null);
-
-        $this->stateStorage->save($state);
-        // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
-        $this->historyStorage->append(new MaintenanceHistoryEntry(
-            action: 'enable',
-            occurredAt: $at,
-            actor: $updatedBy,
-            message: $state->getMessage(),
-        ));
-        $this->eventDispatcher?->dispatch(new MaintenanceEnabledEvent($state, $updatedBy));
-        $this->logger->info('Maintenance mode enabled.', $this->logContext('enable', $updatedBy));
-
-        return $state;
+        return $this->writeEnabled($this->stateStorage->load(), $message ?? $this->defaultMessage, $updatedBy, $at ?? $this->clock->now());
     }
 
     public function disable(?string $updatedBy = null, ?DateTimeImmutable $at = null): MaintenanceState
     {
         $at ??= $this->clock->now();
-        $state = $this->stateStorage->load()
-            ->withEnabled(false)
-            ->withDeactivatedAt($at)
-            ->withUpdatedBy($updatedBy)
-            ->withScheduledDisableAt(null);
+        $state = $this->stateStorage->load()->withScheduledDisableAt(null);
+        // A start that already passed would otherwise keep maintenance on with no end (scheduledEnableAt <= now and
+        // no scheduledDisableAt); a future start is kept so a planned window still runs.
+        $start = $state->getScheduledEnableAt();
+        if ($start instanceof DateTimeImmutable && $start <= $at) {
+            $state = $state->withScheduledEnableAt(null);
+        }
 
-        // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
-        $this->stateStorage->save($state);
-        // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
-        $this->historyStorage->append(new MaintenanceHistoryEntry(
-            action: 'disable',
-            occurredAt: $at,
-            actor: $updatedBy,
-            message: $state->getMessage(),
-        ));
-        $this->eventDispatcher?->dispatch(new MaintenanceDisabledEvent($state, $updatedBy));
-        $this->logger->info('Maintenance mode disabled.', $this->logContext('disable', $updatedBy));
+        return $this->writeDisabled($state, $updatedBy, $at);
+    }
 
-        return $state;
+    public function applySchedule(?DateTimeImmutable $now = null, ?string $actor = self::ACTOR_SCHEDULE): ?MaintenanceState
+    {
+        $now ??= $this->clock->now();
+        $state     = $this->stateStorage->load();
+        $effective = $state->isEffectivelyEnabled($now);
+
+        if ($effective === $state->isEnabled()) {
+            return null;
+        }
+
+        // Compare-before-save: a panel / CLI write that landed after the load wins, this tick does nothing (the next
+        // one re-evaluates). Narrows the race; run the tick on one node only.
+        if ($this->stateStorage->load()->toArray() !== $state->toArray()) {
+            return null;
+        }
+
+        $context = ['trigger' => self::ACTOR_SCHEDULE];
+
+        if ($effective) {
+            // A window started (scheduledEnableAt <= now): enabled, activatedAt = the start, both bounds kept, so the
+            // panel still shows the window and schedule() / clearSchedule() can move or end it (see isScheduleOwned()).
+            return $this->writeEnabled(
+                $state,
+                $state->getMessage() ?? $this->defaultMessage,
+                $actor,
+                $state->getScheduledEnableAt() ?? $now,
+                $context,
+                keepStart: true,
+            );
+        }
+
+        // A window ended (scheduledDisableAt <= now): once the end is in the past the stored schedule can never turn
+        // maintenance on again, so both bounds are cleared (same effective state, now and later).
+        $at = $state->getScheduledDisableAt() ?? $now;
+
+        return $this->writeDisabled($state->withScheduledEnableAt(null)->withScheduledDisableAt(null), $actor, $at, $context);
     }
 
     public function schedule(
@@ -125,7 +133,7 @@ final class MaintenanceManager
             $state = $state->withMessage($message);
         }
 
-        return $this->update($state, $updatedBy, 'schedule');
+        return $this->writeSchedule($state, $updatedBy, 'schedule');
     }
 
     public function clearSchedule(?string $updatedBy = null): MaintenanceState
@@ -134,7 +142,48 @@ final class MaintenanceManager
             ->withScheduledEnableAt(null)
             ->withScheduledDisableAt(null);
 
-        return $this->update($state, $updatedBy, 'clear_schedule');
+        return $this->writeSchedule($state, $updatedBy, 'clear_schedule');
+    }
+
+    /**
+     * Whether the stored `enabled` flag was set by {@see applySchedule()} for a window that is still stored: the tick
+     * writes activatedAt = scheduledEnableAt and keeps the start, while enable() always clears the start.
+     */
+    private function isScheduleOwned(MaintenanceState $state): bool
+    {
+        $start = $state->getScheduledEnableAt();
+        $at    = $state->getActivatedAt();
+
+        return $state->isEnabled()
+            && $start instanceof DateTimeImmutable
+            && $at instanceof DateTimeImmutable
+            && $start->getTimestamp() === $at->getTimestamp();
+    }
+
+    /**
+     * schedule() / clearSchedule(): when the tick had switched maintenance on for the window being edited, the flag
+     * follows the new bounds (on only while the new window covers now), so clearing or moving a running window ends
+     * it, as it does without the tick. Ending it dispatches MaintenanceDisabledEvent (actor = the editor).
+     */
+    private function writeSchedule(MaintenanceState $state, ?string $updatedBy, string $action): MaintenanceState
+    {
+        $base = $this->stateStorage->load();
+        if (!$this->isScheduleOwned($base)) {
+            return $this->update($state, $updatedBy, $action);
+        }
+
+        $now       = $this->clock->now();
+        $candidate = $state->withEnabled(false);
+        if ($candidate->isEffectivelyEnabled($now)) {
+            // Still inside the (edited) window: stays on, still owned by the schedule.
+            return $this->update($state, $updatedBy, $action);
+        }
+
+        $state = $this->update($candidate->withDeactivatedAt($now), $updatedBy, $action);
+        $this->eventDispatcher?->dispatch(new MaintenanceDisabledEvent($state, $updatedBy));
+        $this->logger->info('Maintenance mode disabled.', $this->logContext($action, $updatedBy));
+
+        return $state;
     }
 
     public function update(
@@ -167,6 +216,62 @@ final class MaintenanceManager
     public function history(int $limit = 50): array
     {
         return $this->historyStorage->list($limit);
+    }
+
+    /**
+     * @param array<string, mixed> $context History entry context
+     */
+    private function writeEnabled(MaintenanceState $base, ?string $message, ?string $updatedBy, DateTimeImmutable $at, array $context = [], bool $keepStart = false): MaintenanceState
+    {
+        $state = $base
+            ->withEnabled(true)
+            ->withActivatedAt($at)
+            ->withDeactivatedAt(null)
+            ->withMessage($message)
+            ->withUpdatedBy($updatedBy);
+        if (!$keepStart) {
+            $state = $state->withScheduledEnableAt(null);
+        }
+
+        $this->stateStorage->save($state);
+        // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
+        $this->historyStorage->append(new MaintenanceHistoryEntry(
+            action: 'enable',
+            occurredAt: $at,
+            actor: $updatedBy,
+            message: $state->getMessage(),
+            context: $context,
+        ));
+        $this->eventDispatcher?->dispatch(new MaintenanceEnabledEvent($state, $updatedBy));
+        $this->logger->info('Maintenance mode enabled.', $this->logContext('enable', $updatedBy));
+
+        return $state;
+    }
+
+    /**
+     * @param array<string, mixed> $context History entry context
+     */
+    private function writeDisabled(MaintenanceState $base, ?string $updatedBy, DateTimeImmutable $at, array $context = []): MaintenanceState
+    {
+        $state = $base
+            ->withEnabled(false)
+            ->withDeactivatedAt($at)
+            ->withUpdatedBy($updatedBy);
+
+        // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
+        $this->stateStorage->save($state);
+        // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
+        $this->historyStorage->append(new MaintenanceHistoryEntry(
+            action: 'disable',
+            occurredAt: $at,
+            actor: $updatedBy,
+            message: $state->getMessage(),
+            context: $context,
+        ));
+        $this->eventDispatcher?->dispatch(new MaintenanceDisabledEvent($state, $updatedBy));
+        $this->logger->info('Maintenance mode disabled.', $this->logContext('disable', $updatedBy));
+
+        return $state;
     }
 
     /**

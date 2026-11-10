@@ -854,6 +854,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         login_max_attempts?: int|Param, // Failed panel password attempts allowed per session / client IP within login_lockout_seconds (0 = unlimited). // Default: 5
  *         login_lockout_seconds?: int|Param, // Window (seconds) for counting failed panel password attempts. // Default: 900
  *         access_gate?: scalar|Param|null, // FQCN or service id implementing MaintenanceAccessGateInterface. null = default password gate. // Default: null
+ *         actor_resolver?: scalar|Param|null, // Service id implementing ActorResolverInterface: the actor recorded for panel actions (history, updatedBy, events). null = "panel" (1.x); Nowo\MaintenanceModeBundle\Security\SecurityTokenActorResolver = the logged-in user identifier. // Default: null
  *         bypass_token?: scalar|Param|null, // Optional shared secret: ?maintenance_bypass=TOKEN (or cookie) skips the 503 for QA without opening the panel. // Default: null
  *         bypass_query_parameter?: scalar|Param|null, // Query parameter name for the soft bypass token. // Default: "maintenance_bypass"
  *         bypass_cookie_name?: scalar|Param|null, // Cookie name set after a successful query bypass. // Default: "nowo_maintenance_bypass"
@@ -864,6 +865,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         history_file?: scalar|Param|null, // Append-only JSONL history file. // Default: "%kernel.project_dir%/var/maintenance/history.jsonl"
  *         state_storage?: scalar|Param|null, // Override service id / FQCN for MaintenanceStateStorageInterface. // Default: null
  *         history_storage?: scalar|Param|null, // Override service id / FQCN for MaintenanceHistoryStorageInterface. // Default: null
+ *         on_error?: "fail_closed"|"fail_open"|"rethrow"|Param, // What the request listener does when MaintenanceStateStorageInterface::load() throws (logged at most once a minute): fail_closed = serve the maintenance page (503, default_message); fail_open = serve the live site as if maintenance were off (only for a state storage independent of the app database); rethrow = let the exception through (1.15: every request is a 500). // Default: "fail_closed"
  *     },
  *     templates?: array{ // Public maintenance page template (REQ-TWIG); the panel_* keys are deprecated aliases of web_ui.layout_template / web_ui.templates.
  *         page?: scalar|Param|null, // Public 503 page. Default: UiKit guest layout + theme tokens, no CDN. Samples: @NowoMaintenanceModeBundle/maintenance/examples/*.html.twig (opt-in, they load CDNs). // Default: "@NowoMaintenanceModeBundle/maintenance/page.html.twig"
