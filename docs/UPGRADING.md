@@ -3,7 +3,8 @@
 ## Table of contents
 
 - [Unreleased](#unreleased)
-  - [To 1.16.0](#to-1160)
+- [To 1.16.0](#to-1160)
+  - [To 1.16.0](#to-1160-1)
 - [To 1.15.1](#to-1151)
 - [To 1.15.0](#to-1150)
 - [To 1.14.2](#to-1142)
@@ -87,6 +88,14 @@
   - [After upgrading](#after-upgrading-1)
 
 ## Unreleased
+
+## To 1.16.0
+
+From **1.15.1**:
+
+```bash
+composer update nowo-tech/maintenance-mode-bundle
+```
 
 ### To 1.16.0
 
