@@ -413,8 +413,9 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
             ->setArgument('$bypassCookieName', (string) ($security['bypass_cookie_name'] ?? 'nowo_maintenance_bypass'))
             ->setArgument('$bypassSetCookie', (bool) ($security['bypass_set_cookie'] ?? true))
             ->setArgument('$clock', new Reference(ClockInterface::class, ContainerBuilder::IGNORE_ON_INVALID_REFERENCE))
-            ->setArgument('$onStorageError', (string) ($config['storage']['on_error'] ?? MaintenanceRequestSubscriber::ON_ERROR_FAIL_OPEN))
-            ->setArgument('$logger', new Reference('logger', ContainerBuilder::IGNORE_ON_INVALID_REFERENCE));
+            ->setArgument('$onStorageError', (string) ($config['storage']['on_error'] ?? MaintenanceRequestSubscriber::ON_ERROR_FAIL_CLOSED))
+            ->setArgument('$logger', new Reference('logger', ContainerBuilder::IGNORE_ON_INVALID_REFERENCE))
+            ->setArgument('$defaultMessage', $config['default_message']);
 
         // Tagged here instead of #[AsEventListener] because the kernel.request priority is configurable
         // (`subscriber_priority`), which an attribute cannot read (documented exception to REQ-SF-003).

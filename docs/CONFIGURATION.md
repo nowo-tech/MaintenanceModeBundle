@@ -43,7 +43,7 @@ Root alias: `nowo_maintenance_mode`.
 | `storage.state_file` | `%kernel.project_dir%/var/maintenance/state.json` | State JSON/YAML |
 | `storage.history_file` | `%kernel.project_dir%/var/maintenance/history.jsonl` | Append-only history |
 | `storage.state_storage` / `history_storage` | `null` | Override storage services |
-| `storage.on_error` | `fail_open` | When the state storage throws on a request: `fail_open` serves the request as if maintenance were off, `fail_closed` serves the maintenance page, `rethrow` lets the exception through (1.x: a 500). The error is always logged |
+| `storage.on_error` | `fail_closed` | When the state storage throws on a request: `fail_closed` serves the maintenance page (503, `default_message`); `fail_open` serves the live site as if maintenance were off — **only for a state storage independent of the application database**, it can expose the site during maintenance; `rethrow` lets the exception through (1.15: a 500). Logged at most once a minute per process |
 | `security.actor_resolver` | `null` | Service implementing `ActorResolverInterface`, the actor recorded for panel writes. `null` = `panel`; `Nowo\MaintenanceModeBundle\Security\SecurityTokenActorResolver` = the logged-in user identifier |
 
 CSS framework, icon set, row-action display and every class / attribute / partial of the panel come from UiKit:

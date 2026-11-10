@@ -17,6 +17,7 @@ use Nowo\MaintenanceModeBundle\Security\ActorResolverInterface;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceAccessGateInterface;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceModeAccessCheckerInterface;
 use Nowo\MaintenanceModeBundle\Security\PasswordMaintenanceAccessGate;
+use Nowo\MaintenanceModeBundle\Security\SecurityTokenActorResolver;
 use Nowo\MaintenanceModeBundle\Service\MaintenanceManagerInterface;
 use Nowo\MaintenanceModeBundle\View\MaintenancePages;
 use Symfony\Component\Form\FormFactoryInterface;
@@ -304,9 +305,19 @@ final class MaintenancePanelController
 
     private function actor(Request $request): ?string
     {
-        return $this->actorResolver instanceof ActorResolverInterface
-            ? $this->actorResolver->resolveActor($request)
-            : ActorResolverInterface::PANEL;
+        if (!$this->actorResolver instanceof ActorResolverInterface) {
+            return ActorResolverInterface::PANEL;
+        }
+
+        $actor = $this->actorResolver->resolveActor($request);
+        if ($actor === null) {
+            return null;
+        }
+
+        // Any resolver (host ones too): a bounded, printable actor (BackupOptions::createdBy accepts 1-128 printable).
+        $actor = SecurityTokenActorResolver::normalize($actor);
+
+        return $actor !== '' ? $actor : ActorResolverInterface::PANEL;
     }
 
     /**

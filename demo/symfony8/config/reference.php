@@ -865,7 +865,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         history_file?: scalar|Param|null, // Append-only JSONL history file. // Default: "%kernel.project_dir%/var/maintenance/history.jsonl"
  *         state_storage?: scalar|Param|null, // Override service id / FQCN for MaintenanceStateStorageInterface. // Default: null
  *         history_storage?: scalar|Param|null, // Override service id / FQCN for MaintenanceHistoryStorageInterface. // Default: null
- *         on_error?: "fail_open"|"fail_closed"|"rethrow"|Param, // What the request listener does when MaintenanceStateStorageInterface::load() throws (the error is logged): fail_open = serve the request as if maintenance were off, fail_closed = serve the maintenance page, rethrow = let the exception through (1.x: every request is a 500). // Default: "fail_open"
+ *         on_error?: "fail_closed"|"fail_open"|"rethrow"|Param, // What the request listener does when MaintenanceStateStorageInterface::load() throws (logged at most once a minute): fail_closed = serve the maintenance page (503, default_message); fail_open = serve the live site as if maintenance were off (only for a state storage independent of the app database); rethrow = let the exception through (1.15: every request is a 500). // Default: "fail_closed"
  *     },
  *     templates?: array{ // Public maintenance page template (REQ-TWIG); the panel_* keys are deprecated aliases of web_ui.layout_template / web_ui.templates.
  *         page?: scalar|Param|null, // Public 503 page. Default: UiKit guest layout + theme tokens, no CDN. Samples: @NowoMaintenanceModeBundle/maintenance/examples/*.html.twig (opt-in, they load CDNs). // Default: "@NowoMaintenanceModeBundle/maintenance/page.html.twig"

@@ -19,6 +19,7 @@ use Psr\Log\AbstractLogger;
 use ReflectionMethod;
 use RuntimeException;
 use Stringable;
+use Symfony\Component\Clock\MockClock;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -514,29 +515,49 @@ final class MaintenanceRequestSubscriberTest extends TestCase
         self::assertInstanceOf(JsonResponse::class, $event->getResponse());
     }
 
-    public function testStorageFailureFailsOpenByDefaultAndLogs(): void
+    public function testStorageFailureFailsClosedByDefaultWithTheDefaultMessageAndLogs(): void
     {
         $logger     = new RecordingLogger();
-        $subscriber = $this->createFailingSubscriber(null, $logger);
+        $subscriber = $this->createFailingSubscriber(null, $logger, 'Back soon');
+
+        $event = $this->createMainRequestEvent('/page');
+        $subscriber->onKernelRequest($event);
+
+        $response = $event->getResponse();
+        self::assertSame(503, $response?->getStatusCode());
+        self::assertSame('3600', $response->headers->get('Retry-After'));
+        self::assertStringContainsString('Back soon', (string) $response->getContent());
+        self::assertCount(1, $logger->records);
+        self::assertSame('error', $logger->records[0]['level']);
+        self::assertSame('fail_closed', $logger->records[0]['context']['on_error']);
+        self::assertInstanceOf(RuntimeException::class, $logger->records[0]['context']['exception']);
+    }
+
+    public function testStorageFailureFailOpenServesTheRequest(): void
+    {
+        $subscriber = $this->createFailingSubscriber(MaintenanceRequestSubscriber::ON_ERROR_FAIL_OPEN);
 
         $event = $this->createMainRequestEvent('/page');
         $subscriber->onKernelRequest($event);
 
         self::assertNull($event->getResponse());
-        self::assertCount(1, $logger->records);
-        self::assertSame('error', $logger->records[0]['level']);
-        self::assertSame('fail_open', $logger->records[0]['context']['on_error']);
-        self::assertInstanceOf(RuntimeException::class, $logger->records[0]['context']['exception']);
     }
 
-    public function testStorageFailureFailClosedServesTheMaintenancePage(): void
+    public function testStorageFailureIsLoggedAtMostOncePerInterval(): void
     {
-        $subscriber = $this->createFailingSubscriber(MaintenanceRequestSubscriber::ON_ERROR_FAIL_CLOSED);
+        $logger     = new RecordingLogger();
+        $clock      = new MockClock('2026-11-10 10:00:00');
+        $subscriber = $this->createFailingSubscriber(null, $logger, clock: $clock);
 
-        $event = $this->createMainRequestEvent('/page');
-        $subscriber->onKernelRequest($event);
+        $subscriber->onKernelRequest($this->createMainRequestEvent('/a'));
+        $subscriber->onKernelRequest($this->createMainRequestEvent('/b'));
+        $clock->sleep(MaintenanceRequestSubscriber::ERROR_LOG_INTERVAL - 1);
+        $subscriber->onKernelRequest($this->createMainRequestEvent('/c'));
+        self::assertCount(1, $logger->records);
 
-        self::assertSame(503, $event->getResponse()?->getStatusCode());
+        $clock->sleep(1);
+        $subscriber->onKernelRequest($this->createMainRequestEvent('/d'));
+        self::assertCount(2, $logger->records);
     }
 
     public function testStorageFailureRethrowKeepsTheOldBehaviour(): void
@@ -547,7 +568,7 @@ final class MaintenanceRequestSubscriberTest extends TestCase
         $subscriber->onKernelRequest($this->createMainRequestEvent('/page'));
     }
 
-    private function createFailingSubscriber(?string $onError, ?RecordingLogger $logger = null): MaintenanceRequestSubscriber
+    private function createFailingSubscriber(?string $onError, ?RecordingLogger $logger = null, ?string $defaultMessage = null, ?MockClock $clock = null): MaintenanceRequestSubscriber
     {
         $stateStorage = new class implements MaintenanceStateStorageInterface {
             public function load(): MaintenanceState
@@ -573,8 +594,8 @@ final class MaintenanceRequestSubscriberTest extends TestCase
         $manager = new MaintenanceManager($stateStorage, $historyStorage);
 
         return $onError === null
-            ? new MaintenanceRequestSubscriber(true, $manager, new MaintenanceExclusionMatcher(), null, 'page.html.twig', logger: $logger)
-            : new MaintenanceRequestSubscriber(true, $manager, new MaintenanceExclusionMatcher(), null, 'page.html.twig', onStorageError: $onError, logger: $logger);
+            ? new MaintenanceRequestSubscriber(true, $manager, new MaintenanceExclusionMatcher(), null, 'page.html.twig', clock: $clock, logger: $logger, defaultMessage: $defaultMessage)
+            : new MaintenanceRequestSubscriber(true, $manager, new MaintenanceExclusionMatcher(), null, 'page.html.twig', clock: $clock, onStorageError: $onError, logger: $logger, defaultMessage: $defaultMessage);
     }
 
     private function createSubscriber(

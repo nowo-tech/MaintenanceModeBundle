@@ -177,7 +177,7 @@ final class MaintenanceModeExtensionIntegrationTest extends TestCase
 
         $subscriber = $container->getDefinition(MaintenanceRequestSubscriber::class);
         self::assertSame(MaintenanceManagerInterface::class, (string) $subscriber->getArgument('$manager'));
-        self::assertSame('fail_open', $subscriber->getArgument('$onStorageError'));
+        self::assertSame('fail_closed', $subscriber->getArgument('$onStorageError'));
     }
 
     public function testLoadUsesConfiguredActorResolverAndStorageErrorMode(): void
@@ -188,11 +188,11 @@ final class MaintenanceModeExtensionIntegrationTest extends TestCase
         (new MaintenanceModeExtension())->load([[
             'panel'    => ['enabled' => false],
             'security' => ['actor_resolver' => SecurityTokenActorResolver::class],
-            'storage'  => ['on_error' => 'fail_closed'],
+            'storage'  => ['on_error' => 'fail_open'],
         ]], $container);
 
         self::assertSame(SecurityTokenActorResolver::class, (string) $container->getAlias(ActorResolverInterface::class));
-        self::assertSame('fail_closed', $container->getDefinition(MaintenanceRequestSubscriber::class)->getArgument('$onStorageError'));
+        self::assertSame('fail_open', $container->getDefinition(MaintenanceRequestSubscriber::class)->getArgument('$onStorageError'));
     }
 
     public function testLoadUsesCustomAccessCheckerServiceId(): void

@@ -26,7 +26,7 @@ final class ConfigurationTest extends TestCase
         self::assertSame(['ROLE_ADMIN'], $config['security']['access_roles']);
         self::assertNull($config['security']['access_checker']);
         self::assertNull($config['security']['actor_resolver']);
-        self::assertSame('fail_open', $config['storage']['on_error']);
+        self::assertSame('fail_closed', $config['storage']['on_error']);
         self::assertFalse($config['security']['allow_unauthenticated']);
         self::assertNull($config['security']['bypass_token']);
         self::assertSame('maintenance_bypass', $config['security']['bypass_query_parameter']);

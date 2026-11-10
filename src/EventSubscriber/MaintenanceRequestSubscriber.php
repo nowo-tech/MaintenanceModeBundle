@@ -51,18 +51,28 @@ final class MaintenanceRequestSubscriber
      */
     private const BYPASS_COOKIE_CONTEXT = 'nowo_maintenance_mode.bypass_cookie.v1';
 
-    /** `storage.on_error`: serve the request as if maintenance were off (default). */
+    /**
+     * `storage.on_error`: serve the request as if maintenance were off. Opt-in, only for a state storage that is
+     * independent of the application's database: it serves the live site while maintenance may be on.
+     */
     public const ON_ERROR_FAIL_OPEN = 'fail_open';
 
-    /** `storage.on_error`: serve the maintenance page. */
+    /** `storage.on_error` (default): serve the maintenance page (503 + Retry-After), no application code runs. */
     public const ON_ERROR_FAIL_CLOSED = 'fail_closed';
 
     /** `storage.on_error`: let the storage exception through (1.x behaviour). */
     public const ON_ERROR_RETHROW = 'rethrow';
 
+    /** A storage failure is logged at most once per this many seconds per process (the rest are dropped). */
+    public const ERROR_LOG_INTERVAL = 60;
+
+    /** Unix time of the last logged storage failure (rate limit of the error log; not request data). */
+    private int $lastErrorLoggedAt = 0;
+
     /**
      * @param string $onStorageError What to do when the state storage throws (see the ON_ERROR_* constants)
-     * @param LoggerInterface|null $logger Receives the storage failure (error level)
+     * @param LoggerInterface|null $logger Receives the storage failure (error level, at most once per ERROR_LOG_INTERVAL)
+     * @param string|null $defaultMessage Message of the fail_closed page (`default_message`)
      */
     public function __construct(
         private readonly bool $enabled,
@@ -78,8 +88,9 @@ final class MaintenanceRequestSubscriber
         private readonly string $bypassCookieName = 'nowo_maintenance_bypass',
         private readonly bool $bypassSetCookie = true,
         private readonly ?ClockInterface $clock = null,
-        private readonly string $onStorageError = self::ON_ERROR_FAIL_OPEN,
+        private readonly string $onStorageError = self::ON_ERROR_FAIL_CLOSED,
         private readonly ?LoggerInterface $logger = null,
+        private readonly ?string $defaultMessage = null,
     ) {
     }
 
@@ -146,8 +157,8 @@ final class MaintenanceRequestSubscriber
 
     /**
      * Reads the state; a throwing storage (database down, often the reason for maintenance) must not turn every
-     * request into a 500. fail_open returns null (request served), fail_closed an enabled state with the default
-     * message (maintenance page), rethrow lets the exception through.
+     * request into a 500. fail_closed (default) returns an enabled state with `default_message` (maintenance page),
+     * fail_open returns null (request served), rethrow lets the exception through.
      */
     private function loadState(): ?MaintenanceState
     {
@@ -158,14 +169,26 @@ final class MaintenanceRequestSubscriber
                 throw $e;
             }
 
-            $this->logger?->error('Maintenance mode state could not be loaded; applying storage.on_error.', [
-                'bundle'    => 'maintenance_mode',
-                'on_error'  => $this->onStorageError,
-                'exception' => $e,
-            ]);
+            $this->logStorageError($e);
 
-            return $this->onStorageError === self::ON_ERROR_FAIL_CLOSED ? new MaintenanceState(enabled: true) : null;
+            return $this->onStorageError === self::ON_ERROR_FAIL_OPEN ? null : new MaintenanceState(enabled: true, message: $this->defaultMessage);
         }
+    }
+
+    private function logStorageError(Throwable $e): void
+    {
+        $now = $this->now()->getTimestamp();
+        if ($this->lastErrorLoggedAt !== 0 && $now - $this->lastErrorLoggedAt < self::ERROR_LOG_INTERVAL) {
+            return;
+        }
+        // @igor-ignore - Log rate limit (a timestamp); never request or user data, safe to share between requests.
+        $this->lastErrorLoggedAt = $now;
+
+        $this->logger?->error('Maintenance mode state could not be loaded; applying storage.on_error.', [
+            'bundle'    => 'maintenance_mode',
+            'on_error'  => $this->onStorageError,
+            'exception' => $e,
+        ]);
     }
 
     /**

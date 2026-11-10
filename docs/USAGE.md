@@ -206,8 +206,17 @@ php bin/console nowo:maintenance-mode:tick     # apply a scheduled window that s
 Scheduled windows (`schedule()`, panel "Schedule") work at read time without any job. Run `tick` from cron (`* * * * *
 php bin/console nowo:maintenance-mode:tick`) or Symfony Scheduler when listeners must hear about them: it writes the
 start / end of a window as an enable / disable (actor `schedule`, history context `trigger: schedule`) and so dispatches
-`MaintenanceEnabledEvent` / `MaintenanceDisabledEvent`. It never changes whether maintenance is effectively on. A window
-that starts and ends between two ticks dispatches nothing.
+`MaintenanceEnabledEvent` / `MaintenanceDisabledEvent`.
+
+- The tick itself never changes whether maintenance is effectively on. A started window keeps its bounds, so the panel
+  still shows it.
+- Editing the schedule keeps working as without the tick: clearing or moving a window the tick started ends it at once
+  (`MaintenanceDisabledEvent`, actor = the editor); extending its end keeps it on. **Disable** always ends it.
+- A window that starts and ends between two ticks dispatches nothing. When no message was scheduled, the tick stores
+  `default_message`.
+- **Run the tick on one node only** (one cron entry, or a Scheduler transport consumed once). It re-reads the state
+  before saving and skips when an operator changed it meanwhile, but two concurrent ticks can still record the same
+  transition twice.
 
 ## Programmatic API
 
@@ -266,8 +275,15 @@ Implement:
   logged-in user identifier
 
 `MaintenanceStateStorageInterface::load()` contract: return a default `MaintenanceState` when there is no data yet and
-throw only on a real failure. When it throws, the request listener logs the error and applies `storage.on_error`
-(`fail_open` by default: the site is served as if maintenance were off; `fail_closed` serves the maintenance page).
+throw only on a real failure. When it throws, the request listener logs the error (at most once a minute per process)
+and applies `storage.on_error`:
+
+- `fail_closed` (default): the maintenance page (503, `Retry-After`, `default_message`). No application code runs, as
+  with the 1.15 500, and the unguarded Twig helpers are never reached on a non-excluded route.
+- `fail_open`: the request is served as if maintenance were off. **It serves the live site while maintenance may be
+  on** (for example migrations running while the state database is locked), so use it only when the state storage is
+  independent of the application's database (a separate Redis, a file).
+- `rethrow`: the exception goes through (1.15: a 500).
 
 ## Using it from a DDD / hexagonal application
 
@@ -352,8 +368,11 @@ final class MaintenanceEventTranslator
 
 - Scheduled windows dispatch events only when `nowo:maintenance-mode:tick` runs (cron / Scheduler); a window that
   starts and ends between two ticks dispatches nothing.
-- The Twig helpers (`nowo_maintenance_is_enabled()`, `nowo_maintenance_state()`) and the panel do not guard a throwing
-  state storage; only the request listener applies `storage.on_error`.
+- The Twig helpers (`nowo_maintenance_is_enabled()`, `nowo_maintenance_state()`), the panel, the preview and the CLI
+  do not guard a throwing state storage; only the request listener applies `storage.on_error`. With the default
+  `fail_closed` that leaves excluded routes and the panel (a visible 500 for the operator); with `fail_open`, a host
+  layout that calls the helpers fails on served pages too.
+- `tick` runs on one node; concurrent ticks can record a transition twice.
 - State writes are load-modify-save with no optimistic locking (last write wins).
 
 ## Twig overrides

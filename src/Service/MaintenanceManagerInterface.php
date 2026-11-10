@@ -50,7 +50,9 @@ interface MaintenanceManagerInterface
      * Materialises a scheduled window that started or ended: when the stored `enabled` flag differs from
      * {@see MaintenanceState::isEffectivelyEnabled()} at `$now`, the state is written as enabled / disabled (history
      * entry + MaintenanceEnabledEvent / MaintenanceDisabledEvent with the given actor). The effective state never
-     * changes: only the stored flag catches up with the schedule. Returns the new state, or null when nothing was due.
+     * changes: only the stored flag catches up with the schedule (a started window keeps its bounds, so schedule() /
+     * clearSchedule() can still move or end it). Returns the new state, or null when nothing was due or the state
+     * changed between the read and the write. Run it on one node.
      *
      * Run it periodically (`nowo:maintenance-mode:tick` from cron or Symfony Scheduler); without it, scheduled windows
      * keep working at read time but dispatch no event.

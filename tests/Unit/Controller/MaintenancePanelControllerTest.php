@@ -38,7 +38,9 @@ use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Twig\Environment;
 
+use function array_shift;
 use function count;
+use function str_repeat;
 
 use const PASSWORD_BCRYPT;
 
@@ -663,6 +665,40 @@ final class MaintenancePanelControllerTest extends TestCase
             self::assertSame('user-42', $entry->getActor());
         }
         self::assertSame('user-42', $this->stateStorage->state->getUpdatedBy());
+    }
+
+    public function testHostResolverOutputIsNormalised(): void
+    {
+        $this->accessGate->method('isGranted')->willReturn(true);
+        $this->csrfTokenManager->method('isTokenValid')->willReturn(true);
+        $actors   = ["evil\nname" . str_repeat('x', 200), "\x01", null];
+        $resolver = new class($actors) implements ActorResolverInterface {
+            /** @param list<string|null> $actors */
+            public function __construct(private array $actors)
+            {
+            }
+
+            public function resolveActor(Request $request): ?string
+            {
+                return array_shift($this->actors);
+            }
+        };
+        $controller = new MaintenancePanelController(
+            $this->manager,
+            $this->accessGate,
+            $this->formFactory,
+            new PanelView($this->twig),
+            $this->csrfTokenManager,
+            actorResolver: $resolver,
+        );
+
+        for ($i = 0; $i < 3; ++$i) {
+            $controller->enable(Request::create('/_maintenance/enable', 'POST', ['message' => 'x', '_token' => 'valid']));
+        }
+
+        self::assertSame('evilname' . str_repeat('x', 120), $this->historyStorage->entries[0]->getActor());
+        self::assertSame('panel', $this->historyStorage->entries[1]->getActor());
+        self::assertNull($this->historyStorage->entries[2]->getActor());
     }
 
     public function testAccessCheckerReceivesTheTokenUser(): void
