@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Nowo\MaintenanceModeBundle\Tests\Integration\Kernel;
 
+use Closure;
 use Nowo\MaintenanceModeBundle\NowoMaintenanceModeBundle;
 use Nowo\UiKitBundle\NowoUiKitBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
@@ -26,11 +27,13 @@ final class MaintenanceTestKernel extends Kernel
      * @param array<string, mixed> $bundleConfig extra nowo_maintenance_mode config
      * @param bool $importBundleRoutes whether the host imports the bundle routes.yaml (the Symfony default
      *                                 `routing.controllers` resource is always imported)
+     * @param (Closure(ContainerConfigurator): void)|null $configureHost registers host services (e.g. port adapters)
      */
     public function __construct(
         private readonly string $dir,
         private readonly array $bundleConfig = [],
         private readonly bool $importBundleRoutes = true,
+        private readonly ?Closure $configureHost = null,
     ) {
         parent::__construct('test', false);
     }
@@ -84,6 +87,9 @@ final class MaintenanceTestKernel extends Kernel
                 'history_file' => $this->dir . '/history.jsonl',
             ],
         ]);
+        if ($this->configureHost !== null) {
+            ($this->configureHost)($container);
+        }
     }
 
     protected function configureRoutes(RoutingConfigurator $routes): void

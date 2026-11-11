@@ -50,6 +50,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Documentation
+
+- USAGE (DDD / hexagonal section): standard vs DDD lead-in, and a new "Custom storage: transactions and concurrency" contract for host storage adapters (events are dispatched right after `save()` returns, so an adapter writing inside a later-committed host transaction must commit on its own or defer its events; read-your-writes; last-write-wins with no optimistic locking; cheap, worker-safe `load()`).
+- `MaintenanceState` docblock: immutable snapshot (it said "Mutable").
+
+### Tests
+
+- `HostPortsKernelTest`: a kernel with host `storage.state_storage` / `storage.history_storage` services and a host `security.actor_resolver`; the interface aliases resolve to them, the manager writes through them, events are dispatched after `save()`, and the 503 follows the host state.
+
 ## [1.16.1] - 2026-11-10
 
 Target 1.16.1.

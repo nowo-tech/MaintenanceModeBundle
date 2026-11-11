@@ -12,7 +12,7 @@ use function is_string;
 use const DATE_ATOM;
 
 /**
- * Mutable snapshot of the site maintenance mode state.
+ * Immutable snapshot of the site maintenance mode state: every with*() method returns a modified copy.
  */
 final class MaintenanceState
 {
