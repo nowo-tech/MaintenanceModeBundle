@@ -335,6 +335,13 @@ Rules for a host gate:
 - Both `MaintenanceAccessGateInterface` and `MaintenancePanelAccessGateInterface` are aliased to the
   `security.access_gate` service (same for the two actor resolver interfaces); type-hint the one your service
   implements.
+- Instead of `security.access_gate`, you may alias or decorate only the new interface in your service configuration
+  (e.g. `#[AsDecorator(MaintenancePanelAccessGateInterface::class)]`). At compile time the panel takes, per port, the
+  alias you changed: the new one when only it changed, the deprecated one when only it changed. If the two aliases
+  point to two different services of yours, the container build fails rather than pick one (same for
+  `MaintenanceActorResolverInterface` / `ActorResolverInterface`).
+- `MaintenanceAccessContext` and the session adapter hide the client IP, the header values and the session from
+  `dump()` / `var_dump()` / `print_r()` (`__debugInfo()`); read them through the properties.
 
 ```php
 namespace App\Infrastructure\Maintenance;

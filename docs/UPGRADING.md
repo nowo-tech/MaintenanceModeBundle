@@ -122,6 +122,10 @@ A custom `security.actor_resolver` implements `MaintenanceActorResolverInterface
 `$context->userIdentifier` instead of the token storage. Code that calls `PasswordMaintenanceAccessGate` with a
 `Request` should build a context with `Security\Http\MaintenanceAccessContextFactory::fromRequest($request, $tokenStorage)`.
 
+Aliasing or decorating only one interface in your own service configuration is supported: the panel uses the alias
+you changed (new port first). Two different services on the two aliases of one port now fail the container build with
+a `LogicException` naming both; alias one service to both, or only the new interface.
+
 In 2.0 the deprecated interfaces and `Request` methods are removed and `ActorResolverInterface::PANEL` moves to
 `MaintenanceActorResolverInterface::PANEL`.
 

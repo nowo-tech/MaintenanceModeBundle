@@ -7,6 +7,7 @@ namespace Nowo\MaintenanceModeBundle\Tests\Integration\DependencyInjection;
 use LogicException;
 use Nowo\MaintenanceModeBundle\Controller\MaintenancePanelController;
 use Nowo\MaintenanceModeBundle\Controller\MaintenancePreviewController;
+use Nowo\MaintenanceModeBundle\DependencyInjection\Compiler\AccessPortsPass;
 use Nowo\MaintenanceModeBundle\DependencyInjection\MaintenanceModeExtension;
 use Nowo\MaintenanceModeBundle\EventSubscriber\MaintenanceRequestSubscriber;
 use Nowo\MaintenanceModeBundle\Exclusion\MaintenanceExclusionMatcher;
@@ -177,7 +178,8 @@ final class MaintenanceModeExtensionIntegrationTest extends TestCase
 
         $panel = $container->getDefinition(MaintenancePanelController::class);
         self::assertSame(MaintenanceManagerInterface::class, (string) $panel->getArgument('$manager'));
-        self::assertSame(ActorResolverInterface::class, (string) $panel->getArgument('$actorResolver'));
+        self::assertSame(MaintenanceActorResolverInterface::class, (string) $panel->getArgument('$actorResolver'), 'AccessPortsPass then picks the alias the host chose');
+        self::assertSame(StaticActorResolver::class, $container->getParameter(AccessPortsPass::ACTOR_PARAMETER));
         self::assertSame('security.token_storage', (string) $panel->getArgument('$tokenStorage'));
 
         $subscriber = $container->getDefinition(MaintenanceRequestSubscriber::class);

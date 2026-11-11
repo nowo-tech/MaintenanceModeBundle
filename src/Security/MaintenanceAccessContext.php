@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Nowo\MaintenanceModeBundle\Security;
 
+use function array_keys;
 use function array_values;
 use function in_array;
 use function is_string;
@@ -68,5 +69,24 @@ final readonly class MaintenanceAccessContext
     public function isAuthenticated(): bool
     {
         return $this->userIdentifier !== null;
+    }
+
+    /**
+     * What `dump()` / `var_dump()` / `print_r()` show (audit MK-S-L3): the client IP is masked, header values and the
+     * session are left out, so a debug dump or a log of the context never carries them.
+     *
+     * @return array<string, mixed>
+     */
+    public function __debugInfo(): array
+    {
+        return [
+            'path'           => $this->path,
+            'method'         => $this->method,
+            'clientIp'       => $this->clientIp === null ? null : '[masked]',
+            'headers'        => array_keys($this->headers),
+            'userIdentifier' => $this->userIdentifier,
+            'roles'          => $this->roles,
+            'session'        => $this->session instanceof MaintenanceAccessSessionInterface ? '[redacted]' : null,
+        ];
     }
 }

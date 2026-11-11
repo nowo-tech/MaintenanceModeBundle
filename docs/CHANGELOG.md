@@ -84,6 +84,15 @@ Target: **1.17.0** (minor; additive, BC-safe).
   the request has no session. `AccessGateEquivalenceTest` replays grant / lockout / revoke scenarios (no hash,
   protection off, no session, per-session and per-IP lockout, untrusted and trusted `X-Forwarded-For`, window expiry)
   through both ports and asserts identical results and state.
+- Audit MK-S-M1 / MK-S-L4: the panel was wired to the deprecated gate and actor aliases, so a host gate aliased or
+  decorated only on `MaintenancePanelAccessGateInterface` (or a resolver only on `MaintenanceActorResolverInterface`)
+  was silently ignored; with no `password_hash` the default gate then let everyone in. The new
+  `DependencyInjection\Compiler\AccessPortsPass` wires the panel, per port, to the alias the host changed (the new one
+  first), and fails the container build when the two aliases point to two different host services.
+  `AccessPortsWiringKernelTest` covers an alias on the new interface only, an `#[AsDecorator]` on it, an alias on the
+  deprecated interface only, and the conflict.
+- Audit MK-S-L3: `MaintenanceAccessContext::__debugInfo()` masks the client IP and leaves out header values and the
+  session; `SymfonyMaintenanceAccessSession::__debugInfo()` redacts the session.
 
 ### Documentation
 

@@ -38,4 +38,14 @@ final readonly class SymfonyMaintenanceAccessSession implements MaintenanceAcces
     {
         $this->session->migrate($destroy);
     }
+
+    /**
+     * Keeps the session contents out of debug dumps (audit MK-S-L3).
+     *
+     * @return array{session: string}
+     */
+    public function __debugInfo(): array
+    {
+        return ['session' => '[redacted]'];
+    }
 }
