@@ -84,7 +84,8 @@ $maintenance->enable('Deploy in progress', 'ops');
 $maintenance->disable('ops');
 ```
 
-See [docs/USAGE.md](docs/USAGE.md).
+See [docs/USAGE.md](docs/USAGE.md): [Standard Symfony host](docs/USAGE.md#standard-symfony-host) (zero config) and
+[DDD / hexagonal host](docs/USAGE.md#ddd--hexagonal-host) (opt-in, framework-free gate and actor ports).
 
 ## Demo
 

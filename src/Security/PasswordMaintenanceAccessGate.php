@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Nowo\MaintenanceModeBundle\Security;
 
+use Nowo\MaintenanceModeBundle\Security\Http\MaintenanceAccessContextFactory;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Clock\ClockInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Throwable;
 
 use function array_filter;
@@ -27,8 +27,13 @@ use function time;
  * Failed attempts are throttled per session and, when a cache pool is available, per client IP:
  * after `maxAttempts` failures within `lockoutSeconds` the password is not even checked.
  * A successful login migrates the session id (session fixation).
+ *
+ * Implements the framework-free {@see MaintenancePanelAccessGateInterface} (used by the panel since 1.17) and, for BC,
+ * the deprecated `Request`-typed {@see MaintenanceAccessGateInterface}: the `Request` methods build a
+ * {@see MaintenanceAccessContext} with {@see MaintenanceAccessContextFactory} and delegate, so both give the same
+ * answer for the same request (same session keys, same per-IP cache key from `Request::getClientIp()`).
  */
-final class PasswordMaintenanceAccessGate implements MaintenanceAccessGateInterface
+final class PasswordMaintenanceAccessGate implements MaintenancePanelAccessGateInterface, MaintenanceAccessGateInterface
 {
     public const SESSION_KEY = '_nowo_maintenance_mode_authorized';
 
@@ -50,14 +55,14 @@ final class PasswordMaintenanceAccessGate implements MaintenanceAccessGateInterf
         return $this->enabled && $this->passwordHash !== null && $this->passwordHash !== '';
     }
 
-    public function isGranted(Request $request): bool
+    public function isGrantedFor(MaintenanceAccessContext $context): bool
     {
         if (!$this->isPasswordRequired()) {
             return true;
         }
 
-        $session = $request->hasSession() ? $request->getSession() : null;
-        if (!$session instanceof SessionInterface) {
+        $session = $context->session;
+        if (!$session instanceof MaintenanceAccessSessionInterface) {
             return false;
         }
 
@@ -67,23 +72,23 @@ final class PasswordMaintenanceAccessGate implements MaintenanceAccessGateInterf
     /**
      * Whether too many failed attempts were recorded for this session or client IP.
      */
-    public function isLockedOut(Request $request): bool
+    public function isLockedOutFor(MaintenanceAccessContext $context): bool
     {
         if (!$this->isPasswordRequired() || $this->maxAttempts < 1) {
             return false;
         }
 
-        return count($this->sessionFailures($request)) >= $this->maxAttempts
-            || count($this->cacheFailures($request)) >= $this->maxAttempts;
+        return count($this->sessionFailures($context)) >= $this->maxAttempts
+            || count($this->cacheFailures($context)) >= $this->maxAttempts;
     }
 
-    public function authenticate(Request $request, string $password): bool
+    public function authenticateFor(MaintenanceAccessContext $context, string $password): bool
     {
         if (!$this->isPasswordRequired()) {
             return true;
         }
 
-        if ($this->isLockedOut($request)) {
+        if ($this->isLockedOutFor($context)) {
             $this->logger?->warning('Maintenance panel login refused: too many failed attempts.', ['bundle' => 'maintenance_mode', 'action' => 'login_locked_out']);
 
             return false;
@@ -92,29 +97,61 @@ final class PasswordMaintenanceAccessGate implements MaintenanceAccessGateInterf
         /** @var non-empty-string $hash */
         $hash = $this->passwordHash;
         if (!password_verify($password, $hash)) {
-            $this->recordFailure($request);
+            $this->recordFailure($context);
             $this->logger?->warning('Maintenance panel login failed.', ['bundle' => 'maintenance_mode', 'action' => 'login_failed']);
 
             return false;
         }
 
-        if ($request->hasSession()) {
-            $session = $request->getSession();
+        $session = $context->session;
+        if ($session instanceof MaintenanceAccessSessionInterface) {
             $session->migrate(true);
             $session->remove(self::SESSION_FAILURES_KEY);
             $session->set(self::SESSION_KEY, true);
         }
-        $this->clearCacheFailures($request);
+        $this->clearCacheFailures($context);
         $this->logger?->info('Maintenance panel login succeeded.', ['bundle' => 'maintenance_mode', 'action' => 'login']);
 
         return true;
     }
 
+    public function revokeFor(MaintenanceAccessContext $context): void
+    {
+        $context->session?->remove(self::SESSION_KEY);
+    }
+
+    /**
+     * @deprecated since 1.17, use {@see self::isGrantedFor()}; removed in 2.0
+     */
+    public function isGranted(Request $request): bool
+    {
+        return $this->isGrantedFor(MaintenanceAccessContextFactory::fromRequest($request));
+    }
+
+    /**
+     * Whether too many failed attempts were recorded for this session or client IP.
+     *
+     * @deprecated since 1.17, use {@see self::isLockedOutFor()}; removed in 2.0
+     */
+    public function isLockedOut(Request $request): bool
+    {
+        return $this->isLockedOutFor(MaintenanceAccessContextFactory::fromRequest($request));
+    }
+
+    /**
+     * @deprecated since 1.17, use {@see self::authenticateFor()}; removed in 2.0
+     */
+    public function authenticate(Request $request, string $password): bool
+    {
+        return $this->authenticateFor(MaintenanceAccessContextFactory::fromRequest($request), $password);
+    }
+
+    /**
+     * @deprecated since 1.17, use {@see self::revokeFor()}; removed in 2.0
+     */
     public function revoke(Request $request): void
     {
-        if ($request->hasSession()) {
-            $request->getSession()->remove(self::SESSION_KEY);
-        }
+        $this->revokeFor(MaintenanceAccessContextFactory::fromRequest($request));
     }
 
     /**
@@ -125,13 +162,14 @@ final class PasswordMaintenanceAccessGate implements MaintenanceAccessGateInterf
         return $this->clock?->now()->getTimestamp() ?? time();
     }
 
-    private function recordFailure(Request $request): void
+    private function recordFailure(MaintenanceAccessContext $context): void
     {
-        $now = $this->timestamp();
-        if ($request->hasSession()) {
-            $failures   = $this->sessionFailures($request);
+        $now     = $this->timestamp();
+        $session = $context->session;
+        if ($session instanceof MaintenanceAccessSessionInterface) {
+            $failures   = $this->sessionFailures($context);
             $failures[] = $now;
-            $request->getSession()->set(self::SESSION_FAILURES_KEY, $failures);
+            $session->set(self::SESSION_FAILURES_KEY, $failures);
         }
 
         if (!$this->cache instanceof CacheItemPoolInterface) {
@@ -139,8 +177,8 @@ final class PasswordMaintenanceAccessGate implements MaintenanceAccessGateInterf
         }
 
         try {
-            $item       = $this->cache->getItem($this->cacheKey($request));
-            $failures   = $this->cacheFailures($request);
+            $item       = $this->cache->getItem($this->cacheKey($context));
+            $failures   = $this->cacheFailures($context);
             $failures[] = $now;
             $this->cache->save($item->set($failures)->expiresAfter($this->lockoutSeconds));
         } catch (Throwable) {
@@ -151,26 +189,27 @@ final class PasswordMaintenanceAccessGate implements MaintenanceAccessGateInterf
     /**
      * @return list<int>
      */
-    private function sessionFailures(Request $request): array
+    private function sessionFailures(MaintenanceAccessContext $context): array
     {
-        if (!$request->hasSession()) {
+        $session = $context->session;
+        if (!$session instanceof MaintenanceAccessSessionInterface) {
             return [];
         }
 
-        return $this->recent($request->getSession()->get(self::SESSION_FAILURES_KEY, []));
+        return $this->recent($session->get(self::SESSION_FAILURES_KEY, []));
     }
 
     /**
      * @return list<int>
      */
-    private function cacheFailures(Request $request): array
+    private function cacheFailures(MaintenanceAccessContext $context): array
     {
         if (!$this->cache instanceof CacheItemPoolInterface) {
             return [];
         }
 
         try {
-            $item = $this->cache->getItem($this->cacheKey($request));
+            $item = $this->cache->getItem($this->cacheKey($context));
 
             return $item->isHit() ? $this->recent($item->get()) : [];
         } catch (Throwable) {
@@ -178,10 +217,10 @@ final class PasswordMaintenanceAccessGate implements MaintenanceAccessGateInterf
         }
     }
 
-    private function clearCacheFailures(Request $request): void
+    private function clearCacheFailures(MaintenanceAccessContext $context): void
     {
         try {
-            $this->cache?->deleteItem($this->cacheKey($request));
+            $this->cache?->deleteItem($this->cacheKey($context));
         } catch (Throwable) {
         }
     }
@@ -199,8 +238,11 @@ final class PasswordMaintenanceAccessGate implements MaintenanceAccessGateInterf
         return array_values(array_filter($failures, static fn (mixed $ts): bool => is_int($ts) && $ts > $cutoff));
     }
 
-    private function cacheKey(Request $request): string
+    /**
+     * Same key as 1.x: sha256 of the client IP the edge resolved (`(string) null` = '' when unknown).
+     */
+    private function cacheKey(MaintenanceAccessContext $context): string
     {
-        return 'nowo_maintenance_login_' . hash('sha256', (string) $request->getClientIp());
+        return 'nowo_maintenance_login_' . hash('sha256', (string) $context->clientIp);
     }
 }

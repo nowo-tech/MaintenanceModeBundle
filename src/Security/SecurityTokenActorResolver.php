@@ -18,7 +18,7 @@ use function trim;
  * The identifier goes through {@see self::normalize()}: control and format characters (tab and newline included) are
  * dropped and it is cut at {@see self::MAX_LENGTH}.
  */
-final readonly class SecurityTokenActorResolver implements ActorResolverInterface
+final readonly class SecurityTokenActorResolver implements MaintenanceActorResolverInterface, ActorResolverInterface
 {
     public const MAX_LENGTH = 128;
 
@@ -28,9 +28,24 @@ final readonly class SecurityTokenActorResolver implements ActorResolverInterfac
     ) {
     }
 
+    /**
+     * The context's user identifier (the edge reads it from the same security token), normalized, or the fallback.
+     */
+    public function resolveActorFor(MaintenanceAccessContext $context): ?string
+    {
+        return $this->fromIdentifier($context->userIdentifier);
+    }
+
+    /**
+     * @deprecated since 1.17, use {@see self::resolveActorFor()}; removed in 2.0
+     */
     public function resolveActor(Request $request): ?string
     {
-        $identifier = $this->tokenStorage?->getToken()?->getUserIdentifier();
+        return $this->fromIdentifier($this->tokenStorage?->getToken()?->getUserIdentifier());
+    }
+
+    private function fromIdentifier(?string $identifier): ?string
+    {
         if ($identifier === null) {
             return $this->fallback;
         }

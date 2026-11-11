@@ -3,6 +3,7 @@
 ## Table of contents
 
 - [Unreleased](#unreleased)
+  - [Framework-free panel gate and actor resolver (deprecations)](#framework-free-panel-gate-and-actor-resolver-deprecations)
 - [To 1.16.1](#to-1161)
 - [To 1.16.1](#to-1161-1)
 - [To 1.16.0](#to-1160)
@@ -90,6 +91,39 @@
   - [After upgrading](#after-upgrading-1)
 
 ## Unreleased
+
+Target **1.17.0**. No action is required: every 1.16 configuration and custom service keeps working.
+
+### Framework-free panel gate and actor resolver (deprecations)
+
+`MaintenanceAccessGateInterface` and `ActorResolverInterface` take a Symfony `Request`, which REQ-ARCH-001 rule 3 no
+longer allows in public ports. Both are **deprecated in 1.17 and removed in 2.0**:
+
+| Deprecated | Use instead |
+|---|---|
+| `MaintenanceAccessGateInterface::isGranted(Request)` | `MaintenancePanelAccessGateInterface::isGrantedFor(MaintenanceAccessContext)` |
+| `MaintenanceAccessGateInterface::authenticate(Request, string)` | `MaintenancePanelAccessGateInterface::authenticateFor(MaintenanceAccessContext, string)` |
+| `MaintenanceAccessGateInterface::revoke(Request)` | `MaintenancePanelAccessGateInterface::revokeFor(MaintenanceAccessContext)` |
+| `PasswordMaintenanceAccessGate::isLockedOut(Request)` | `isLockedOutFor(MaintenanceAccessContext)` (now part of the port) |
+| `ActorResolverInterface::resolveActor(Request)` | `MaintenanceActorResolverInterface::resolveActorFor(MaintenanceAccessContext)` |
+
+How to migrate a custom `security.access_gate`:
+
+1. Implement `Nowo\MaintenanceModeBundle\Security\MaintenancePanelAccessGateInterface` (you may keep the old interface
+   during the transition; the panel prefers the new one).
+2. Read the request data from the context: `$context->clientIp` (already resolved with your trusted proxies),
+   `$context->userIdentifier`, `$context->roles`, `$context->header('user-agent')`, `$context->path`.
+3. Replace `$request->getSession()` with `$context->session` (`get`, `set`, `remove`, `migrate`; null when the request has
+   no session: deny in that case, as the default gate does).
+4. Add `isLockedOutFor()` (return false if you have no lockout). The panel now asks every new-port gate before checking
+   the password; with 1.16 only the bundle's own gate was asked.
+
+A custom `security.actor_resolver` implements `MaintenanceActorResolverInterface::resolveActorFor()` and reads
+`$context->userIdentifier` instead of the token storage. Code that calls `PasswordMaintenanceAccessGate` with a
+`Request` should build a context with `Security\Http\MaintenanceAccessContextFactory::fromRequest($request, $tokenStorage)`.
+
+In 2.0 the deprecated interfaces and `Request` methods are removed and `ActorResolverInterface::PANEL` moves to
+`MaintenanceActorResolverInterface::PANEL`.
 
 ## To 1.16.1
 

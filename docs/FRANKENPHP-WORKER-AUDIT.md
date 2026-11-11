@@ -93,9 +93,9 @@ Worker demo: `demo/symfony8/docker/frankenphp/Caddyfile` declares a `worker` blo
 
 ### W-04 — Access decisions are computed per request (Info)
 
-- **Where:** `PasswordMaintenanceAccessGate` reads the session flag on the current request; `ConfigurableMaintenanceModeAccessChecker` asks `AuthorizationCheckerInterface::isGranted()` each time; the bypass token is compared against the current query/cookie and handed to `onKernelResponse()` only through `$request->attributes`.
+- **Where:** `PasswordMaintenanceAccessGate` reads the session flag on the current request (since 1.17 through a `MaintenanceAccessContext` that the panel controller builds per call with the stateless `MaintenanceAccessContextFactory` and never stores); `ConfigurableMaintenanceModeAccessChecker` asks `AuthorizationCheckerInterface::isGranted()` each time; the bypass token is compared against the current query/cookie and handed to `onKernelResponse()` only through `$request->attributes`.
 - **Worker impact:** no decision or token is cached in a service, so one user's panel login or bypass cannot be reused by another user on the same worker.
-- **Recommendation:** none. Covered by `WorkerModeNoKernelResetTest`.
+- **Recommendation:** none. Covered by `WorkerModeNoKernelResetTest` and, for the framework-free ports, `DddHostAccessPortsKernelTest` (300 alternating visitors in one kernel without the services resetter, own decision each time, flat memory).
 
 No open remediations.
 

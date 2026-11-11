@@ -39,12 +39,12 @@ Root alias: `nowo_maintenance_mode`.
 | `exclusions.routes` | `[]` | Symfony route names that bypass 503 |
 | `exclusions.patterns` | `[]` | Glob (`fnmatch`) or regex delimited with `#…#` / `~…~` |
 | `exclusions.ips` | `[]` | Client IPs or CIDR ranges (set `framework.trusted_proxies` behind a proxy) |
-| `security.access_gate` | `null` | Custom `MaintenanceAccessGateInterface` service (ops password / session gate) |
+| `security.access_gate` | `null` | Custom `MaintenancePanelAccessGateInterface` service (ops password / session gate); the deprecated `MaintenanceAccessGateInterface` still works until 2.0 |
 | `storage.state_file` | `%kernel.project_dir%/var/maintenance/state.json` | State JSON/YAML |
 | `storage.history_file` | `%kernel.project_dir%/var/maintenance/history.jsonl` | Append-only history |
 | `storage.state_storage` / `history_storage` | `null` | Override storage services |
 | `storage.on_error` | `fail_closed` | When the state storage throws on a request: `fail_closed` serves the maintenance page (503, `default_message`); `fail_open` serves the live site as if maintenance were off — **only for a state storage independent of the application database**, it can expose the site during maintenance; `rethrow` lets the exception through (1.15: a 500). Logged at most once a minute per process |
-| `security.actor_resolver` | `null` | Service implementing `ActorResolverInterface`, the actor recorded for panel writes. `null` = `panel`; `Nowo\MaintenanceModeBundle\Security\SecurityTokenActorResolver` = the logged-in user identifier |
+| `security.actor_resolver` | `null` | Service implementing `MaintenanceActorResolverInterface` (or the deprecated `ActorResolverInterface`), the actor recorded for panel writes. `null` = `panel`; `Nowo\MaintenanceModeBundle\Security\SecurityTokenActorResolver` = the logged-in user identifier |
 
 CSS framework, icon set, row-action display and every class / attribute / partial of the panel come from UiKit:
 `nowo_ui_kit.css_framework`, `nowo_ui_kit.theme` (once for every bundle) and, for exceptions,
