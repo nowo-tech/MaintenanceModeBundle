@@ -3,6 +3,7 @@
 ## Table of contents
 
 - [Unreleased](#unreleased)
+- [To 1.17.0](#to-1170)
   - [Framework-free panel gate and actor resolver (deprecations)](#framework-free-panel-gate-and-actor-resolver-deprecations)
 - [To 1.16.1](#to-1161)
 - [To 1.16.1](#to-1161-1)
@@ -91,6 +92,14 @@
   - [After upgrading](#after-upgrading-1)
 
 ## Unreleased
+
+## To 1.17.0
+
+From **1.16.0**:
+
+```bash
+composer update nowo-tech/maintenance-mode-bundle
+```
 
 Target **1.17.0**. No action is required: every 1.16 configuration and custom service keeps working.
 

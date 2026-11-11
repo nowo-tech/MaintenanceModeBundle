@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Table of contents
 
 - [[Unreleased]](#unreleased)
+- [[1.17.0] - 2026-11-11](#1170---2026-11-11)
 - [[1.16.1] - 2026-11-10](#1161---2026-11-10)
 - [[1.16.0] - 2026-11-10](#1160---2026-11-10)
 - [[1.15.1] - 2026-11-02](#1151---2026-11-02)
@@ -49,6 +50,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [[1.0.0] - 2026-07-24](#100---2026-07-24)
 
 ## [Unreleased]
+
+## [1.17.0] - 2026-11-11
 
 Target: **1.17.0** (minor; additive, BC-safe).
 
@@ -673,7 +676,7 @@ First stable release.
 - PHP `>=8.2`, `<8.6` (Symfony **8.x** requires PHP **8.4+**)
 - Symfony floor **7.4** (CI / mandatory minors: **7.4**, **8.0**, **8.1**)
 
-[Unreleased]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.16.1...HEAD
+[Unreleased]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.17.0...HEAD
 [1.5.8]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.7...v1.5.8
 [1.5.7]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.6...v1.5.7
 [1.5.6]: https://github.com/nowo-tech/MaintenanceModeBundle/compare/v1.5.5...v1.5.6
