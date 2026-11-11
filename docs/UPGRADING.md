@@ -95,7 +95,7 @@
 
 ## To 1.17.0
 
-From **1.16.0**:
+From **1.16.1**:
 
 ```bash
 composer update nowo-tech/maintenance-mode-bundle
