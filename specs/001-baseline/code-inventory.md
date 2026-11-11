@@ -12,27 +12,28 @@ requirements.
 
 | Category | Files |
 | --- | ---: |
-| Bundle, dependency injection, and subscriber | 6 |
+| Bundle, dependency injection, and subscriber | 7 |
 | Commands | 4 |
 | Controllers | 2 |
 | Events | 3 |
 | Attribute and exclusion | 2 |
 | Forms | 7 |
-| Models, service, security, and storage | 12 |
+| Models, service, security, and storage | 18 |
 | Twig extension, page views and chrome defaults | 4 |
 | YAML configuration | 3 |
 | Twig views | 17 |
 | Translations | 7 |
-| **Total production files under `src/`** | **67/67** |
+| **Total production files under `src/`** | **79/79** |
 
 ## Bundle, dependency injection, and subscriber
 
 | Path | Responsibility | Spec FR-* IDs |
 | --- | --- | --- |
-| `NowoMaintenanceModeBundle.php` | Registers the bundle extension and the Twig paths and CSRF protection compiler passes. | FR-11, FR-22 |
+| `NowoMaintenanceModeBundle.php` | Registers the bundle extension and the Twig paths, CSRF protection and access ports compiler passes. | FR-09, FR-11, FR-22 |
 | `DependencyInjection/Configuration.php` | Defines the `nowo_maintenance_mode` configuration tree. | FR-01–FR-12, FR-15–FR-18 |
 | `DependencyInjection/MaintenanceModeExtension.php` | Wires storage, manager, subscriber, controllers, commands, and Twig services; prepends the FormKit `maintenance_mode` profile. | FR-05–FR-09, FR-12–FR-18, FR-23 |
 | `DependencyInjection/Compiler/TwigPathsPass.php` | Registers the bundle Twig namespace and application override paths. | FR-11 |
+| `DependencyInjection/Compiler/AccessPortsPass.php` | Wires the panel to the access gate and actor resolver alias the host changed (new port first); fails the build when the two aliases of one port point to different host services (audit MK-S-M1/L4). | FR-09, FR-27 |
 | `DependencyInjection/Compiler/CsrfProtectionPass.php` | Refuses to compile the container while the panel is enabled without the CSRF token manager or form CSRF protection (fail closed, REQ-SEC-005). | FR-08, FR-22 |
 | `EventSubscriber/MaintenanceRequestSubscriber.php` | Intercepts applicable main requests and returns the maintenance response. | FR-01–FR-04, FR-12, FR-15 |
 
@@ -92,6 +93,12 @@ requirements.
 | `Security/StaticActorResolver.php` | Default actor resolver (`panel`). | FR-27 |
 | `Security/SecurityTokenActorResolver.php` | Opt-in actor resolver: the logged-in user identifier. | FR-27 |
 | `Security/MaintenanceAccessGateInterface.php` | Defines the replaceable panel authorization contract. | FR-09 |
+| `Security/MaintenancePanelAccessGateInterface.php` | Framework-free panel authorization port on `MaintenanceAccessContext` (REQ-ARCH-001 rule 3; replaces the deprecated `Request` gate). | FR-09 |
+| `Security/MaintenanceActorResolverInterface.php` | Framework-free actor port on `MaintenanceAccessContext` (replaces the deprecated `Request` resolver). | FR-27 |
+| `Security/MaintenanceAccessContext.php` | Per-request VO: path, method, client IP, allow-listed headers, user identifier, roles, session port; redacted in debug dumps. | FR-09, FR-27 |
+| `Security/MaintenanceAccessSessionInterface.php` | Session port of the access context (`get`, `set`, `remove`, `migrate`). | FR-09 |
+| `Security/Http/MaintenanceAccessContextFactory.php` | HTTP edge: builds the context from the `Request` (client IP via `getClientIp()`) and the security token. | FR-09, FR-27 |
+| `Security/Http/SymfonyMaintenanceAccessSession.php` | Symfony session adapter of the session port; redacted in debug dumps. | FR-09 |
 | `Security/PasswordMaintenanceAccessGate.php` | Implements the default password and session gate. | FR-09 |
 | `Security/MaintenanceModeAccessCheckerInterface.php` | Role / custom access-checker contract for the panel (REQ-UI-002). | FR-08, FR-09 |
 | `Security/ConfigurableMaintenanceModeAccessChecker.php` | Default role-based checker (`security.access_roles`, fail-closed when empty). | FR-08, FR-09 |
@@ -156,5 +163,5 @@ requirements.
 
 ```bash
 find src -type f | wc -l
-# Expected: 67
+# Expected: 79
 ```

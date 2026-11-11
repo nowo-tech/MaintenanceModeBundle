@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Nowo\MaintenanceModeBundle\Tests\Unit\Security;
 
 use Nowo\MaintenanceModeBundle\Security\ActorResolverInterface;
+use Nowo\MaintenanceModeBundle\Security\Http\MaintenanceAccessContextFactory;
+use Nowo\MaintenanceModeBundle\Security\MaintenanceAccessContext;
 use Nowo\MaintenanceModeBundle\Security\SecurityTokenActorResolver;
 use Nowo\MaintenanceModeBundle\Security\StaticActorResolver;
 use PHPUnit\Framework\TestCase;
@@ -65,5 +67,40 @@ final class ActorResolverTest extends TestCase
         self::assertSame('alicebob', SecurityTokenActorResolver::normalize("  ali\tce\nbob\u{202E}\u{200B} "));
         self::assertSame('ok', SecurityTokenActorResolver::normalize("o\xFFk"));
         self::assertSame('', SecurityTokenActorResolver::normalize("\r\n"));
+    }
+
+    public function testStaticResolverContextPortMatchesTheRequestPort(): void
+    {
+        $context = new MaintenanceAccessContext('/');
+        foreach (['panel', 'ops-panel', null] as $actor) {
+            $resolver = $actor === 'panel' ? new StaticActorResolver() : new StaticActorResolver($actor);
+            self::assertSame($resolver->resolveActor(Request::create('/')), $resolver->resolveActorFor($context));
+        }
+    }
+
+    public function testTokenResolverContextPortMatchesTheRequestPort(): void
+    {
+        $identifiers = ['alice@example.test', "ali\x07ce" . str_repeat('x', 200), "\x01\t\n", null];
+        foreach ($identifiers as $identifier) {
+            $storage = new TokenStorage();
+            if ($identifier !== null) {
+                $storage->setToken(new UsernamePasswordToken(new InMemoryUser($identifier, null), 'main'));
+            }
+            $resolver = new SecurityTokenActorResolver($storage);
+            $request  = Request::create('/');
+
+            self::assertSame(
+                $resolver->resolveActor($request),
+                $resolver->resolveActorFor(MaintenanceAccessContextFactory::fromRequest($request, $storage)),
+            );
+        }
+    }
+
+    public function testTokenResolverContextPortUsesTheContextIdentifier(): void
+    {
+        $resolver = new SecurityTokenActorResolver(null, 'anon');
+
+        self::assertSame('host-7', $resolver->resolveActorFor(new MaintenanceAccessContext('/', userIdentifier: 'host-7')));
+        self::assertSame('anon', $resolver->resolveActorFor(new MaintenanceAccessContext('/')));
     }
 }

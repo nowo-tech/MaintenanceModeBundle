@@ -7,6 +7,7 @@ namespace Nowo\MaintenanceModeBundle\Tests\Integration\DependencyInjection;
 use LogicException;
 use Nowo\MaintenanceModeBundle\Controller\MaintenancePanelController;
 use Nowo\MaintenanceModeBundle\Controller\MaintenancePreviewController;
+use Nowo\MaintenanceModeBundle\DependencyInjection\Compiler\AccessPortsPass;
 use Nowo\MaintenanceModeBundle\DependencyInjection\MaintenanceModeExtension;
 use Nowo\MaintenanceModeBundle\EventSubscriber\MaintenanceRequestSubscriber;
 use Nowo\MaintenanceModeBundle\Exclusion\MaintenanceExclusionMatcher;
@@ -15,7 +16,9 @@ use Nowo\MaintenanceModeBundle\Security\ActorResolverInterface;
 use Nowo\MaintenanceModeBundle\Security\AllowAllMaintenanceModeAccessChecker;
 use Nowo\MaintenanceModeBundle\Security\ConfigurableMaintenanceModeAccessChecker;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceAccessGateInterface;
+use Nowo\MaintenanceModeBundle\Security\MaintenanceActorResolverInterface;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceModeAccessCheckerInterface;
+use Nowo\MaintenanceModeBundle\Security\MaintenancePanelAccessGateInterface;
 use Nowo\MaintenanceModeBundle\Security\PasswordMaintenanceAccessGate;
 use Nowo\MaintenanceModeBundle\Security\SecurityTokenActorResolver;
 use Nowo\MaintenanceModeBundle\Security\StaticActorResolver;
@@ -55,6 +58,8 @@ final class MaintenanceModeExtensionIntegrationTest extends TestCase
         self::assertTrue($container->hasAlias(MaintenanceStateStorageInterface::class));
         self::assertTrue($container->hasAlias(MaintenanceHistoryStorageInterface::class));
         self::assertTrue($container->hasAlias(MaintenanceAccessGateInterface::class));
+        self::assertSame(PasswordMaintenanceAccessGate::class, (string) $container->getAlias(MaintenancePanelAccessGateInterface::class));
+        self::assertSame(PasswordMaintenanceAccessGate::class, (string) $container->getAlias(MaintenanceAccessGateInterface::class));
         self::assertTrue($container->getParameter('nowo.maintenance_mode.enabled'));
         self::assertSame('/_maintenance', $container->getParameter('nowo.maintenance_mode.panel.path_prefix'));
     }
@@ -169,10 +174,12 @@ final class MaintenanceModeExtensionIntegrationTest extends TestCase
         self::assertSame(MaintenanceManager::class, (string) $container->getAlias(MaintenanceManagerInterface::class));
         self::assertFalse($container->getAlias(MaintenanceManagerInterface::class)->isPublic());
         self::assertSame(StaticActorResolver::class, (string) $container->getAlias(ActorResolverInterface::class));
+        self::assertSame(StaticActorResolver::class, (string) $container->getAlias(MaintenanceActorResolverInterface::class));
 
         $panel = $container->getDefinition(MaintenancePanelController::class);
         self::assertSame(MaintenanceManagerInterface::class, (string) $panel->getArgument('$manager'));
-        self::assertSame(ActorResolverInterface::class, (string) $panel->getArgument('$actorResolver'));
+        self::assertSame(MaintenanceActorResolverInterface::class, (string) $panel->getArgument('$actorResolver'), 'AccessPortsPass then picks the alias the host chose');
+        self::assertSame(StaticActorResolver::class, $container->getParameter(AccessPortsPass::ACTOR_PARAMETER));
         self::assertSame('security.token_storage', (string) $panel->getArgument('$tokenStorage'));
 
         $subscriber = $container->getDefinition(MaintenanceRequestSubscriber::class);
@@ -192,6 +199,7 @@ final class MaintenanceModeExtensionIntegrationTest extends TestCase
         ]], $container);
 
         self::assertSame(SecurityTokenActorResolver::class, (string) $container->getAlias(ActorResolverInterface::class));
+        self::assertSame(SecurityTokenActorResolver::class, (string) $container->getAlias(MaintenanceActorResolverInterface::class));
         self::assertSame('fail_open', $container->getDefinition(MaintenanceRequestSubscriber::class)->getArgument('$onStorageError'));
     }
 
@@ -239,6 +247,7 @@ final class MaintenanceModeExtensionIntegrationTest extends TestCase
         self::assertSame('app.custom_state_storage', (string) $container->getAlias(MaintenanceStateStorageInterface::class));
         self::assertSame('app.custom_history_storage', (string) $container->getAlias(MaintenanceHistoryStorageInterface::class));
         self::assertSame('app.custom_access_gate', (string) $container->getAlias(MaintenanceAccessGateInterface::class));
+        self::assertSame('app.custom_access_gate', (string) $container->getAlias(MaintenancePanelAccessGateInterface::class));
     }
 
     public function testLoadConfiguresPasswordGateAndSubscriberPriority(): void

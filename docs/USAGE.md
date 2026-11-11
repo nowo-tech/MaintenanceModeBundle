@@ -13,6 +13,9 @@
 - [Programmatic API](#programmatic-api)
   - [Twig](#twig)
 - [Custom storage / access gate](#custom-storage--access-gate)
+- [Standard Symfony host](#standard-symfony-host)
+- [DDD / hexagonal host](#ddd--hexagonal-host)
+  - [Panel access gate and actor resolver ports](#panel-access-gate-and-actor-resolver-ports)
 - [Using it from a DDD / hexagonal application](#using-it-from-a-ddd--hexagonal-application)
   - [Keep the domain free of the bundle](#keep-the-domain-free-of-the-bundle)
   - [Adapter sketch](#adapter-sketch)
@@ -269,12 +272,13 @@ Implement:
 
 - `Nowo\MaintenanceModeBundle\Storage\MaintenanceStateStorageInterface`
 - `Nowo\MaintenanceModeBundle\Storage\MaintenanceHistoryStorageInterface`
-- `Nowo\MaintenanceModeBundle\Security\MaintenanceAccessGateInterface`
+- `Nowo\MaintenanceModeBundle\Security\MaintenancePanelAccessGateInterface` (optional `security.access_gate`; the
+  `Request`-typed `MaintenanceAccessGateInterface` is deprecated since 1.17 and still works until 2.0)
 - `Nowo\MaintenanceModeBundle\Security\MaintenanceModeAccessCheckerInterface` (optional custom `access_checker`); the
   panel passes it the user of the security token (`null` when anonymous or without SecurityBundle)
-- `Nowo\MaintenanceModeBundle\Security\ActorResolverInterface` (optional `security.actor_resolver`): the actor stored
-  as `updatedBy`, in history and in events for panel writes. Default `panel`; `SecurityTokenActorResolver` stores the
-  logged-in user identifier
+- `Nowo\MaintenanceModeBundle\Security\MaintenanceActorResolverInterface` (optional `security.actor_resolver`; the
+  `Request`-typed `ActorResolverInterface` is deprecated since 1.17): the actor stored as `updatedBy`, in history and in
+  events for panel writes. Default `panel`; `SecurityTokenActorResolver` stores the logged-in user identifier
 
 `MaintenanceStateStorageInterface::load()` contract: return a default `MaintenanceState` when there is no data yet and
 throw only on a real failure. When it throws, the request listener logs the error (at most once a minute per process)
@@ -286,6 +290,91 @@ and applies `storage.on_error`:
   on** (for example migrations running while the state database is locked), so use it only when the state storage is
   independent of the application's database (a separate Redis, a file).
 - `rethrow`: the exception goes through (1.15: a 500).
+
+## Standard Symfony host
+
+Zero config. Install the bundle, import its routes and you get: filesystem state and history, the default
+`PasswordMaintenanceAccessGate` (optional `security.password_hash`, session flag, per-session and per-IP lockout), the
+role checker driven by `security.access_roles`, and the static `panel` actor (or `SecurityTokenActorResolver`). The
+gate and the actor resolver read the request through the bundle's own `MaintenanceAccessContext`, built at the HTTP
+edge from the Symfony `Request` (client IP from `Request::getClientIp()`, so `framework.trusted_proxies` applies as
+before) and the security token. Nothing changes for a standard host in 1.17; a custom gate or resolver written for
+the 1.x `Request` interfaces keeps working (a deprecation is triggered) until 2.0.
+
+## DDD / hexagonal host
+
+Opt-in. The host implements bundle-owned, framework-free ports and points the configuration at them; no `Request`,
+`Response`, `UserInterface` or Doctrine type crosses the boundary. The bundle has no Doctrine and no entity, so there
+is no EntityManager or mapping to configure: storage is the two ports described in
+[Custom storage](#custom-storage--access-gate). `tests/Integration/Kernel/DddHostAccessPortsKernelTest.php` boots a
+kernel whose gate and actor resolver implement only the new ports; `HostPortsKernelTest.php` covers host storage.
+
+### Panel access gate and actor resolver ports
+
+| Port | Method(s) | Replaces (deprecated 1.17, removed 2.0) |
+|---|---|---|
+| `Security\MaintenancePanelAccessGateInterface` | `isPasswordRequired()`, `isGrantedFor(MaintenanceAccessContext)`, `isLockedOutFor(…)`, `authenticateFor(…, string $password)`, `revokeFor(…)` | `Security\MaintenanceAccessGateInterface` (`isGranted(Request)`, `authenticate(Request, string)`, `revoke(Request)`) |
+| `Security\MaintenanceActorResolverInterface` | `resolveActorFor(MaintenanceAccessContext): ?string` | `Security\ActorResolverInterface` (`resolveActor(Request)`) |
+
+`Security\MaintenanceAccessContext` (final, readonly) carries what a gate needs from one request:
+
+| Field | Meaning |
+|---|---|
+| `path`, `method` | Path info and HTTP method |
+| `clientIp` | Client IP resolved at the edge with the host's trusted proxies (`Request::getClientIp()`), or null |
+| `headers` | Allow-listed headers only (`user-agent`, `accept-language`; lower-case names). Never cookies or credentials |
+| `userIdentifier`, `roles` | The authenticated user from the security token (null / `[]` when anonymous) |
+| `session` | `Security\MaintenanceAccessSessionInterface` (`get`, `set`, `remove`, `migrate`), or null when the request has no session |
+
+Rules for a host gate:
+
+- Deny by default: return false from `isGrantedFor()` when the context does not prove access (no session, unknown IP).
+- Build nothing per user in service properties: the context is created per request and must not be stored
+  (FrankenPHP worker mode with kernel reset false).
+- When a service implements both the new and the deprecated interface, the panel calls the new one.
+- Both `MaintenanceAccessGateInterface` and `MaintenancePanelAccessGateInterface` are aliased to the
+  `security.access_gate` service (same for the two actor resolver interfaces); type-hint the one your service
+  implements.
+- Instead of `security.access_gate`, you may alias or decorate only the new interface in your service configuration
+  (e.g. `#[AsDecorator(MaintenancePanelAccessGateInterface::class)]`). At compile time the panel takes, per port, the
+  alias you changed: the new one when only it changed, the deprecated one when only it changed. If the two aliases
+  point to two different services of yours, the container build fails rather than pick one (same for
+  `MaintenanceActorResolverInterface` / `ActorResolverInterface`).
+- `MaintenanceAccessContext` and the session adapter hide the client IP, the header values and the session from
+  `dump()` / `var_dump()` / `print_r()` (`__debugInfo()`); read them through the properties.
+
+```php
+namespace App\Infrastructure\Maintenance;
+
+use Nowo\MaintenanceModeBundle\Security\MaintenanceAccessContext;
+use Nowo\MaintenanceModeBundle\Security\MaintenancePanelAccessGateInterface;
+
+final readonly class OpsNetworkGate implements MaintenancePanelAccessGateInterface
+{
+    public function __construct(private OpsAccessPolicy $policy) {} // your application port
+
+    public function isPasswordRequired(): bool { return true; }
+
+    public function isGrantedFor(MaintenanceAccessContext $context): bool
+    {
+        return $context->userIdentifier !== null
+            && $this->policy->mayOperateMaintenance($context->userIdentifier, $context->roles, $context->clientIp);
+    }
+
+    public function isLockedOutFor(MaintenanceAccessContext $context): bool { return false; }
+
+    public function authenticateFor(MaintenanceAccessContext $context, string $password): bool { return false; }
+
+    public function revokeFor(MaintenanceAccessContext $context): void {}
+}
+```
+
+```yaml
+nowo_maintenance_mode:
+    security:
+        access_gate: App\Infrastructure\Maintenance\OpsNetworkGate
+        actor_resolver: Nowo\MaintenanceModeBundle\Security\SecurityTokenActorResolver # or your MaintenanceActorResolverInterface
+```
 
 ## Using it from a DDD / hexagonal application
 
@@ -310,7 +399,7 @@ type-hint the interfaces (never the final classes) and replace or decorate them 
   `Event\MaintenanceEnabledEvent` and `Event\MaintenanceDisabledEvent` (`$state`, `$actor`), and
   `Event\MaintenanceUpdatedEvent` (`$state`, `$action` = `schedule` | `clear_schedule` | `update`, `$actor`). Run
   `nowo:maintenance-mode:tick` so scheduled windows dispatch the enabled / disabled events too (actor `schedule`).
-- Panel writes carry the actor from `Security\ActorResolverInterface` (`security.actor_resolver`; set it to
+- Panel writes carry the actor from `Security\MaintenanceActorResolverInterface` (`security.actor_resolver`; set it to
   `Security\SecurityTokenActorResolver` to record the user identifier), and your access checker receives the token
   user.
 - Store state where your infrastructure lives by implementing
@@ -319,7 +408,7 @@ type-hint the interfaces (never the final classes) and replace or decorate them 
   `storage.state_storage` / `storage.history_storage`. `MaintenanceState::toArray()` / `fromArray()` give you a stable
   array shape to persist.
 - Plug your authorisation in through `security.access_checker` (`Security\MaintenanceModeAccessCheckerInterface`) and
-  `security.access_gate` (`Security\MaintenanceAccessGateInterface`).
+  `security.access_gate` (`Security\MaintenancePanelAccessGateInterface`, see [DDD / hexagonal host](#ddd--hexagonal-host)).
 - Keep endpoints that must stay up (health checks, webhooks) out of the 503 with `exclusions.*`,
   `#[ExcludeFromMaintenance]` or the route default `ExcludeFromMaintenance::ROUTE_DEFAULT`.
 

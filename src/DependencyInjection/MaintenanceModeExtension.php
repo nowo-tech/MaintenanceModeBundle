@@ -7,6 +7,7 @@ namespace Nowo\MaintenanceModeBundle\DependencyInjection;
 use LogicException;
 use Nowo\MaintenanceModeBundle\Controller\MaintenancePanelController;
 use Nowo\MaintenanceModeBundle\Controller\MaintenancePreviewController;
+use Nowo\MaintenanceModeBundle\DependencyInjection\Compiler\AccessPortsPass;
 use Nowo\MaintenanceModeBundle\EventSubscriber\MaintenanceRequestSubscriber;
 use Nowo\MaintenanceModeBundle\Exclusion\MaintenanceExclusionMatcher;
 use Nowo\MaintenanceModeBundle\Form\AbstractMaintenanceFormType;
@@ -16,7 +17,9 @@ use Nowo\MaintenanceModeBundle\Security\ActorResolverInterface;
 use Nowo\MaintenanceModeBundle\Security\AllowAllMaintenanceModeAccessChecker;
 use Nowo\MaintenanceModeBundle\Security\ConfigurableMaintenanceModeAccessChecker;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceAccessGateInterface;
+use Nowo\MaintenanceModeBundle\Security\MaintenanceActorResolverInterface;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceModeAccessCheckerInterface;
+use Nowo\MaintenanceModeBundle\Security\MaintenancePanelAccessGateInterface;
 use Nowo\MaintenanceModeBundle\Security\PasswordMaintenanceAccessGate;
 use Nowo\MaintenanceModeBundle\Security\StaticActorResolver;
 use Nowo\MaintenanceModeBundle\Service\MaintenanceManager;
@@ -300,7 +303,10 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
     {
         $custom = $security['access_gate'] ?? null;
         if (is_string($custom) && $custom !== '') {
+            // Both aliases point to the host gate; the panel uses whichever interface it implements (new one first).
             $container->setAlias(MaintenanceAccessGateInterface::class, $custom)->setPublic(false);
+            $container->setAlias(MaintenancePanelAccessGateInterface::class, $custom)->setPublic(false);
+            $container->setParameter(AccessPortsPass::GATE_PARAMETER, $custom);
 
             return;
         }
@@ -316,6 +322,8 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
             ->setArgument('$logger', new Reference('logger', ContainerBuilder::IGNORE_ON_INVALID_REFERENCE));
 
         $container->setAlias(MaintenanceAccessGateInterface::class, PasswordMaintenanceAccessGate::class)->setPublic(false);
+        $container->setAlias(MaintenancePanelAccessGateInterface::class, PasswordMaintenanceAccessGate::class)->setPublic(false);
+        $container->setParameter(AccessPortsPass::GATE_PARAMETER, PasswordMaintenanceAccessGate::class);
     }
 
     /** @param array<string, mixed> $security */
@@ -349,11 +357,11 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
     private function configureActorResolver(ContainerBuilder $container, array $security): void
     {
         $resolverId = $security['actor_resolver'] ?? null;
+        $resolverId = is_string($resolverId) && $resolverId !== '' ? $resolverId : StaticActorResolver::class;
 
-        $container->setAlias(
-            ActorResolverInterface::class,
-            is_string($resolverId) && $resolverId !== '' ? $resolverId : StaticActorResolver::class,
-        )->setPublic(false);
+        $container->setAlias(ActorResolverInterface::class, $resolverId)->setPublic(false);
+        $container->setAlias(MaintenanceActorResolverInterface::class, $resolverId)->setPublic(false);
+        $container->setParameter(AccessPortsPass::ACTOR_PARAMETER, $resolverId);
     }
 
     /**
@@ -457,7 +465,8 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
 
         $container->getDefinition(MaintenancePanelController::class)
             ->setArgument('$manager', new Reference(MaintenanceManagerInterface::class))
-            ->setArgument('$accessGate', new Reference(MaintenanceAccessGateInterface::class))
+            // AccessPortsPass replaces it with the alias the host chose (new port first).
+            ->setArgument('$accessGate', new Reference(MaintenancePanelAccessGateInterface::class))
             ->setArgument('$formFactory', new Reference('form.factory'))
             ->setArgument('$view', new Reference(PanelView::class))
             ->setArgument('$csrfTokenManager', new Reference(CsrfTokenManagerInterface::class, ContainerBuilder::IGNORE_ON_INVALID_REFERENCE))
@@ -465,7 +474,7 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
             ->setArgument('$allowUnauthenticated', (bool) $config['security']['allow_unauthenticated'])
             ->setArgument('$historyLimit', (int) $config['web_ui']['history_limit'])
             ->setArgument('$historyPerPage', (int) $config['web_ui']['history_per_page'])
-            ->setArgument('$actorResolver', new Reference(ActorResolverInterface::class))
+            ->setArgument('$actorResolver', new Reference(MaintenanceActorResolverInterface::class))
             ->setArgument('$tokenStorage', new Reference('security.token_storage', ContainerBuilder::IGNORE_ON_INVALID_REFERENCE))
             ->setPublic(true);
     }

@@ -18,6 +18,8 @@ services:
             - '../../Security/MaintenanceModeAccessCheckerInterface.php'
             - '../../Security/ConfigurableMaintenanceModeAccessChecker.php'
             - '../../Security/AllowAllMaintenanceModeAccessChecker.php'
+            - '../../Security/MaintenanceAccessContext.php'
+            - '../../Security/Http/'
 
     Nowo\MaintenanceModeBundle\Storage\FilesystemMaintenanceStateStorage:
         arguments:

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Nowo\MaintenanceModeBundle;
 
+use Nowo\MaintenanceModeBundle\DependencyInjection\Compiler\AccessPortsPass;
 use Nowo\MaintenanceModeBundle\DependencyInjection\Compiler\CsrfProtectionPass;
 use Nowo\MaintenanceModeBundle\DependencyInjection\Compiler\TwigPathsPass;
 use Nowo\MaintenanceModeBundle\DependencyInjection\MaintenanceModeExtension;
+use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
@@ -20,6 +22,8 @@ final class NowoMaintenanceModeBundle extends Bundle
         parent::build($container);
         $container->addCompilerPass(new TwigPathsPass());
         $container->addCompilerPass(new CsrfProtectionPass());
+        // After decoration (optimization passes), before the private aliases are removed.
+        $container->addCompilerPass(new AccessPortsPass(), PassConfig::TYPE_BEFORE_REMOVING);
     }
 
     public function getContainerExtension(): ?ExtensionInterface

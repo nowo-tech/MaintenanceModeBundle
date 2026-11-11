@@ -14,9 +14,12 @@ use Nowo\MaintenanceModeBundle\Form\ScheduleMaintenanceType;
 use Nowo\MaintenanceModeBundle\Model\MaintenanceState;
 use Nowo\MaintenanceModeBundle\Panel\PanelView;
 use Nowo\MaintenanceModeBundle\Security\ActorResolverInterface;
+use Nowo\MaintenanceModeBundle\Security\Http\MaintenanceAccessContextFactory;
+use Nowo\MaintenanceModeBundle\Security\MaintenanceAccessContext;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceAccessGateInterface;
+use Nowo\MaintenanceModeBundle\Security\MaintenanceActorResolverInterface;
 use Nowo\MaintenanceModeBundle\Security\MaintenanceModeAccessCheckerInterface;
-use Nowo\MaintenanceModeBundle\Security\PasswordMaintenanceAccessGate;
+use Nowo\MaintenanceModeBundle\Security\MaintenancePanelAccessGateInterface;
 use Nowo\MaintenanceModeBundle\Security\SecurityTokenActorResolver;
 use Nowo\MaintenanceModeBundle\Service\MaintenanceManagerInterface;
 use Nowo\MaintenanceModeBundle\View\MaintenancePages;
@@ -31,8 +34,13 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 use function array_merge;
+use function get_debug_type;
 use function is_string;
 use function max;
+use function sprintf;
+use function trigger_error;
+
+use const E_USER_DEPRECATED;
 
 /**
  * Twig panel to enable / disable maintenance and view history (Symfony Forms + CSRF). Pages render on the UiKit page
@@ -50,12 +58,16 @@ final class MaintenancePanelController
     public const CSRF_LOGOUT         = 'nowo_maintenance_logout';
 
     /**
-     * @param ActorResolverInterface|null $actorResolver Actor recorded for panel writes; null = "panel" (1.x)
-     * @param TokenStorageInterface|null $tokenStorage Source of the user passed to the access checker; null = none
+     * @param MaintenanceAccessGateInterface|MaintenancePanelAccessGateInterface $accessGate the framework-free port is
+     *                                                                                       used when implemented; the deprecated `Request` one otherwise
+     * @param ActorResolverInterface|MaintenanceActorResolverInterface|null $actorResolver Actor recorded for panel
+     *                                                                                     writes; null = "panel" (1.x)
+     * @param TokenStorageInterface|null $tokenStorage Source of the user passed to the access checker and of the
+     *                                                 user identifier / roles of the access context; null = none
      */
     public function __construct(
         private readonly MaintenanceManagerInterface $manager,
-        private readonly MaintenanceAccessGateInterface $accessGate,
+        private readonly MaintenancePanelAccessGateInterface|MaintenanceAccessGateInterface $accessGate,
         private readonly FormFactoryInterface $formFactory,
         private readonly PanelView $view,
         private readonly ?CsrfTokenManagerInterface $csrfTokenManager = null,
@@ -63,7 +75,7 @@ final class MaintenancePanelController
         private readonly bool $allowUnauthenticated = true,
         private readonly int $historyLimit = 100,
         private readonly int $historyPerPage = 25,
-        private readonly ?ActorResolverInterface $actorResolver = null,
+        private readonly MaintenanceActorResolverInterface|ActorResolverInterface|null $actorResolver = null,
         private readonly ?TokenStorageInterface $tokenStorage = null,
     ) {
         $this->pathPrefix = $view->pathPrefix;
@@ -230,7 +242,7 @@ final class MaintenancePanelController
             return $response;
         }
 
-        if (!$this->accessGate->isPasswordRequired() || $this->accessGate->isGranted($request)) {
+        if (!$this->accessGate->isPasswordRequired() || $this->gateGrants($request)) {
             return new RedirectResponse($this->pathPrefix);
         }
 
@@ -244,10 +256,10 @@ final class MaintenancePanelController
             /** @var array{password?: string|null} $data */
             $data     = $form->getData() ?? [];
             $password = isset($data['password']) && is_string($data['password']) ? $data['password'] : '';
-            if ($this->accessGate instanceof PasswordMaintenanceAccessGate && $this->accessGate->isLockedOut($request)) {
+            if ($this->gateLocksOut($request)) {
                 $error  = 'Too many failed attempts. Try again later.';
                 $status = Response::HTTP_TOO_MANY_REQUESTS;
-            } elseif ($this->accessGate->authenticate($request, $password)) {
+            } elseif ($this->gateAuthenticates($request, $password)) {
                 return new RedirectResponse($this->pathPrefix);
             } else {
                 $error = 'Invalid password.';
@@ -272,7 +284,12 @@ final class MaintenancePanelController
         if (!$this->handleValidForm($form, $request)) {
             return new Response('Invalid CSRF token.', Response::HTTP_FORBIDDEN);
         }
-        $this->accessGate->revoke($request);
+        if ($this->accessGate instanceof MaintenancePanelAccessGateInterface) {
+            $this->accessGate->revokeFor($this->context($request));
+        } else {
+            $this->deprecatedGate();
+            $this->accessGate->revoke($request);
+        }
 
         return new RedirectResponse($this->pathPrefix . '/login');
     }
@@ -283,7 +300,7 @@ final class MaintenancePanelController
             return $response;
         }
 
-        if ($this->accessGate->isGranted($request)) {
+        if ($this->gateGrants($request)) {
             return null;
         }
 
@@ -305,11 +322,15 @@ final class MaintenancePanelController
 
     private function actor(Request $request): ?string
     {
-        if (!$this->actorResolver instanceof ActorResolverInterface) {
+        if ($this->actorResolver instanceof MaintenanceActorResolverInterface) {
+            $actor = $this->actorResolver->resolveActorFor($this->context($request));
+        } elseif ($this->actorResolver instanceof ActorResolverInterface) {
+            @trigger_error(sprintf('Since nowo-tech/maintenance-mode-bundle 1.17: actor resolver "%s" implements only the deprecated %s; implement %s instead (removed in 2.0).', get_debug_type($this->actorResolver), ActorResolverInterface::class, MaintenanceActorResolverInterface::class), E_USER_DEPRECATED);
+            $actor = $this->actorResolver->resolveActor($request);
+        } else {
             return ActorResolverInterface::PANEL;
         }
 
-        $actor = $this->actorResolver->resolveActor($request);
         if ($actor === null) {
             return null;
         }
@@ -318,6 +339,51 @@ final class MaintenancePanelController
         $actor = SecurityTokenActorResolver::normalize($actor);
 
         return $actor !== '' ? $actor : ActorResolverInterface::PANEL;
+    }
+
+    /**
+     * Framework-free view of this request for the panel ports. Built per call, never stored (worker mode, reset false).
+     */
+    private function context(Request $request): MaintenanceAccessContext
+    {
+        return MaintenanceAccessContextFactory::fromRequest($request, $this->tokenStorage);
+    }
+
+    private function gateGrants(Request $request): bool
+    {
+        if ($this->accessGate instanceof MaintenancePanelAccessGateInterface) {
+            return $this->accessGate->isGrantedFor($this->context($request));
+        }
+        $this->deprecatedGate();
+
+        return $this->accessGate->isGranted($request);
+    }
+
+    /**
+     * Lockout before the password check. Legacy (`Request`-only) gates have no lockout API: never locked out, as in 1.x.
+     */
+    private function gateLocksOut(Request $request): bool
+    {
+        if ($this->accessGate instanceof MaintenancePanelAccessGateInterface) {
+            return $this->accessGate->isLockedOutFor($this->context($request));
+        }
+
+        return false;
+    }
+
+    private function gateAuthenticates(Request $request, string $password): bool
+    {
+        if ($this->accessGate instanceof MaintenancePanelAccessGateInterface) {
+            return $this->accessGate->authenticateFor($this->context($request), $password);
+        }
+        $this->deprecatedGate();
+
+        return $this->accessGate->authenticate($request, $password);
+    }
+
+    private function deprecatedGate(): void
+    {
+        @trigger_error(sprintf('Since nowo-tech/maintenance-mode-bundle 1.17: access gate "%s" implements only the deprecated %s; implement %s instead (removed in 2.0).', get_debug_type($this->accessGate), MaintenanceAccessGateInterface::class, MaintenancePanelAccessGateInterface::class), E_USER_DEPRECATED);
     }
 
     /**

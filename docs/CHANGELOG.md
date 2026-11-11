@@ -50,6 +50,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Target: **1.17.0** (minor; additive, BC-safe).
+
+### Added
+
+- Framework-free panel ports (REQ-ARCH-001 rule 3; the owner reclassified HTTP / security edge ports as non-compliant
+  on 2026-11-11): `Security\MaintenancePanelAccessGateInterface` (`isPasswordRequired()`, `isGrantedFor()`,
+  `isLockedOutFor()`, `authenticateFor()`, `revokeFor()`) and `Security\MaintenanceActorResolverInterface`
+  (`resolveActorFor()`), taking the bundle-owned `Security\MaintenanceAccessContext` VO (path, method, client IP,
+  allow-listed headers, user identifier, roles) and `Security\MaintenanceAccessSessionInterface` (session port).
+- `Security\Http\MaintenanceAccessContextFactory`: the HTTP edge that builds the context from a `Request` and the
+  security token (client IP from `Request::getClientIp()`, so trusted-proxy handling is unchanged; only `user-agent`
+  and `accept-language` are copied).
+- `PasswordMaintenanceAccessGate`, `StaticActorResolver` and `SecurityTokenActorResolver` implement the new ports; the
+  panel calls them when a service implements them, and the `Request` interfaces otherwise.
+- Container aliases `MaintenancePanelAccessGateInterface` and `MaintenanceActorResolverInterface` (to the
+  `security.access_gate` / `security.actor_resolver` service or the defaults).
+- USAGE: "Standard Symfony host" and "DDD / hexagonal host" sections.
+
+### Deprecated
+
+- `Security\MaintenanceAccessGateInterface` (`Request` parameters) and `PasswordMaintenanceAccessGate::isGranted()`,
+  `isLockedOut()`, `authenticate()`, `revoke()` with a `Request`: use `MaintenancePanelAccessGateInterface` and the
+  `*For(MaintenanceAccessContext)` methods. The panel triggers a deprecation when the configured gate implements only
+  the old interface. Removal in 2.0.
+- `Security\ActorResolverInterface` and `resolveActor(Request)`: use `MaintenanceActorResolverInterface::resolveActorFor()`.
+  Removal in 2.0 (`ActorResolverInterface::PANEL` moves to the new interface then).
+
+### Security
+
+- The access decision is unchanged for the default gate: the `Request` methods now delegate to the context methods,
+  with the same session keys, the same per-IP cache key (`sha256` of `Request::getClientIp()`) and the same deny when
+  the request has no session. `AccessGateEquivalenceTest` replays grant / lockout / revoke scenarios (no hash,
+  protection off, no session, per-session and per-IP lockout, untrusted and trusted `X-Forwarded-For`, window expiry)
+  through both ports and asserts identical results and state.
+- Audit MK-S-M1 / MK-S-L4: the panel was wired to the deprecated gate and actor aliases, so a host gate aliased or
+  decorated only on `MaintenancePanelAccessGateInterface` (or a resolver only on `MaintenanceActorResolverInterface`)
+  was silently ignored; with no `password_hash` the default gate then let everyone in. The new
+  `DependencyInjection\Compiler\AccessPortsPass` wires the panel, per port, to the alias the host changed (the new one
+  first), and fails the container build when the two aliases point to two different host services.
+  `AccessPortsWiringKernelTest` covers an alias on the new interface only, an `#[AsDecorator]` on it, an alias on the
+  deprecated interface only, and the conflict.
+- Audit MK-S-L3: `MaintenanceAccessContext::__debugInfo()` masks the client IP and leaves out header values and the
+  session; `SymfonyMaintenanceAccessSession::__debugInfo()` redacts the session.
+
 ### Documentation
 
 - USAGE (DDD / hexagonal section): standard vs DDD lead-in, and a new "Custom storage: transactions and concurrency" contract for host storage adapters (events are dispatched right after `save()` returns, so an adapter writing inside a later-committed host transaction must commit on its own or defer its events; read-your-writes; last-write-wins with no optimistic locking; cheap, worker-safe `load()`).
@@ -57,6 +101,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Tests
 
+- `DddHostAccessPortsKernelTest`: a kernel whose gate and actor resolver implement only the new ports (no `Request`);
+  300 alternating visitors in one kernel without the services resetter keep their own decision and flat memory.
 - `HostPortsKernelTest`: a kernel with host `storage.state_storage` / `storage.history_storage` services and a host `security.actor_resolver`; the interface aliases resolve to them, the manager writes through them, events are dispatched after `save()`, and the 503 follows the host state.
 
 ## [1.16.1] - 2026-11-10

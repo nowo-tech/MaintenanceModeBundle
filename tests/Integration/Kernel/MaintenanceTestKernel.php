@@ -87,7 +87,7 @@ final class MaintenanceTestKernel extends Kernel
                 'history_file' => $this->dir . '/history.jsonl',
             ],
         ]);
-        if ($this->configureHost !== null) {
+        if ($this->configureHost instanceof Closure) {
             ($this->configureHost)($container);
         }
     }
