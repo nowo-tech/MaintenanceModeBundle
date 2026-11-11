@@ -294,6 +294,12 @@ page, an optional admin panel, CLI commands and Twig helpers. It has **no Doctri
 its state (`Model\MaintenanceState`) and history (`Model\MaintenanceHistoryEntry`) are small value objects stored
 behind two ports (filesystem JSON/JSONL by default). Your domain never needs to import a bundle class.
 
+**Standard Symfony project (default):** nothing to wire; state and history go to the filesystem, the panel records the
+static `panel` actor (or the user identifier with `SecurityTokenActorResolver`). **DDD / hexagonal project (opt-in):**
+point the ports below at your own services; the bundle aliases each interface to the configured service id, so
+type-hint the interfaces (never the final classes) and replace or decorate them through those aliases.
+`tests/Integration/Kernel/HostPortsKernelTest.php` boots a kernel with host storage + actor resolver services.
+
 ### Keep the domain free of the bundle
 
 - Define your own port in the application layer (e.g. `App\Application\Port\SiteAvailability`) and implement it in
@@ -365,6 +371,25 @@ final class MaintenanceEventTranslator
     }
 }
 ```
+
+### Custom storage: transactions and concurrency
+
+What the manager expects from a host `MaintenanceStateStorageInterface`:
+
+- `save()` is durable when it returns: the manager dispatches `MaintenanceEnabledEvent` / `MaintenanceDisabledEvent` /
+  `MaintenanceUpdatedEvent` right after `save()` (and the history `append()`) return. If your adapter writes inside a
+  host transaction that commits later (e.g. a Doctrine adapter that only `persist()`s and leaves the flush to the
+  caller), listeners run **before** your commit and may see a state that is then rolled back. Make the adapter commit
+  on its own (own connection or an explicit transaction inside `save()`), or translate the events into your own
+  messages dispatched after commit (Messenger `DispatchAfterCurrentBusStamp`, or a transactional outbox).
+- `load()` returns the last saved state (read your own writes); returning a stale cached copy breaks `applySchedule()`'s
+  compare-before-save check.
+- `save()` replaces the whole state (load-modify-save, last write wins). The bundle does no optimistic locking; if
+  several nodes can write at the same time (panel + CLI + tick), serialise the writes in the adapter (row lock, version
+  column) or accept last-write-wins. Run `nowo:maintenance-mode:tick` on one node.
+- The request listener calls `load()` on every main request: keep it cheap (cache in the adapter only with
+  invalidation on `save()`, and nothing request- or user-specific in service properties: FrankenPHP worker mode).
+- A throwing `load()` follows `storage.on_error` in the request listener only (see below).
 
 ### Known limitations
 
