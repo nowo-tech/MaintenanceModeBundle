@@ -2,36 +2,44 @@
 
 {% block title %}Maintenance Mode Bundle Demo{% endblock %}
 
+{% block nowo_ui_page_header %}
+    {{ include(nowo_ui_partial('page_header'), {
+        title: 'Maintenance Mode Bundle',
+        intro: 'FrankenPHP demo for nowo-tech/maintenance-mode-bundle.',
+    }) }}
+{% endblock %}
+
 {% block body %}
-    <h1>Maintenance Mode Bundle</h1>
-    <p>FrankenPHP demo for <code>nowo-tech/maintenance-mode-bundle</code>.</p>
+    <section class="nowo-ui-card">
+        <div class="nowo-ui-card__header"><h2 class="nowo-ui-card__title">While maintenance is on</h2></div>
+        <div class="nowo-ui-card__body">
+            <p>
+                The public 503 page must <strong>not</strong> send visitors to panel login.
+                Use <strong>exclusions</strong> (or the auto-excluded <code>/_maintenance</code> prefix)
+                to manage the site. Login itself is optional via YAML
+                (<code>security.password_protection</code>).
+            </p>
+            <ul>
+                <li><a class="nowo-ui-link" href="/_maintenance_preview">Current maintenance page preview</a> (dev — like <code>/_error/503</code>)</li>
+                <li><a class="nowo-ui-link" href="/_error/503">Symfony error page preview</a> (<code>/_error/503</code>)</li>
+                <li><a class="nowo-ui-link" href="/examples/bypass">Bypass guide + exclusion examples</a></li>
+                <li><a class="nowo-ui-link" href="/_maintenance/">Admin panel</a> (login on when <code>password_protection: true</code>; password: <code>maintenance</code>)</li>
+                <li><a class="nowo-ui-link" href="/examples">Calm 503 page examples</a> (Bootstrap · Foundation · Tailwind · ideas)</li>
+            </ul>
+        </div>
+    </section>
 
-    <div class="card">
-        <h2>While maintenance is on</h2>
-        <p>
-            The public 503 page must <strong>not</strong> send visitors to panel login.
-            Use <strong>exclusions</strong> (or the auto-excluded <code>/_maintenance</code> prefix)
-            to manage the site. Login itself is optional via YAML
-            (<code>security.password_protection</code>).
-        </p>
-        <ul>
-            <li><a href="/_maintenance_preview">Current maintenance page preview</a> (dev — like <code>/_error/503</code>)</li>
-            <li><a href="/_error/503">Symfony error page preview</a> (<code>/_error/503</code>)</li>
-            <li><a href="/examples/bypass">Bypass guide + exclusion examples</a></li>
-            <li><a href="/_maintenance/">Admin panel</a> (login on when <code>password_protection: true</code>; password: <code>maintenance</code>)</li>
-            <li><a href="/examples">Calm 503 page examples</a> (Bootstrap · Foundation · Tailwind · ideas)</li>
-        </ul>
-    </div>
-
-    <div class="card">
-        <h2>Quick exclusion smoke links</h2>
-        <ul>
-            <li>Path — <a href="/health"><code>/health</code></a></li>
-            <li>Route name — <a href="/status"><code>/status</code></a> (<code>app_status</code>)</li>
-            <li>Prefix — <a href="/api/ops/ping"><code>/api/ops/ping</code></a></li>
-            <li>Glob — <a href="/internal-check"><code>/internal-check</code></a></li>
-            <li>Regex — <a href="/ops/ready"><code>/ops/ready</code></a></li>
-        </ul>
-        <p>Enable maintenance from the panel, then reload this page — you should get HTTP 503. The links above (and <code>/examples/*</code>) stay available.</p>
-    </div>
+    <section class="nowo-ui-card">
+        <div class="nowo-ui-card__header"><h2 class="nowo-ui-card__title">Quick exclusion smoke links</h2></div>
+        <div class="nowo-ui-card__body">
+            <ul>
+                <li>Path — <a class="nowo-ui-link" href="/health"><code>/health</code></a></li>
+                <li>Route name — <a class="nowo-ui-link" href="/status"><code>/status</code></a> (<code>app_status</code>)</li>
+                <li>Prefix — <a class="nowo-ui-link" href="/api/ops/ping"><code>/api/ops/ping</code></a></li>
+                <li>Glob — <a class="nowo-ui-link" href="/internal-check"><code>/internal-check</code></a></li>
+                <li>Regex — <a class="nowo-ui-link" href="/ops/ready"><code>/ops/ready</code></a></li>
+            </ul>
+            <p class="nowo-ui-muted">Enable maintenance from the panel, then reload this page — you should get HTTP 503. The links above (and <code>/examples/*</code>) stay available.</p>
+        </div>
+    </section>
 {% endblock %}

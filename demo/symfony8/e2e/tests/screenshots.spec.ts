@@ -50,7 +50,7 @@ test.describe('MaintenanceMode screenshots (full demo frame)', () => {
     await signIn(page);
     await disableMaintenance(page);
     await enableMaintenance(page, MESSAGE);
-    await expect(page.locator('header.demo-masthead')).toBeVisible();
+    await expect(page.locator('[data-testid="demo-masthead"]')).toBeVisible();
     await captureDemoFrame(page, 'panel.png');
   });
 
@@ -60,7 +60,6 @@ test.describe('MaintenanceMode screenshots (full demo frame)', () => {
     const response = await page.goto('/');
     expect(response?.status()).toBe(503);
     await expect(page.getByTestId('maintenance-page')).toContainText(MESSAGE);
-    await expect(page.locator('header.demo-masthead')).toBeVisible();
     await captureDemoFrame(page, 'maintenance-page.png');
     await visitor.close();
   });

@@ -8,6 +8,8 @@
         "ext-iconv": "*",
         "nowo-tech/maintenance-mode-bundle": "@dev",
         "php": ">=8.4",
+        "nowo-tech/ui-kit-bundle": "^2.49",
+        "symfony/asset": "8.1.*",
         "symfony/console": "8.1.*",
         "symfony/dotenv": "8.1.*",
         "symfony/flex": "^2.11",

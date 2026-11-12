@@ -1,6 +1,6 @@
 # Symfony 8 Demo — Maintenance Mode Bundle
 
-FrankenPHP demo: HTTP 503 maintenance + panel at `/_maintenance/` on the UiKit page contract (host layouts `templates/layouts/admin.html.twig` / `guest.html.twig`, theme in `config/packages/nowo_ui_kit.yaml`).
+FrankenPHP demo: HTTP 503 maintenance + panel at `/_maintenance/` on the UiKit page contract (`templates/base.html.twig` extends UiKit's admin layout and is the host admin layout, UiKit's own guest layout for the 503 page and login, default theme, `config/packages/nowo_ui_kit.yaml`).
 
 ## Usage
 
