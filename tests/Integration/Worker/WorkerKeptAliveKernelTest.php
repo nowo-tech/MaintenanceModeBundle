@@ -11,6 +11,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\HttpKernel;
 
 use function gc_collect_cycles;
 use function memory_get_usage;
@@ -19,7 +20,7 @@ use function sys_get_temp_dir;
 use function uniqid;
 
 /**
- * REQ-RUNTIME-002: ONE booted kernel, `services_resetter` / `kernel.reset` never called (FrankenPHP worker, kernel
+ * REQ-RUNTIME-002: ONE booted kernel, `services_resetter` / `kernel.reset` never called (requests go through the `http_kernel` service, not `Kernel::handle()`, which resets services after a terminate()) (FrankenPHP worker, kernel
  * reset false). N iterations alternate two visitors through `http_kernel` `handle()` + `terminate()` while
  * maintenance is on: visitor A carries the QA bypass token (own page, own bypass cookie), visitor B does not (503,
  * no cookie, no trace of A). A third request type (A again, now with the cookie it was given) proves the cookie decision is
@@ -51,6 +52,9 @@ final class WorkerKeptAliveKernelTest extends TestCase
             'security' => ['allow_unauthenticated' => true, 'password_protection' => false, 'bypass_token' => self::TOKEN],
         ]);
         $this->kernel->boot();
+        // The `http_kernel` service directly, never `Kernel::handle()`: after a terminate() that one runs the services resetter.
+        $httpKernel = $this->kernel->getContainer()->get('http_kernel');
+        self::assertInstanceOf(HttpKernel::class, $httpKernel);
         $container = $this->kernel->getContainer()->get('test.service_container');
         self::assertInstanceOf(ContainerInterface::class, $container);
         $manager = $container->get(MaintenanceManager::class);
@@ -77,7 +81,7 @@ final class WorkerKeptAliveKernelTest extends TestCase
                 $request = Request::create('/', 'GET', [], [], [], ['REMOTE_ADDR' => '198.51.100.' . (10 + $i % 50)]);
             }
 
-            $response = $this->kernel->handle($request);
+            $response = $httpKernel->handle($request);
             $content  = (string) $response->getContent();
             $context  = sprintf('iteration %d', $i);
 
@@ -96,7 +100,7 @@ final class WorkerKeptAliveKernelTest extends TestCase
                     self::assertNotSame('', $cookie, $context);
                 }
             }
-            $this->kernel->terminate($request, $response);
+            $httpKernel->terminate($request, $response);
         }
 
         gc_collect_cycles();
