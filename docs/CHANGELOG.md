@@ -52,6 +52,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Tests
+
+- Added `WorkerKeptAliveKernelTest` (REQ-RUNTIME-002): one kernel, 1,200 alternating visitors, no services resetter, flat memory.
+
+### Docs
+
+- Refreshed `docs/FRANKENPHP-WORKER-AUDIT.md` (reviewed version, kept-alive test, rule 7 note).
+
 ## [1.17.1] - 2026-11-12
 
 Target: **1.17.1** (patch).

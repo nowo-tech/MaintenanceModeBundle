@@ -3,8 +3,9 @@
 | Field | Value |
 |-------|-------|
 | Package | `nowo-tech/maintenance-mode-bundle` (`symfony-bundle`) |
-| Audited revision | `v1.5.8` |
-| Audit date | 2026-09-24 |
+| Audited revision | `v1.5.8` (original review); kept-alive test added 2026-11-12 |
+| Reviewed version | `v1.17.1` (re-checked 2026-11-12 against the kept-alive test below) |
+| Audit date | 2026-11-12 (earlier audit date 2026-09-24 kept in the history) |
 | Method | Manual review of every file under `src/` (services, request listener, storages, controllers, forms, commands, Twig extension, DI extension, compiler pass, `Resources/config`) plus regression tests that re-use the same instances across consecutive requests without `reset()` |
 | **Verdict** | ✅ **100% compatible under scenario B** (`reset_kernel false`) — all HTTP services are stateless (`readonly` config only); maintenance state is re-read from storage on every request; auth / bypass decisions live on the current `Request` / session only |
 
@@ -18,6 +19,7 @@
   - [W-02 — History view loads the whole JSONL file into memory (Low, accepted)](#w-02--history-view-loads-the-whole-jsonl-file-into-memory-low-accepted)
   - [W-03 — Concurrent writes across worker threads are handled correctly (Info)](#w-03--concurrent-writes-across-worker-threads-are-handled-correctly-info)
   - [W-04 — Access decisions are computed per request (Info)](#w-04--access-decisions-are-computed-per-request-info)
+- [Kept-alive test (REQ-RUNTIME-002)](#kept-alive-test-req-runtime-002)
 - [Usage recommendations in worker mode](#usage-recommendations-in-worker-mode)
 - [Re-audit triggers](#re-audit-triggers)
 
@@ -98,6 +100,14 @@ Worker demo: `demo/symfony8/docker/frankenphp/Caddyfile` declares a `worker` blo
 - **Recommendation:** none. Covered by `WorkerModeNoKernelResetTest` and, for the framework-free ports, `DddHostAccessPortsKernelTest` (300 alternating visitors in one kernel without the services resetter, own decision each time, flat memory).
 
 No open remediations.
+
+## Kept-alive test (REQ-RUNTIME-002)
+
+Test: `Nowo\MaintenanceModeBundle\Tests\Integration\Worker\WorkerKeptAliveKernelTest` (`tests/Integration/Worker/WorkerKeptAliveKernelTest.php`). It boots **one** kernel (FrameworkBundle + TwigBundle + UiKit + this bundle) and drives `http_kernel` `handle()` + `terminate()` 1,200 times with maintenance enabled, alternating two visitors: visitor A carries the QA bypass token (first visit) or the bypass cookie it was given (next visit) and must get the site page plus its own cookie; visitor B has neither and must get the 503 with the maintenance message, no cookie and no bypass attribute. `services_resetter` / `kernel.reset` is **never** called: requests are sent through the `http_kernel` service itself, because `Kernel::handle()` runs the services resetter on the next boot after a `terminate()`. Memory growth after a 100-iteration warm-up must stay below 4 MiB. Complementary tests: `WorkerModeNoKernelResetTest` (unit level, state toggled between requests) and `DddHostAccessPortsKernelTest` (300 alternating visitors on the panel).
+
+Result: no state is carried between requests, so the bundle is **safe with kernel reset false**.
+
+Rule 7: the bundle has no persistence layer and never clears, flushes or resets the host's default EntityManager.
 
 ## Usage recommendations in worker mode
 
