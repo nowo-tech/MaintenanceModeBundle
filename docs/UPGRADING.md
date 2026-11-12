@@ -93,6 +93,14 @@
 
 ## Unreleased
 
+Target: **1.17.1**. From **1.17.0**: `composer update nowo-tech/maintenance-mode-bundle`. No configuration change.
+
+`bin/console lint:container` now passes when `security.access_gate` or `security.actor_resolver` implements only one
+port. The alias of the interface the service does not implement is no longer registered: a host on the framework-free
+port only has no `MaintenanceAccessGateInterface` / `ActorResolverInterface` alias, and a host still on the deprecated
+port has no `MaintenancePanelAccessGateInterface` / `MaintenanceActorResolverInterface` alias. Inject the interface your
+service implements. A configured service that implements neither interface of its port now fails the container build.
+
 ## To 1.17.0
 
 From **1.16.1**:
