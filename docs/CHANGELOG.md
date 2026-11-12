@@ -51,6 +51,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Target: **1.17.1** (patch).
+
+### Fixed
+
+- `lint:container` failed for a host whose `security.access_gate` or `security.actor_resolver` implements only one of
+  the two ports ("Invalid alias definition: alias `MaintenanceAccessGateInterface` is referencing class ... but this
+  class does not implement `MaintenanceAccessGateInterface`", and the same for `ActorResolverInterface`, or for the
+  new port with a host still on the deprecated one; also with a host `#[AsDecorator]` on the new interface). This is a
+  1.17.0 bug: 1.17.0 aliased both the deprecated port and its framework-free replacement to the configured service,
+  and Symfony's `CheckAliasValidityPass` only runs in `lint:container`, so `cache:clear` and runtime did not show it.
+  Affected: `>= 1.17.0, < 1.17.1`.
+  `AccessPortsPass` now, after choosing the panel port (unchanged: new port first, decorators honoured, two different
+  services on the two aliases still fail the build), keeps each of `MaintenanceAccessGateInterface`,
+  `MaintenancePanelAccessGateInterface`, `ActorResolverInterface` and `MaintenanceActorResolverInterface` only when
+  the service it resolves to implements it. A service that implements neither interface of its port now fails the
+  container build with a clear message; a service whose class cannot be known keeps its alias.
+
+### Tests
+
+- `PortAliasValidityKernelTest` boots a host kernel and runs `lint:container` for the gate and the actor resolver on
+  the new port only, the deprecated port only, both, and with an `#[AsDecorator]` on the new interface;
+  `AccessPortsAliasValidityTest` covers the alias pruning.
+
 ## [1.17.0] - 2026-11-11
 
 Target: **1.17.0** (minor; additive, BC-safe).

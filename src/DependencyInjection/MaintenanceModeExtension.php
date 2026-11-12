@@ -303,7 +303,8 @@ final class MaintenanceModeExtension extends Extension implements PrependExtensi
     {
         $custom = $security['access_gate'] ?? null;
         if (is_string($custom) && $custom !== '') {
-            // Both aliases point to the host gate; the panel uses whichever interface it implements (new one first).
+            // Both aliases point to the host gate; AccessPortsPass picks the panel port and drops the alias of the
+            // interface the gate does not implement (1.17.1+, keeps lint:container valid).
             $container->setAlias(MaintenanceAccessGateInterface::class, $custom)->setPublic(false);
             $container->setAlias(MaintenancePanelAccessGateInterface::class, $custom)->setPublic(false);
             $container->setParameter(AccessPortsPass::GATE_PARAMETER, $custom);
