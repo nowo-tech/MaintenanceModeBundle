@@ -32,9 +32,9 @@ final class HomeControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(503);
         $html = (string) $client->getResponse()->getContent();
         self::assertStringContainsString('Down for test', $html);
-        // REQ-UI-003: UiKit guest layout of the demo, theme tokens, no UiKit script, no CDN from the bundle.
+        // REQ-UI-003: UiKit guest layout, UiKit's own stylesheet, no UiKit script, no CDN from the bundle.
         self::assertSelectorExists('.nowo-ui-page--guest [data-testid="maintenance-page"]');
-        self::assertStringContainsString('data-nowo-ui-host-tokens', $html);
+        self::assertStringContainsString('/bundles/nowouikit/css/nowo-ui.css', $html);
         self::assertStringNotContainsString('/bundles/nowouikit/js/', $html);
         self::assertStringNotContainsString('fonts.googleapis.com', $html);
 

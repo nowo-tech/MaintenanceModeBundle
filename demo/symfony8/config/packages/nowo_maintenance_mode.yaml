@@ -6,8 +6,8 @@ nowo_maintenance_mode:
         enabled: true
         # Auto-excluded from 503 — operators open this URL directly (do not link it from the public 503 page).
         path_prefix: '/_maintenance'
-        # layout_template: null → nowo_ui_kit.layouts.admin (templates/layouts/admin.html.twig)
-    # templates.page: default = UiKit guest layout + theme tokens (templates/layouts/guest.html.twig here).
+        # layout_template: null → nowo_ui_kit.layouts.admin (templates/base.html.twig)
+    # templates.page: default = UiKit guest layout and its default theme.
     # Opt-in CDN samples: '@NowoMaintenanceModeBundle/maintenance/examples/*.html.twig' (see /examples).
     security:
         # Demo: password gate only (no SecurityBundle). Never copy allow_unauthenticated to production.

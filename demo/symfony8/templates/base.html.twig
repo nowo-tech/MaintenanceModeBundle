@@ -1,28 +1,21 @@
-<!DOCTYPE html>
-<html lang="{{ app.request.locale|default('en') }}"{% block html_attributes %}{% endblock %}>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}Maintenance Mode Demo{% endblock %}</title>
-    <link rel="stylesheet" href="{{ asset('css/demo.css') }}">
-    {% block stylesheets %}{% endblock %}
-</head>
-<body>
-<header class="demo-masthead">
-    <a class="demo-brand" href="/">Maintenance Mode <span>Demo</span></a>
-    {% block masthead_nav %}
-        <nav aria-label="Demo">
-            <a href="/">Home</a>
-            <a href="/_maintenance/">Admin panel</a>
-            <a href="/_maintenance/history">History</a>
-            <a href="/_maintenance_preview">503 preview</a>
-            <a href="/examples">Sample pages</a>
+{#- REQ-DEMO-014: the demo shell is UiKit's admin layout with UiKit's default theme (nowo-ui.css from the bundle's own
+    asset package, no CSS framework, no CDN). It is also the host layout of the panel pages (nowo_ui_kit.layouts.admin).
+    The header menu is static: the demo pages stay reachable (and cheap) while the site is in maintenance. -#}
+{% extends '@NowoUiKit/layout/admin.html.twig' %}
+
+{% block nowo_ui_document_title %}{% block title %}Maintenance Mode Demo{% endblock %}{% endblock %}
+
+{% block nowo_ui_navigation %}
+    <header class="nowo-ui-header" data-testid="demo-masthead">
+        <a class="nowo-ui-brand" href="{{ path('homepage') }}">Maintenance Mode Demo</a>
+        <nav class="nowo-ui-menu" aria-label="Demo">
+            <a class="nowo-ui-link" href="{{ path('homepage') }}">Home</a>
+            <a class="nowo-ui-link" href="/_maintenance/">Admin panel</a>
+            <a class="nowo-ui-link" href="/_maintenance/history">History</a>
+            <a class="nowo-ui-link" href="/_maintenance_preview">503 preview</a>
+            <a class="nowo-ui-link" href="{{ path('maintenance_examples') }}">Sample pages</a>
         </nav>
-    {% endblock %}
-</header>
-<main class="{% block main_class %}{% endblock %}">
-    {% block body %}{% endblock %}
-</main>
-{% block javascripts %}{% endblock %}
-</body>
-</html>
+    </header>
+{% endblock %}
+
+{% block nowo_ui_content %}{% block body %}{% endblock %}{% endblock %}

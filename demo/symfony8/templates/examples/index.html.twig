@@ -2,17 +2,17 @@
 
 {% block title %}Maintenance page examples{% endblock %}
 
-{% block body %}
-    <h1>Maintenance page examples</h1>
-    <p>
-        Calm, anxiety-light 503 templates shipped with the bundle.
-        Frameworks: <strong>Bootstrap 5.3</strong>, <strong>Foundation 6.9</strong>, <strong>Tailwind CSS 4</strong>, plus vanilla CSS.
-        Patterns: soft themes + six idea pages (short, compassionate, playful, brand, countdown, updates).
-        Locales: en · es · it · fr · pt · de · nl.
-    </p>
+{% block nowo_ui_page_header %}
+    {{ include(nowo_ui_partial('page_header'), {
+        title: 'Maintenance page examples',
+        intro: 'Calm, anxiety-light 503 templates shipped with the bundle. Frameworks: Bootstrap 5.3, Foundation 6.9, Tailwind CSS 4, plus vanilla CSS. Patterns: soft themes + six idea pages (short, compassionate, playful, brand, countdown, updates). Locales: en · es · it · fr · pt · de · nl.',
+    }) }}
+{% endblock %}
 
-    <div class="card">
-        <table>
+{% block body %}
+    <section class="nowo-ui-card">
+        <div class="nowo-ui-card__body">
+        <table class="nowo-ui-data-table">
             <thead>
             <tr>
                 <th>Slug</th>
@@ -29,14 +29,15 @@
                     <td>{{ meta.style }}</td>
                     <td>
                         {% for loc in locales %}
-                            <a href="{{ path('maintenance_example_show', {slug: slug, _locale: loc}) }}">{{ loc }}</a>{% if not loop.last %} · {% endif %}
+                            <a class="nowo-ui-link" href="{{ path('maintenance_example_show', {slug: slug, _locale: loc}) }}">{{ loc }}</a>{% if not loop.last %} · {% endif %}
                         {% endfor %}
                     </td>
                 </tr>
             {% endfor %}
             </tbody>
         </table>
-    </div>
+        </div>
+    </section>
 
-    <p><a href="{{ path('homepage') }}">← Demo home</a></p>
+    <p><a class="nowo-ui-link" href="{{ path('homepage') }}">← Demo home</a></p>
 {% endblock %}

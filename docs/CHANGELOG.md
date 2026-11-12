@@ -52,6 +52,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Demo uses the UiKit base style (REQ-DEMO-014)
+
 ### Tests
 
 - Added `WorkerKeptAliveKernelTest` (REQ-RUNTIME-002): one kernel, 1,200 alternating visitors, no services resetter, flat memory.
