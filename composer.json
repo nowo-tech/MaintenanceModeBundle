@@ -103,6 +103,10 @@
     "scripts": {
         "test": "phpunit --color=always",
         "test-coverage": "phpunit --color=always --coverage-html coverage --coverage-clover coverage.xml --coverage-text",
+        "test-coverage-100": [
+            "@test-coverage",
+            "php .scripts/check-coverage.php coverage.xml --min-percent=100"
+        ],
         "cs-check": "php-cs-fixer fix --dry-run --diff",
         "cs-fix": "php-cs-fixer fix",
         "rector": "rector process",
@@ -120,6 +124,7 @@
         "igor": "igor-php --no-agent ."
     },
     "scripts-descriptions": {
+        "test-coverage-100": "Run test-coverage and fail if statement or element coverage is below 100% (REQ-TEST-003)",
         "igor": "Run Igor FrankenPHP worker-state audit (REQ-CS-008)"
     }
 }
