@@ -23,7 +23,7 @@ This bundle is **FrankenPHP worker mode friendly** — including when the kernel
   </tr>
 </table>
 
-Demo: `demo/symfony8` (FrankenPHP) — host layouts `templates/layouts/{admin,guest}.html.twig`, UiKit theme tokens, password `maintenance`. Screenshots are captured by the demo Playwright suite (`make -C demo/symfony8 demo-screenshots`).
+Demo: `demo/symfony8` (FrankenPHP) — `templates/base.html.twig` extends the UiKit admin layout (`@NowoUiKit/layout/admin.html.twig`), UiKit theme tokens, password `maintenance`. Screenshots are captured by the demo Playwright suite (`make -C demo/symfony8 demo-screenshots`).
 
 ## Features
 
@@ -146,6 +146,8 @@ make release-check
 
 - Tests: PHPUnit (PHP)
 - PHP: **100%** Lines (run `make coverage-check`)
+- TS/JS: N/A (no TypeScript / JavaScript sources)
+- Python: N/A
 - Justified exclusions (`@codeCoverageIgnore`, REQ-TEST-003): filesystem error branches of `FilesystemMaintenanceStateStorage` / `FilesystemMaintenanceHistoryStorage` (directory not creatable, write / rename / read failures that need a broken filesystem) and two defensive early returns in `MaintenanceModeExtension` (controller definitions that `services.yaml` always registers).
 
 ## License and author
