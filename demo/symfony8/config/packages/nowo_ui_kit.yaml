@@ -1,8 +1,9 @@
-# REQ-DEMO-014: UiKit's default theme, unchanged, with UiKit's own semantic stylesheet only (no CSS framework, no CDN).
-# The panel pages render in the demo shell (base.html.twig extends UiKit's admin layout); the public 503 page and the
-# login use UiKit's own guest layout.
+# REQ-DEMO-014: UiKit's default theme, unchanged (no CSS framework, no CDN, no token override). The demo platform shell
+# (templates/base.html.twig) is the host layout of the panel pages. The public 503 page, the maintenance-page previews and
+# the panel login are standalone pages: the guest layout stays UiKit's own.
 nowo_ui_kit:
     css_framework: custom
+    base_stylesheet: true
     icon_set: none
     layouts:
         admin: 'base.html.twig'

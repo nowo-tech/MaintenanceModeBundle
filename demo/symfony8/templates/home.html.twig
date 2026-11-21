@@ -10,36 +10,37 @@
 {% endblock %}
 
 {% block body %}
-    <section class="nowo-ui-card">
-        <div class="nowo-ui-card__header"><h2 class="nowo-ui-card__title">While maintenance is on</h2></div>
-        <div class="nowo-ui-card__body">
-            <p>
-                The public 503 page must <strong>not</strong> send visitors to panel login.
-                Use <strong>exclusions</strong> (or the auto-excluded <code>/_maintenance</code> prefix)
-                to manage the site. Login itself is optional via YAML
-                (<code>security.password_protection</code>).
-            </p>
-            <ul>
-                <li><a class="nowo-ui-link" href="/_maintenance_preview">Current maintenance page preview</a> (dev — like <code>/_error/503</code>)</li>
-                <li><a class="nowo-ui-link" href="/_error/503">Symfony error page preview</a> (<code>/_error/503</code>)</li>
-                <li><a class="nowo-ui-link" href="/examples/bypass">Bypass guide + exclusion examples</a></li>
-                <li><a class="nowo-ui-link" href="/_maintenance/">Admin panel</a> (login on when <code>password_protection: true</code>; password: <code>maintenance</code>)</li>
-                <li><a class="nowo-ui-link" href="/examples">Calm 503 page examples</a> (Bootstrap · Foundation · Tailwind · ideas)</li>
-            </ul>
-        </div>
-    </section>
+    {% embed '@NowoUiKit/demo_platform/_section.html.twig' with {title: 'While maintenance is on', intro: 'The public 503 page must not send visitors to panel login. Use exclusions (or the auto-excluded /_maintenance prefix) to manage the site. Login itself is optional via YAML (security.password_protection).', kind: 'table'} %}
+        {% block section_body %}
+            <table class="nowo-ui-data-table">
+                <thead>
+                    <tr><th>Page</th><th>What it shows</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><a class="nowo-ui-link" href="/_maintenance_preview">Maintenance page preview</a></td><td class="nowo-ui-cell--wrap">The current maintenance page (dev, like <code class="nowo-ui-code">/_error/503</code>)</td></tr>
+                    <tr><td><a class="nowo-ui-link" href="/_error/503">Symfony error page preview</a></td><td class="nowo-ui-cell--wrap"><code class="nowo-ui-code">/_error/503</code></td></tr>
+                    <tr><td><a class="nowo-ui-link" href="/examples/bypass">Bypass guide</a></td><td class="nowo-ui-cell--wrap">Exclusion examples</td></tr>
+                    <tr><td><a class="nowo-ui-link" href="/_maintenance/">Admin panel</a></td><td class="nowo-ui-cell--wrap">Login on when <code class="nowo-ui-code">password_protection: true</code>; password: <code class="nowo-ui-code">maintenance</code></td></tr>
+                    <tr><td><a class="nowo-ui-link" href="/examples">Calm 503 page examples</a></td><td class="nowo-ui-cell--wrap">Bootstrap · Foundation · Tailwind · ideas</td></tr>
+                </tbody>
+            </table>
+        {% endblock %}
+    {% endembed %}
 
-    <section class="nowo-ui-card">
-        <div class="nowo-ui-card__header"><h2 class="nowo-ui-card__title">Quick exclusion smoke links</h2></div>
-        <div class="nowo-ui-card__body">
-            <ul>
-                <li>Path — <a class="nowo-ui-link" href="/health"><code>/health</code></a></li>
-                <li>Route name — <a class="nowo-ui-link" href="/status"><code>/status</code></a> (<code>app_status</code>)</li>
-                <li>Prefix — <a class="nowo-ui-link" href="/api/ops/ping"><code>/api/ops/ping</code></a></li>
-                <li>Glob — <a class="nowo-ui-link" href="/internal-check"><code>/internal-check</code></a></li>
-                <li>Regex — <a class="nowo-ui-link" href="/ops/ready"><code>/ops/ready</code></a></li>
-            </ul>
-            <p class="nowo-ui-muted">Enable maintenance from the panel, then reload this page — you should get HTTP 503. The links above (and <code>/examples/*</code>) stay available.</p>
-        </div>
-    </section>
+    {% embed '@NowoUiKit/demo_platform/_section.html.twig' with {title: 'Quick exclusion smoke links', intro: 'Enable maintenance from the panel, then reload this page: you should get HTTP 503. The links below (and /examples/*) stay available.', kind: 'table'} %}
+        {% block section_body %}
+            <table class="nowo-ui-data-table">
+                <thead>
+                    <tr><th>Kind</th><th>Try</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Path</td><td><a class="nowo-ui-link" href="/health"><code class="nowo-ui-code">/health</code></a></td></tr>
+                    <tr><td>Route name</td><td><a class="nowo-ui-link" href="/status"><code class="nowo-ui-code">/status</code></a> (<code class="nowo-ui-code">app_status</code>)</td></tr>
+                    <tr><td>Prefix</td><td><a class="nowo-ui-link" href="/api/ops/ping"><code class="nowo-ui-code">/api/ops/ping</code></a></td></tr>
+                    <tr><td>Glob</td><td><a class="nowo-ui-link" href="/internal-check"><code class="nowo-ui-code">/internal-check</code></a></td></tr>
+                    <tr><td>Regex</td><td><a class="nowo-ui-link" href="/ops/ready"><code class="nowo-ui-code">/ops/ready</code></a></td></tr>
+                </tbody>
+            </table>
+        {% endblock %}
+    {% endembed %}
 {% endblock %}
