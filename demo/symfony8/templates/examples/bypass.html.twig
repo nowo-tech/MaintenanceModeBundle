@@ -3,76 +3,68 @@
 {% block title %}Bypass maintenance (exclusions){% endblock %}
 
 {% block nowo_ui_page_header %}
+    {% set _toolbar %}<a class="nowo-ui-btn nowo-ui-btn--primary" href="/_maintenance">Open panel</a>{% endset %}
     {{ include(nowo_ui_partial('page_header'), {
         title: 'Bypass the 503 page',
         intro: 'The public maintenance page must not link to panel login. Operators keep working through exclusions (or the auto-excluded panel prefix /_maintenance).',
+        toolbar: _toolbar|trim,
     }) }}
 {% endblock %}
 
 {% block body %}
+    {% embed '@NowoUiKit/demo_platform/_section.html.twig' with {title: 'Demo exclusions', intro: 'These stay 200 while the site is in maintenance.', kind: 'table'} %}
+        {% block section_body %}
+            <table class="nowo-ui-data-table">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Config</th>
+                        <th>Try</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Exact path</td>
+                        <td class="nowo-ui-cell--wrap"><code class="nowo-ui-code">exclusions.paths: [/health]</code></td>
+                        <td><a class="nowo-ui-link" href="/health">/health</a></td>
+                    </tr>
+                    <tr>
+                        <td>Route name</td>
+                        <td class="nowo-ui-cell--wrap"><code class="nowo-ui-code">exclusions.routes: [app_status]</code></td>
+                        <td><a class="nowo-ui-link" href="/status">/status</a> (<code class="nowo-ui-code">app_status</code>)</td>
+                    </tr>
+                    <tr>
+                        <td>Path prefix</td>
+                        <td class="nowo-ui-cell--wrap"><code class="nowo-ui-code">exclusions.path_prefixes: [/api/ops, /examples]</code></td>
+                        <td><a class="nowo-ui-link" href="/api/ops/ping">/api/ops/ping</a> · <a class="nowo-ui-link" href="/examples">/examples</a></td>
+                    </tr>
+                    <tr>
+                        <td>Glob pattern</td>
+                        <td class="nowo-ui-cell--wrap"><code class="nowo-ui-code">exclusions.patterns: ['/internal-*']</code></td>
+                        <td><a class="nowo-ui-link" href="/internal-check">/internal-check</a></td>
+                    </tr>
+                    <tr>
+                        <td>Regex pattern</td>
+                        <td class="nowo-ui-cell--wrap"><code class="nowo-ui-code">exclusions.patterns: ['#^/ops/#']</code></td>
+                        <td><a class="nowo-ui-link" href="/ops/ready">/ops/ready</a></td>
+                    </tr>
+                    <tr>
+                        <td>Panel prefix (built-in)</td>
+                        <td class="nowo-ui-cell--wrap"><code class="nowo-ui-code">panel.path_prefix: /_maintenance</code> (always skipped)</td>
+                        <td><a class="nowo-ui-link" href="/_maintenance">/_maintenance</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        {% endblock %}
+    {% endembed %}
 
-    <section class="nowo-ui-card">
-        <div class="nowo-ui-card__header"><h2 class="nowo-ui-card__title">Demo exclusions (stay 200 while site is in maintenance)</h2></div>
-        <div class="nowo-ui-card__body">
-        <table class="nowo-ui-data-table">
-            <thead>
-            <tr>
-                <th>Type</th>
-                <th>Config</th>
-                <th>Try</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>Exact path</td>
-                <td><code>exclusions.paths: [/health]</code></td>
-                <td><a class="nowo-ui-link" href="/health">/health</a></td>
-            </tr>
-            <tr>
-                <td>Route name</td>
-                <td><code>exclusions.routes: [app_status]</code></td>
-                <td><a class="nowo-ui-link" href="/status">/status</a> (<code>app_status</code>)</td>
-            </tr>
-            <tr>
-                <td>Path prefix</td>
-                <td><code>exclusions.path_prefixes: [/api/ops, /examples]</code></td>
-                <td><a class="nowo-ui-link" href="/api/ops/ping">/api/ops/ping</a> · <a class="nowo-ui-link" href="/examples">/examples</a></td>
-            </tr>
-            <tr>
-                <td>Glob pattern</td>
-                <td><code>exclusions.patterns: ['/internal-*']</code></td>
-                <td><a class="nowo-ui-link" href="/internal-check">/internal-check</a></td>
-            </tr>
-            <tr>
-                <td>Regex pattern</td>
-                <td><code>exclusions.patterns: ['#^/ops/#']</code></td>
-                <td><a class="nowo-ui-link" href="/ops/ready">/ops/ready</a></td>
-            </tr>
-            <tr>
-                <td>Panel prefix (built-in)</td>
-                <td><code>panel.path_prefix: /_maintenance</code> (always skipped)</td>
-                <td><a class="nowo-ui-link" href="/_maintenance">/_maintenance</a></td>
-            </tr>
-            </tbody>
-        </table>
-        </div>
-    </section>
-
-    <section class="nowo-ui-card">
-        <div class="nowo-ui-card__header"><h2 class="nowo-ui-card__title">Panel login (YAML toggle)</h2></div>
-        <div class="nowo-ui-card__body">
-        <p>
-            Login is optional. Control it with
-            <code>security.password_protection</code>:
-        </p>
-        <ul>
-            <li><code>true</code> (+ <code>password_hash</code>) — login required before enable/disable.</li>
-            <li><code>false</code> — no login UI; panel opens directly (use only on VPN / trusted networks).</li>
-        </ul>
-        <p>Demo password when protection is on: <code>maintenance</code>.</p>
-        <p><a class="nowo-ui-btn nowo-ui-btn--primary" href="/_maintenance">Open panel</a></p>
-        </div>
-    </section>
-
-    <p><a class="nowo-ui-link" href="{{ path('homepage') }}">← Demo home</a> · <a class="nowo-ui-link" href="{{ path('maintenance_examples') }}">Page examples</a></p>
+    {% embed '@NowoUiKit/demo_platform/_section.html.twig' with {title: 'Panel login (YAML toggle)', intro: 'Login is optional. Control it with security.password_protection.', kind: 'list'} %}
+        {% block section_body %}
+            <ul class="nowo-ui-list">
+                <li><code class="nowo-ui-code">true</code> (+ <code class="nowo-ui-code">password_hash</code>) — login required before enable/disable.</li>
+                <li><code class="nowo-ui-code">false</code> — no login UI; panel opens directly (use only on VPN / trusted networks).</li>
+            </ul>
+            <p>Demo password when protection is on: <code class="nowo-ui-code">maintenance</code>.</p>
+        {% endblock %}
+    {% endembed %}
 {% endblock %}

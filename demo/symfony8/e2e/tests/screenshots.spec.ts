@@ -4,8 +4,8 @@ import { resolve } from 'node:path';
 import { disableMaintenance, enableMaintenance, signIn } from './helpers';
 
 /**
- * REQ-DEMO-013 — README screenshots in full demo context: demo masthead + bundle UI + Symfony web debug
- * toolbar. Captured as PNG; `make demo-screenshots` converts them to WebP and deletes the PNGs.
+ * REQ-DEMO-013 — README screenshots in full demo context: the demo platform shell + bundle UI (Symfony web debug
+ * toolbar hidden). Captured as PNG; `make demo-screenshots` converts them to WebP and deletes the PNGs.
  */
 test.describe.configure({ mode: 'serial' });
 
@@ -17,19 +17,17 @@ const WIDTH = 1280;
 const MESSAGE = 'Upgrading the catalogue database — back in about 30 minutes.';
 
 /**
- * Resizes the viewport so masthead, bundle UI and the (fixed, bottom) web debug toolbar all fit,
- * then captures the viewport: a padded union of header → main → .sf-toolbar without empty gaps.
+ * Resizes the viewport so the shell (or the standalone page) fits, with the Symfony web debug toolbar hidden (it is not
+ * part of the demo), then captures the viewport.
  */
 async function captureDemoFrame(page: Page, file: string): Promise<void> {
-  const toolbar = page.locator('.sf-toolbar .sf-toolbarreset');
-  await expect(toolbar).toBeVisible();
-  const toolbarHeight = (await toolbar.boundingBox())?.height ?? 40;
-  // Bottom of the bundle UI (#nowo-ui-content), not <main>, which may stretch to the viewport height.
+  await page.addStyleTag({ content: '.sf-toolbar,.sf-minitoolbar,[id^="sfwdt"]{display:none!important}' });
+  // Bottom of the bundle UI (#nowo-ui-content, or the page body for the standalone 503 page).
   const contentBottom = await page
-    .locator('#nowo-ui-content')
+    .locator('#nowo-ui-content, body')
+    .first()
     .evaluate((el) => el.getBoundingClientRect().bottom + window.scrollY);
-  await page.setViewportSize({ width: WIDTH, height: Math.ceil(contentBottom + 48 + toolbarHeight) });
-  await expect(toolbar).toBeVisible();
+  await page.setViewportSize({ width: WIDTH, height: Math.min(1400, Math.max(700, Math.ceil(contentBottom + 48))) });
   await page.screenshot({ path: resolve(outDir, file) });
 }
 
@@ -50,7 +48,7 @@ test.describe('MaintenanceMode screenshots (full demo frame)', () => {
     await signIn(page);
     await disableMaintenance(page);
     await enableMaintenance(page, MESSAGE);
-    await expect(page.locator('[data-testid="demo-masthead"]')).toBeVisible();
+    await expect(page.getByTestId('demo-platform')).toBeVisible();
     await captureDemoFrame(page, 'panel.png');
   });
 

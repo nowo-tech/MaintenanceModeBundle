@@ -62,6 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Demo: runs in UiKit's demo platform shell (`nowo-tech/ui-kit-bundle` ^2.60); the demo's own header is gone and the pages use the shell page headers and section cards. The maintenance-page previews, the 503 page and the panel login stay standalone pages. Demo only, no bundle change.
 - Demo uses the UiKit base style (REQ-DEMO-014)
 - docs: demo screenshots regenerated on the UiKit base style
 

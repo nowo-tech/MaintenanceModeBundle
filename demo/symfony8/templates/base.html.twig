@@ -1,21 +1,21 @@
-{#- REQ-DEMO-014: the demo shell is UiKit's admin layout with UiKit's default theme (nowo-ui.css from the bundle's own
-    asset package, no CSS framework, no CDN). It is also the host layout of the panel pages (nowo_ui_kit.layouts.admin).
-    The header menu is static: the demo pages stay reachable (and cheap) while the site is in maintenance. -#}
-{% extends '@NowoUiKit/layout/admin.html.twig' %}
-
+{#- REQ-DEMO-014: the demo runs inside UiKit's shared demo platform shell. This file only declares the demo and is also the
+    host layout of the panel pages (nowo_ui_kit.layouts.admin). The nav is static: the demo pages stay reachable (and cheap)
+    while the site is in maintenance. The maintenance-page previews (/examples/<slug>, the 503 page, the panel login) are
+    standalone pages and do not use the shell. -#}
+{% extends '@NowoUiKit/demo_platform/layout.html.twig' %}
+{% set nowo_ui_demo_platform = {
+    bundle: 'Maintenance Mode',
+    home_route: 'homepage',
+    repository: 'https://github.com/nowo-tech/MaintenanceModeBundle',
+    translation_domain: false,
+    nav: [
+        {label: 'Home', route: 'homepage', section: 'Demo'},
+        {label: 'Bypass guide', route: 'app_bypass_guide', section: 'Demo'},
+        {label: 'Sample pages', route: 'maintenance_examples', section: 'Demo'},
+        {label: 'Admin panel', route: 'nowo_maintenance_mode_panel_index', section: 'Panel'},
+        {label: 'History', route: 'nowo_maintenance_mode_panel_history', section: 'Panel'},
+        {label: '503 preview', route: 'nowo_maintenance_mode_preview', section: 'Previews'},
+        {label: 'Symfony 503 error page', href: '/_error/503', active: [], section: 'Previews', testid: 'demo-nav-error-503'},
+    ],
+} %}
 {% block nowo_ui_document_title %}{% block title %}Maintenance Mode Demo{% endblock %}{% endblock %}
-
-{% block nowo_ui_navigation %}
-    <header class="nowo-ui-header" data-testid="demo-masthead">
-        <a class="nowo-ui-brand" href="{{ path('homepage') }}">Maintenance Mode Demo</a>
-        <nav class="nowo-ui-menu" aria-label="Demo">
-            <a class="nowo-ui-link" href="{{ path('homepage') }}">Home</a>
-            <a class="nowo-ui-link" href="/_maintenance/">Admin panel</a>
-            <a class="nowo-ui-link" href="/_maintenance/history">History</a>
-            <a class="nowo-ui-link" href="/_maintenance_preview">503 preview</a>
-            <a class="nowo-ui-link" href="{{ path('maintenance_examples') }}">Sample pages</a>
-        </nav>
-    </header>
-{% endblock %}
-
-{% block nowo_ui_content %}{% block body %}{% endblock %}{% endblock %}

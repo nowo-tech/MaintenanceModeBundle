@@ -10,34 +10,32 @@
 {% endblock %}
 
 {% block body %}
-    <section class="nowo-ui-card">
-        <div class="nowo-ui-card__body">
-        <table class="nowo-ui-data-table">
-            <thead>
-            <tr>
-                <th>Slug</th>
-                <th>Framework</th>
-                <th>Style</th>
-                <th>Preview</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for slug, meta in examples %}
-                <tr>
-                    <td><code>{{ slug }}</code></td>
-                    <td>{{ meta.framework }}</td>
-                    <td>{{ meta.style }}</td>
-                    <td>
-                        {% for loc in locales %}
-                            <a class="nowo-ui-link" href="{{ path('maintenance_example_show', {slug: slug, _locale: loc}) }}">{{ loc }}</a>{% if not loop.last %} · {% endif %}
-                        {% endfor %}
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-        </div>
-    </section>
-
-    <p><a class="nowo-ui-link" href="{{ path('homepage') }}">← Demo home</a></p>
+    {% embed '@NowoUiKit/demo_platform/_section.html.twig' with {title: 'Previews', intro: 'Each preview is a standalone maintenance page (it does not use the demo shell).', kind: 'table'} %}
+        {% block section_body %}
+            <table class="nowo-ui-data-table">
+                <thead>
+                    <tr>
+                        <th>Slug</th>
+                        <th>Framework</th>
+                        <th>Style</th>
+                        <th>Preview</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for slug, meta in examples %}
+                        <tr>
+                            <td><code class="nowo-ui-code">{{ slug }}</code></td>
+                            <td>{{ meta.framework }}</td>
+                            <td>{{ meta.style }}</td>
+                            <td>
+                                {% for loc in locales %}
+                                    <a class="nowo-ui-link" href="{{ path('maintenance_example_show', {slug: slug, _locale: loc}) }}">{{ loc }}</a>{% if not loop.last %} · {% endif %}
+                                {% endfor %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endblock %}
+    {% endembed %}
 {% endblock %}
