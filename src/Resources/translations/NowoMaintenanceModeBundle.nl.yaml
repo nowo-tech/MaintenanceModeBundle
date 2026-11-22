@@ -97,7 +97,7 @@ panel.flash.schedule_cleared: Planning gewist.
 panel.flash.schedule_saved: Planning opgeslagen.
 panel.history: Geschiedenis
 panel.history.action: Actie
-panel.history.actor: Actor
+panel.history.actor: Uitvoerder
 panel.history.empty: Nog geen geschiedenis.
 panel.history.intro: 'Recente in- en uitschakelingen en planningswijzigingen, nieuwste eerst.'
 panel.history.message: Bericht
