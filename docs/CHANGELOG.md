@@ -53,6 +53,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Translations: `panel.history.actor` is now "Autor" (es) and "Uitvoerder" (nl), and `maintenance.examples.idea_playful.eyebrow` is now "Modo de humor leve" (pt, it was the Spanish "Modo humor suave"). A new strict `TranslationCatalogueTest` fails on a non-en locale missing a key, on a non-en value identical to English (any length, placeholders included; values without letters are skipped) unless allow-listed per locale (brands, units, protocols, loanwords, true cognates), on a non-es value identical to the Spanish one (longer than 12 characters, different from English) unless allow-listed as genuinely shared, and on stale entries in either allow-list.
+
 ## [1.18.0] - 2026-11-22
 
 ### Added

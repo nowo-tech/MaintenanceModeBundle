@@ -97,7 +97,7 @@ panel.flash.schedule_cleared: Programación borrada.
 panel.flash.schedule_saved: Programación guardada.
 panel.history: Historial
 panel.history.action: Acción
-panel.history.actor: Actor
+panel.history.actor: Autor
 panel.history.empty: Aún no hay historial.
 panel.history.intro: 'Cambios recientes de activación, desactivación y programación, del más nuevo al más antiguo.'
 panel.history.message: Mensaje
