@@ -92,6 +92,7 @@ panel.update_message: Nachricht aktualisieren
 panel.enable: Wartung aktivieren
 panel.flash.disabled: Wartung deaktiviert.
 panel.flash.enabled: Wartung aktiviert.
+panel.flash.message_not_saved: 'Die Wartung ist ausgeschaltet: Die Nachricht wurde nicht gespeichert.'
 panel.flash.message_updated: Nachricht aktualisiert.
 panel.flash.schedule_cleared: Zeitplan gelöscht.
 panel.flash.schedule_saved: Zeitplan gespeichert.

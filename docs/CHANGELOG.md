@@ -54,6 +54,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Security (audit ZA-L1, Low): `POST /message` no longer writes back the copy of the state read before the form was handled. It re-reads the state right before the write and changes only the message on that fresh copy (the compare-before-save of `applySchedule()`), so a disable, a schedule edit or a tick that lands during the request is no longer undone (before, maintenance could be switched back on with the old activation time and old schedule bounds, with only a `message` history entry and no `MaintenanceEnabledEvent`). Affected: 1.18.0 and 1.18.1.
+- `POST /message` while maintenance is off (a stale tab, or a disable in between) now shows a warning (`panel.flash.message_not_saved`, 7 locales) instead of redirecting silently; nothing is written, as before (audit ZA-I1).
+- `panel/index.html.twig`: the comment on the secondary *Update message* submit now names `POST /message` (it said `POST /enable`; audit ZA-I2).
+
 ## [1.18.1] - 2026-11-22
 
 ### Fixed

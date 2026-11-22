@@ -36,7 +36,7 @@
             {% endif %}
             {% if section.id == 'manual' and state.enabled %}
                 {#- 1.18: maintenance is on - the single Disable toggle (primary) and, below it, the message form with a secondary
-                    "Update message" submit (POST /enable again: it stores the new message, the state stays on) -#}
+                    "Update message" submit (POST /message: it stores the new message, the state stays on) -#}
                 <div class="nowo-maintenance-panel__toggle" data-testid="maintenance-toggle">
                     {% for action in section.actions %}
                         {{ include(nowo_ui_partial('action', _b), {action: action, context: 'toolbar', bundle: _b, nowo_ui_page_type: nowo_ui_page_type}, false) }}
