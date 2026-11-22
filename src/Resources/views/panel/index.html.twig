@@ -35,6 +35,14 @@
                 {% form_theme section.form with [nowo_maintenance_page.form_theme] %}
             {% endif %}
             {{ parent() }}
+            {#- 1.18: while maintenance is on the manual section has no form, only the single Disable toggle -#}
+            {% if not section.form and section.actions is not empty %}
+                <div class="nowo-maintenance-panel__toggle" data-testid="maintenance-toggle">
+                    {% for action in section.actions %}
+                        {{ include(nowo_ui_partial('action', _b), {action: action, context: 'toolbar', bundle: _b, nowo_ui_page_type: nowo_ui_page_type}, false) }}
+                    {% endfor %}
+                </div>
+            {% endif %}
         {% endif %}
     </div>
 {% endblock %}

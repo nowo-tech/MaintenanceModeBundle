@@ -26,6 +26,7 @@ use function ceil;
 use function count;
 use function max;
 use function min;
+use function property_exists;
 
 /**
  * UiKit view models of the bundle pages (REQ-UI-003): the panel (settings scaffold), the history (list scaffold),
@@ -45,7 +46,7 @@ final class MaintenancePages
     public const FORM_THEME = '@NowoUiKit/form/nowo_ui_layout.html.twig';
 
     /**
-     * Panel page ({@code $nav}: {@see PanelView::nav()} with {@code panel} active): sections status (no form), manual (enable form + disable action) and schedule (schedule form +
+     * Panel page ({@code $nav}: {@see PanelView::nav()} with {@code panel} active): sections status (no form), manual (the enable form while maintenance is off, only the disable action while it is on) and schedule (schedule form +
      * clear action) — the section actions are {@see SettingsSection::$actions} (UiKit 2.2); header action Logout when the password gate is on; area nav Panel | History.
      *
      * @return array{page: SettingsPage, section_actions: array<string, list<Action>>, status_items: list<DetailItem>}
@@ -63,10 +64,14 @@ final class MaintenancePages
         ?string $logoutHref = null,
         ?string $layout = null,
     ): array {
+        // One toggle that reflects the state (1.18): Enable (the section form's submit) while maintenance is off, only
+        // Disable while it is on - never the primary and the red button side by side. The schedule section keeps its
+        // secondary Clear schedule action.
+        $enabled        = $state->isEnabled();
         $sectionActions = [
-            'manual' => [
-                new Action('custom', PanelView::label('panel.disable'), $disableHref, method: 'POST', variant: 'danger', attributes: ['data-testid' => 'maintenance-disable'], form: $disableForm),
-            ],
+            'manual' => $enabled
+                ? [new Action('custom', PanelView::label('panel.disable'), $disableHref, method: 'POST', variant: 'primary', attributes: ['data-testid' => 'maintenance-disable'], form: $disableForm)]
+                : [],
             'schedule' => [
                 new Action('custom', PanelView::label('panel.clear_schedule'), $clearScheduleHref, method: 'POST', variant: 'secondary', attributes: ['data-testid' => 'maintenance-clear-schedule'], form: $clearScheduleForm),
             ],
@@ -81,7 +86,7 @@ final class MaintenancePages
                 new PageHeader(PanelView::label('panel.title'), PanelView::label('panel.intro'), $actions, tabs: $nav),
                 [
                     new SettingsSection('status', PanelView::label('panel.status')),
-                    new SettingsSection('manual', PanelView::label('panel.manual'), form: $enableForm, intro: PanelView::label('panel.manual.intro'), submitLabel: PanelView::label('panel.enable'), formThemes: [self::FORM_THEME], actions: $sectionActions['manual']),
+                    new SettingsSection('manual', PanelView::label('panel.manual'), form: $enabled ? null : $enableForm, intro: PanelView::label('panel.manual.intro'), submitLabel: PanelView::label('panel.enable'), formThemes: [self::FORM_THEME], actions: $sectionActions['manual']),
                     new SettingsSection('schedule', PanelView::label('panel.schedule'), form: $scheduleForm, intro: PanelView::label('panel.schedule.intro'), submitLabel: PanelView::label('panel.save_schedule'), formThemes: [self::FORM_THEME], actions: $sectionActions['schedule']),
                 ],
                 bundle: PanelView::BUNDLE,
@@ -123,11 +128,35 @@ final class MaintenancePages
             ],
             array_slice($entries, ($page - 1) * $perPage, $perPage),
             pagination: $total > $perPage ? new Pagination($page, $perPage, $total, $totalPages, 'nowo_maintenance_mode_panel_history') : null,
-            empty: new EmptyState(PanelView::label('panel.history.empty')),
+            empty: self::emptyHistory(),
             bundle: PanelView::BUNDLE,
             layout: $layout,
             attributes: ['data-testid' => 'maintenance-history'],
         );
+    }
+
+    /**
+     * Empty history: one sentence through the UiKit `empty` partial. UiKit 2.61+ draws the illustrated layout (a
+     * decorative icon over the sentence); older kits get the plain state, so the bundle's UiKit floor stays where it was.
+     */
+    private static function emptyHistory(): EmptyState
+    {
+        return new EmptyState(...self::emptyHistoryArguments(property_exists(EmptyState::class, 'icon')));
+    }
+
+    /**
+     * Constructor arguments of the empty history state (named, so a kit without `EmptyState::$icon` never sees one).
+     *
+     * @return array<string, mixed>
+     */
+    public static function emptyHistoryArguments(bool $illustrated): array
+    {
+        $arguments = ['message' => PanelView::label('panel.history.empty')];
+        if ($illustrated) {
+            $arguments['icon'] = 'book';
+        }
+
+        return $arguments;
     }
 
     /**

@@ -64,28 +64,28 @@ final class PageContractTest extends PageContractTestCase
         self::assertStringContainsString('data-testid="maintenance-status-effective">ON</span>', $html);
         self::assertStringContainsString('Database upgrade in progress — back at 14:30.', $html);
         self::assertStringContainsString('2026-10-18 13:45:00', $html);
-        self::assertStringContainsString('action="/_maintenance/enable"', $html);
         self::assertStringContainsString('action="/_maintenance/schedule"', $html);
         self::assertStringContainsString('action="/_maintenance/disable"', $html);
         self::assertStringContainsString('action="/_maintenance/clear-schedule"', $html);
         self::assertStringContainsString('action="/_maintenance/logout"', $html);
-        self::assertStringContainsString('Enable maintenance', $html);
         self::assertStringContainsString('Disable maintenance', $html);
+        // 1.18: one toggle by state - while maintenance is on there is no Enable button or form
+        self::assertStringNotContainsString('Enable maintenance', $html);
+        self::assertStringNotContainsString('action="/_maintenance/enable"', $html);
+        self::assertStringNotContainsString('nowo-maintenance-enable-form', $html);
         self::assertStringContainsString('Save schedule', $html);
         self::assertStringContainsString('Clear schedule', $html);
         self::assertStringContainsString('value="token-nowo_maintenance_disable"', $html);
         // UiKit 2.2 SettingsSection::actions: one actions row per section, after the section form (not nested)
         self::assertSame(1, substr_count($html, 'data-testid="maintenance-disable"'));
         self::assertSame(1, substr_count($html, 'data-testid="maintenance-clear-schedule"'));
-        self::assertLessThan(strpos($html, 'action="/_maintenance/disable"'), strpos($html, 'action="/_maintenance/enable"'));
+        self::assertStringContainsString('data-testid="maintenance-toggle"', $html);
+        self::assertStringNotContainsString('nowo-ui-btn--danger', $html, 'no red button next to the primary');
         // each section submit button targets its own form (unique ids)
-        self::assertStringContainsString('id="nowo-maintenance-enable-form"', $html);
-        self::assertStringContainsString('form="nowo-maintenance-enable-form">Enable maintenance</button>', $html);
         self::assertStringContainsString('id="nowo-maintenance-schedule-form"', $html);
         self::assertStringContainsString('form="nowo-maintenance-schedule-form">Save schedule</button>', $html);
         self::assertStringNotContainsString('nowo-ui-section-form', $html);
         self::assertStringContainsString('value="token-nowo_maintenance_logout"', $html);
-        self::assertSame(1, substr_count($html, 'value="token-nowo_maintenance_enable"'));
         foreach (['status', 'manual', 'schedule'] as $section) {
             self::assertStringContainsString('data-testid="maintenance-' . $section . '"', $html);
         }
@@ -97,7 +97,7 @@ final class PageContractTest extends PageContractTestCase
      */
     public function testPanelFieldsGetTheUiKitInputSlots(): void
     {
-        $html = $this->renderPage(new PageFixture('@NowoMaintenanceModeBundle/panel/index.html.twig', PageFixtures::index(PageFixtures::enabledState())))->html;
+        $html = $this->renderPage(new PageFixture('@NowoMaintenanceModeBundle/panel/index.html.twig', PageFixtures::index(PageFixtures::disabledState())))->html;
 
         // enable form message + schedule form message: full-width input slot
         self::assertSame(2, preg_match_all('#<textarea [^>]*class="nowo-ui-input nowo-ui-input--full[ "]#', $html));
@@ -122,6 +122,19 @@ final class PageContractTest extends PageContractTestCase
         $html = $this->renderPage(new PageFixture('@NowoMaintenanceModeBundle/panel/index.html.twig', $context))->html;
 
         self::assertStringNotContainsString('Maintenance enabled.', $html, 'The flashes partial must read (and consume) app.flashes.');
+    }
+
+    public function testPanelOffShowsOnlyTheEnableToggle(): void
+    {
+        $html = $this->renderPage(new PageFixture('@NowoMaintenanceModeBundle/panel/index.html.twig', PageFixtures::index(PageFixtures::disabledState(), false)))->html;
+
+        self::assertStringContainsString('action="/_maintenance/enable"', $html);
+        self::assertStringContainsString('>Enable maintenance</button>', $html);
+        self::assertSame(1, substr_count($html, 'value="token-nowo_maintenance_enable"'));
+        self::assertStringNotContainsString('Disable maintenance', $html);
+        self::assertStringNotContainsString('action="/_maintenance/disable"', $html);
+        self::assertStringNotContainsString('data-testid="maintenance-disable"', $html);
+        self::assertStringNotContainsString('maintenance-toggle', $html);
     }
 
     public function testPanelWithoutPasswordGateHasNoLogout(): void
@@ -162,6 +175,11 @@ final class PageContractTest extends PageContractTestCase
 
         $empty = $this->renderPage(new PageFixture('@NowoMaintenanceModeBundle/panel/history.html.twig', PageFixtures::history([])))->html;
         self::assertStringContainsString('No history yet.', $empty);
+        // through the UiKit `empty` partial: one sentence (no second default "No items" line), illustrated when the kit can
+        self::assertStringContainsString('data-nowo-ui-region="empty"', $empty);
+        self::assertSame(1, substr_count($empty, 'nowo-ui-empty__message'));
+        self::assertStringNotContainsString('nowo-ui-empty__title', $empty);
+        self::assertStringNotContainsString('No items', $empty);
         self::assertStringNotContainsString('data-nowo-ui-region="pagination"', $empty);
     }
 

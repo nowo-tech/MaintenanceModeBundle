@@ -52,6 +52,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Panel: one toggle that reflects the state. While maintenance is off the manual section shows the message form with *Enable maintenance*; while it is on it shows only *Disable maintenance* (primary, no longer the red button next to the primary). The enable form is not rendered while maintenance is on (the `enable` route is unchanged); `section_actions.manual` is empty while maintenance is off.
+- History: the empty state is one sentence through the UiKit `empty` partial (the sentence was passed as the title, so the kit added its default "No items" line); UiKit 2.61+ draws the illustrated layout.
+
 ### Documentation
 
 - README: Tests and coverage lists TS/JS and Python as N/A (REQ-TEST-007); the demo note names the UiKit admin layout the demo base template extends.
