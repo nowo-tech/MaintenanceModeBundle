@@ -196,11 +196,16 @@ final class MaintenancePanelControllerTest extends TestCase
         $this->accessGate->method('isGranted')->willReturn(true);
         $this->csrfTokenManager->method('isTokenValid')->willReturn(true);
 
-        $response = $this->createController()->message(Request::create('/_maintenance/message', 'POST', ['message' => 'New', '_token' => 'valid']));
+        $request = Request::create('/_maintenance/message', 'POST', ['message' => 'New', '_token' => 'valid']);
+        $session = new Session(new MockArraySessionStorage());
+        $request->setSession($session);
+
+        $response = $this->createController()->message($request);
 
         self::assertInstanceOf(RedirectResponse::class, $response);
         self::assertFalse($this->stateStorage->state->isEnabled());
         self::assertSame('Old', $this->stateStorage->state->getMessage());
+        self::assertSame(['panel.flash.message_not_saved'], $session->getFlashBag()->peek('warning'), 'ZA-I1: a stale tab gets a visible notice');
     }
 
     public function testMessageReturns403OnInvalidCsrf(): void

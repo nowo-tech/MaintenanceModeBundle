@@ -161,20 +161,28 @@ final class MaintenancePanelController
             return $response;
         }
 
-        $state = $this->manager->getState();
-        $form  = $this->createMessageForm($state);
+        $form = $this->createMessageForm($this->manager->getState());
         if (!$this->handleValidForm($form, $request)) {
             return new Response('Invalid CSRF token.', Response::HTTP_FORBIDDEN);
         }
 
-        if ($state->isEnabled()) {
-            /** @var array{message?: string|null} $data */
-            $data    = $form->getData() ?? [];
-            $message = isset($data['message']) && is_string($data['message']) ? $data['message'] : '';
-            // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
-            $this->manager->update($state->withMessage($message !== '' ? $message : null), $this->actor($request), 'message');
-            $this->flash($request, 'success', 'panel.flash.message_updated');
+        // ZA-L1 (1.18.2): re-read the state right before the write and change only the message on that fresh copy, as
+        // applySchedule() compares before it saves. Saving the copy read before the form was handled could switch
+        // maintenance back on (and bring back old schedule bounds) when a disable, a schedule edit or the tick landed
+        // in between. Maintenance off (a stale tab, or a disable in between): nothing is written, a warning says so.
+        $state = $this->manager->getState();
+        if (!$state->isEnabled()) {
+            $this->flash($request, 'warning', 'panel.flash.message_not_saved');
+
+            return new RedirectResponse($this->pathPrefix);
         }
+
+        /** @var array{message?: string|null} $data */
+        $data    = $form->getData() ?? [];
+        $message = isset($data['message']) && is_string($data['message']) ? $data['message'] : '';
+        // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
+        $this->manager->update($state->withMessage($message !== '' ? $message : null), $this->actor($request), 'message');
+        $this->flash($request, 'success', 'panel.flash.message_updated');
 
         return new RedirectResponse($this->pathPrefix);
     }

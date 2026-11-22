@@ -92,6 +92,7 @@ panel.update_message: Atualizar mensagem
 panel.enable: Ativar manutenção
 panel.flash.disabled: Manutenção desativada.
 panel.flash.enabled: Manutenção ativada.
+panel.flash.message_not_saved: 'A manutenção está desativada: a mensagem não foi guardada.'
 panel.flash.message_updated: Mensagem atualizada.
 panel.flash.schedule_cleared: Agendamento limpo.
 panel.flash.schedule_saved: Agendamento guardado.
