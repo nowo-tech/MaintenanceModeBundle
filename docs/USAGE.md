@@ -180,6 +180,8 @@ php bin/console nowo:maintenance-mode:hash-password --algo=argon2id
 
 Prefer the interactive prompt (no argument) so the plaintext password is not stored in shell history.
 
+The manual section is a single toggle that follows the state: *Enable maintenance* (message form) while maintenance is off, *Disable maintenance* (primary) while it is on, with the message form below it and a secondary *Update message* button (`POST /message`). The empty history is a single UiKit `empty` sentence.
+
 ## Customising the admin chrome
 
 The 1.7 chrome hooks (`web_ui.classes`, `web_ui.partials`, `show_page_header`, `document_title`, `test_ids`, the

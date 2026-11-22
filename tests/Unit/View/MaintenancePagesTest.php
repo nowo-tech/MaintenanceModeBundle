@@ -10,6 +10,8 @@ use Nowo\UiKitBundle\View\Label;
 use Nowo\UiKitBundle\View\Pagination;
 use PHPUnit\Framework\TestCase;
 
+use function array_keys;
+
 final class MaintenancePagesTest extends TestCase
 {
     public function testHistoryPaginatesInMemoryAndClampsThePage(): void
@@ -50,9 +52,41 @@ final class MaintenancePagesTest extends TestCase
 
         self::assertSame([], $sections['status']->actions);
         self::assertSame($panel['section_actions']['manual'], $sections['manual']->actions, 'BC: section_actions keeps the same actions');
+        self::assertSame($panel['message_form'], $sections['manual']->form, 'maintenance on: the manual section carries the message form (message route)');
+        self::assertSame('primary', $sections['manual']->actions[0]->variant, 'not the red button');
         self::assertSame($panel['section_actions']['schedule'], $sections['schedule']->actions);
         self::assertSame('maintenance-disable', $sections['manual']->actions[0]->attributes['data-testid'] ?? null);
         self::assertSame('maintenance-clear-schedule', $sections['schedule']->actions[0]->attributes['data-testid'] ?? null);
+    }
+
+    public function testPanelOffHasTheEnableFormAndNoDisableAction(): void
+    {
+        $panel    = PageFixtures::index(PageFixtures::disabledState());
+        $sections = [];
+        foreach ($panel['page']->sections as $section) {
+            $sections[$section->id] = $section;
+        }
+
+        self::assertNotNull($sections['manual']->form);
+        self::assertSame([], $sections['manual']->actions);
+        self::assertSame([], $panel['section_actions']['manual']);
+    }
+
+    public function testEmptyHistoryIsOneSentenceThroughTheEmptyState(): void
+    {
+        $empty = MaintenancePages::history([], 1, 25, PageFixtures::view()->nav('history'))->empty;
+
+        self::assertNotNull($empty);
+        self::assertNull($empty->title, 'the sentence is the message: the kit does not add its default second line');
+        self::assertInstanceOf(Label::class, $empty->message);
+        self::assertSame('panel.history.empty', $empty->message->key);
+    }
+
+    public function testEmptyHistoryArgumentsAddTheIconOnlyForAKitThatKnowsIt(): void
+    {
+        self::assertSame(['message'], array_keys(MaintenancePages::emptyHistoryArguments(false)));
+        self::assertSame(['message', 'icon'], array_keys(MaintenancePages::emptyHistoryArguments(true)));
+        self::assertSame('book', MaintenancePages::emptyHistoryArguments(true)['icon'] ?? null);
     }
 
     public function testLoginErrorLabel(): void

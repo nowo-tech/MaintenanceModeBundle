@@ -101,6 +101,7 @@ final class MaintenancePanelController
         $passwordRequired = $this->accessGate->isPasswordRequired();
         $forms            = [
             'enable_form'         => $this->createEnableForm($state)->createView(),
+            'message_form'        => $this->createMessageForm($state)->createView(),
             'disable_form'        => $this->createDisableForm()->createView(),
             'schedule_form'       => $this->createScheduleForm($state)->createView(),
             'clear_schedule_form' => $this->createClearScheduleForm()->createView(),
@@ -119,6 +120,7 @@ final class MaintenancePanelController
             $this->view->href('/clear-schedule'),
             $this->view->href('/logout'),
             $this->view->layout(),
+            $forms['message_form'],
         ) + $forms + [
             'state'             => $state,
             'flashes'           => $flashes,
@@ -144,6 +146,35 @@ final class MaintenancePanelController
         // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
         $this->manager->enable($message !== '' ? $message : null, $this->actor($request));
         $this->flash($request, 'success', 'panel.flash.enabled');
+
+        return new RedirectResponse($this->pathPrefix);
+    }
+
+    /**
+     * Changes the public message while maintenance stays on (1.18): same CSRF token and access check as enable, no
+     * change of the activation time and no second "enable" history entry (history action "message").
+     */
+    #[Route(path: '/message', name: 'nowo_maintenance_mode_panel_message', methods: ['POST'])]
+    public function message(Request $request): Response
+    {
+        if (($response = $this->denyUnlessGranted($request)) instanceof Response) {
+            return $response;
+        }
+
+        $state = $this->manager->getState();
+        $form  = $this->createMessageForm($state);
+        if (!$this->handleValidForm($form, $request)) {
+            return new Response('Invalid CSRF token.', Response::HTTP_FORBIDDEN);
+        }
+
+        if ($state->isEnabled()) {
+            /** @var array{message?: string|null} $data */
+            $data    = $form->getData() ?? [];
+            $message = isset($data['message']) && is_string($data['message']) ? $data['message'] : '';
+            // @igor-ignore - Mutates attached request-scoped or value object; not worker singleton cache
+            $this->manager->update($state->withMessage($message !== '' ? $message : null), $this->actor($request), 'message');
+            $this->flash($request, 'success', 'panel.flash.message_updated');
+        }
 
         return new RedirectResponse($this->pathPrefix);
     }
@@ -418,6 +449,20 @@ final class MaintenancePanelController
             'message' => $state->getMessage(),
         ], $this->formOptions([
             'action' => $this->pathPrefix . '/enable',
+        ]));
+    }
+
+    /**
+     * The enable form (message textarea, same CSRF token id) posting to the message route.
+     *
+     * @return FormInterface<array<string, mixed>|null>
+     */
+    private function createMessageForm(MaintenanceState $state): FormInterface
+    {
+        return $this->formFactory->createNamed('', EnableMaintenanceType::class, [
+            'message' => $state->getMessage(),
+        ], $this->formOptions([
+            'action' => $this->pathPrefix . '/message',
         ]));
     }
 

@@ -78,6 +78,7 @@ final class PageFixtures
         $f     = self::factory();
         $forms = [
             'enable_form'   => $f->createNamed('', EnableMaintenanceType::class, ['message' => $state->getMessage()], ['action' => self::PREFIX . '/enable'])->createView(),
+            'message_form'  => $f->createNamed('', EnableMaintenanceType::class, ['message' => $state->getMessage()], ['action' => self::PREFIX . '/message'])->createView(),
             'disable_form'  => $f->createNamed('', DisableMaintenanceType::class, null, ['action' => self::PREFIX . '/disable'])->createView(),
             'schedule_form' => $f->createNamed('', ScheduleMaintenanceType::class, [
                 'scheduled_enable_at'  => $state->getScheduledEnableAt(),
@@ -100,6 +101,8 @@ final class PageFixtures
             $view->href('/disable'),
             $view->href('/clear-schedule'),
             $view->href('/logout'),
+            null,
+            $forms['message_form'],
         ) + $forms + [
             'state'             => $state,
             'flashes'           => [],

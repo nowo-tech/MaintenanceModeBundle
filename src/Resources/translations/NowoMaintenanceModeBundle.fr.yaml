@@ -88,9 +88,11 @@ panel.activated: Activé
 panel.clear_schedule: Effacer la planification
 panel.deactivated: Désactivé
 panel.disable: Désactiver la maintenance
+panel.update_message: Mettre à jour le message
 panel.enable: Activer la maintenance
 panel.flash.disabled: Maintenance désactivée.
 panel.flash.enabled: Maintenance activée.
+panel.flash.message_updated: Message mis à jour.
 panel.flash.schedule_cleared: Planification effacée.
 panel.flash.schedule_saved: Planification enregistrée.
 panel.history: Historique

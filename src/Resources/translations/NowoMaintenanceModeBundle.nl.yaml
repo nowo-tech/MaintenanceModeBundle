@@ -88,9 +88,11 @@ panel.activated: Geactiveerd
 panel.clear_schedule: Planning wissen
 panel.deactivated: Gedeactiveerd
 panel.disable: Onderhoud uitschakelen
+panel.update_message: Bericht bijwerken
 panel.enable: Onderhoud inschakelen
 panel.flash.disabled: Onderhoud uitgeschakeld.
 panel.flash.enabled: Onderhoud ingeschakeld.
+panel.flash.message_updated: Bericht bijgewerkt.
 panel.flash.schedule_cleared: Planning gewist.
 panel.flash.schedule_saved: Planning opgeslagen.
 panel.history: Geschiedenis

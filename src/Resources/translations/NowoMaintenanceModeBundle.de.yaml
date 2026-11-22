@@ -88,9 +88,11 @@ panel.activated: Aktiviert
 panel.clear_schedule: Zeitplan löschen
 panel.deactivated: Deaktiviert
 panel.disable: Wartung deaktivieren
+panel.update_message: Nachricht aktualisieren
 panel.enable: Wartung aktivieren
 panel.flash.disabled: Wartung deaktiviert.
 panel.flash.enabled: Wartung aktiviert.
+panel.flash.message_updated: Nachricht aktualisiert.
 panel.flash.schedule_cleared: Zeitplan gelöscht.
 panel.flash.schedule_saved: Zeitplan gespeichert.
 panel.history: Verlauf
