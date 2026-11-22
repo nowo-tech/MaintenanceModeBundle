@@ -159,6 +159,70 @@ final class MaintenancePanelControllerTest extends TestCase
         self::assertSame('Invalid CSRF token.', $response->getContent());
     }
 
+    public function testMessageUpdatesTheMessageWhileMaintenanceStaysOn(): void
+    {
+        $activated                 = new DateTimeImmutable('2026-01-01 10:00:00');
+        $this->stateStorage->state = (new MaintenanceState())->withEnabled(true)->withMessage('Old')->withActivatedAt($activated);
+        $this->accessGate->method('isGranted')->willReturn(true);
+        $this->csrfTokenManager->method('isTokenValid')->willReturn(true);
+
+        $request = Request::create('/_maintenance/message', 'POST', ['message' => 'Back at 15:00', '_token' => 'valid']);
+        $session = new Session(new MockArraySessionStorage());
+        $request->setSession($session);
+
+        $response = $this->createController()->message($request);
+
+        self::assertInstanceOf(RedirectResponse::class, $response);
+        self::assertTrue($this->stateStorage->state->isEnabled());
+        self::assertSame('Back at 15:00', $this->stateStorage->state->getMessage());
+        self::assertSame($activated, $this->stateStorage->state->getActivatedAt(), 'the activation time is kept');
+        self::assertSame(['panel.flash.message_updated'], $session->getFlashBag()->peek('success'));
+    }
+
+    public function testMessageWithEmptyTextClearsTheMessage(): void
+    {
+        $this->stateStorage->state = (new MaintenanceState())->withEnabled(true)->withMessage('Old');
+        $this->accessGate->method('isGranted')->willReturn(true);
+        $this->csrfTokenManager->method('isTokenValid')->willReturn(true);
+
+        $this->createController()->message(Request::create('/_maintenance/message', 'POST', ['message' => '', '_token' => 'valid']));
+
+        self::assertNull($this->stateStorage->state->getMessage());
+    }
+
+    public function testMessageDoesNothingWhileMaintenanceIsOff(): void
+    {
+        $this->stateStorage->state = (new MaintenanceState())->withEnabled(false)->withMessage('Old');
+        $this->accessGate->method('isGranted')->willReturn(true);
+        $this->csrfTokenManager->method('isTokenValid')->willReturn(true);
+
+        $response = $this->createController()->message(Request::create('/_maintenance/message', 'POST', ['message' => 'New', '_token' => 'valid']));
+
+        self::assertInstanceOf(RedirectResponse::class, $response);
+        self::assertFalse($this->stateStorage->state->isEnabled());
+        self::assertSame('Old', $this->stateStorage->state->getMessage());
+    }
+
+    public function testMessageReturns403OnInvalidCsrf(): void
+    {
+        $this->accessGate->method('isGranted')->willReturn(true);
+        $this->csrfTokenManager->method('isTokenValid')->willReturn(false);
+
+        $response = $this->createController()->message(Request::create('/_maintenance/message', 'POST', ['_token' => 'bad']));
+
+        self::assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+    }
+
+    public function testMessageRedirectsToLoginWhenDenied(): void
+    {
+        $this->accessGate->method('isGranted')->willReturn(false);
+
+        $response = $this->createController()->message(Request::create('/_maintenance/message', 'POST', ['message' => 'x', '_token' => 'valid']));
+
+        self::assertInstanceOf(RedirectResponse::class, $response);
+        self::assertSame('/_maintenance/login', $response->getTargetUrl());
+    }
+
     public function testDisableCallsManagerAndRedirects(): void
     {
         $this->stateStorage->state = (new MaintenanceState())->withEnabled(true);

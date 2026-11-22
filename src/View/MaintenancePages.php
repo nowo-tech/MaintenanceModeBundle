@@ -46,7 +46,7 @@ final class MaintenancePages
     public const FORM_THEME = '@NowoUiKit/form/nowo_ui_layout.html.twig';
 
     /**
-     * Panel page ({@code $nav}: {@see PanelView::nav()} with {@code panel} active): sections status (no form), manual (the enable form while maintenance is off, only the disable action while it is on) and schedule (schedule form +
+     * Panel page ({@code $nav}: {@see PanelView::nav()} with {@code panel} active): sections status (no form), manual (the enable form while maintenance is off; the disable action plus the message form while it is on) and schedule (schedule form +
      * clear action) — the section actions are {@see SettingsSection::$actions} (UiKit 2.2); header action Logout when the password gate is on; area nav Panel | History.
      *
      * @return array{page: SettingsPage, section_actions: array<string, list<Action>>, status_items: list<DetailItem>}
@@ -63,10 +63,11 @@ final class MaintenancePages
         string $clearScheduleHref,
         ?string $logoutHref = null,
         ?string $layout = null,
+        ?FormView $messageForm = null,
     ): array {
-        // One toggle that reflects the state (1.18): Enable (the section form's submit) while maintenance is off, only
-        // Disable while it is on - never the primary and the red button side by side. The schedule section keeps its
-        // secondary Clear schedule action.
+        // One toggle that reflects the state (1.18): Enable (the section form's submit) while maintenance is off; Disable
+        // (primary) while it is on, with the message form below it and a secondary Update message submit (the template) -
+        // never the primary and the red button side by side. The schedule section keeps its secondary Clear schedule action.
         $enabled        = $state->isEnabled();
         $sectionActions = [
             'manual' => $enabled
@@ -86,7 +87,7 @@ final class MaintenancePages
                 new PageHeader(PanelView::label('panel.title'), PanelView::label('panel.intro'), $actions, tabs: $nav),
                 [
                     new SettingsSection('status', PanelView::label('panel.status')),
-                    new SettingsSection('manual', PanelView::label('panel.manual'), form: $enabled ? null : $enableForm, intro: PanelView::label('panel.manual.intro'), submitLabel: PanelView::label('panel.enable'), formThemes: [self::FORM_THEME], actions: $sectionActions['manual']),
+                    new SettingsSection('manual', PanelView::label('panel.manual'), form: $enabled && $messageForm instanceof FormView ? $messageForm : $enableForm, intro: PanelView::label('panel.manual.intro'), submitLabel: PanelView::label('panel.enable'), formThemes: [self::FORM_THEME], actions: $sectionActions['manual']),
                     new SettingsSection('schedule', PanelView::label('panel.schedule'), form: $scheduleForm, intro: PanelView::label('panel.schedule.intro'), submitLabel: PanelView::label('panel.save_schedule'), formThemes: [self::FORM_THEME], actions: $sectionActions['schedule']),
                 ],
                 bundle: PanelView::BUNDLE,

@@ -34,14 +34,24 @@
             {% if section.form and (nowo_maintenance_page.form_theme ?? null) %}
                 {% form_theme section.form with [nowo_maintenance_page.form_theme] %}
             {% endif %}
-            {{ parent() }}
-            {#- 1.18: while maintenance is on the manual section has no form, only the single Disable toggle -#}
-            {% if not section.form and section.actions is not empty %}
+            {% if section.id == 'manual' and state.enabled %}
+                {#- 1.18: maintenance is on - the single Disable toggle (primary) and, below it, the message form with a secondary
+                    "Update message" submit (POST /enable again: it stores the new message, the state stays on) -#}
                 <div class="nowo-maintenance-panel__toggle" data-testid="maintenance-toggle">
                     {% for action in section.actions %}
                         {{ include(nowo_ui_partial('action', _b), {action: action, context: 'toolbar', bundle: _b, nowo_ui_page_type: nowo_ui_page_type}, false) }}
                     {% endfor %}
                 </div>
+                {{ form_start(section.form, {attr: {class: nowo_ui_class('form', _b), 'data-nowo-ui-region': 'form', 'data-testid': 'maintenance-update-message'}}) }}
+                    {% for child in section.form %}
+                        {% if not child.rendered %}{{ form_row(child) }}{% endif %}
+                    {% endfor %}
+                    <div class="{{ nowo_ui_class('form_actions', _b) }}">
+                        <button type="submit" class="{{ nowo_ui_class('btn_secondary', _b) }}" data-testid="maintenance-update-message-submit">{{ 'panel.update_message'|trans }}</button>
+                    </div>
+                {{ form_end(section.form) }}
+            {% else %}
+                {{ parent() }}
             {% endif %}
         {% endif %}
     </div>

@@ -52,7 +52,7 @@ final class MaintenancePagesTest extends TestCase
 
         self::assertSame([], $sections['status']->actions);
         self::assertSame($panel['section_actions']['manual'], $sections['manual']->actions, 'BC: section_actions keeps the same actions');
-        self::assertNull($sections['manual']->form, 'maintenance on: the manual section is only the Disable toggle');
+        self::assertSame($panel['message_form'], $sections['manual']->form, 'maintenance on: the manual section carries the message form (message route)');
         self::assertSame('primary', $sections['manual']->actions[0]->variant, 'not the red button');
         self::assertSame($panel['section_actions']['schedule'], $sections['schedule']->actions);
         self::assertSame('maintenance-disable', $sections['manual']->actions[0]->attributes['data-testid'] ?? null);

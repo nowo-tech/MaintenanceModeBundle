@@ -52,9 +52,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `POST /message` (`nowo_maintenance_mode_panel_message`) and the `panel.update_message` / `panel.flash.message_updated` translations (7 locales): change the public message while maintenance stays on.
+
 ### Changed
 
-- Panel: one toggle that reflects the state. While maintenance is off the manual section shows the message form with *Enable maintenance*; while it is on it shows only *Disable maintenance* (primary, no longer the red button next to the primary). The enable form is not rendered while maintenance is on (the `enable` route is unchanged); `section_actions.manual` is empty while maintenance is off.
+- Panel: one toggle that reflects the state. While maintenance is off the manual section shows the message form with *Enable maintenance*; while it is on it shows *Disable maintenance* (primary, no longer the red button next to the primary) and, below it, the message form with a secondary *Update message* submit (new `POST /message` route, `nowo_maintenance_mode_panel_message`: same CSRF token and access check as enable; it keeps the activation time and logs a `message` history entry), so the message can still be changed without disabling. `section_actions.manual` is empty while maintenance is off.
 - History: the empty state is one sentence through the UiKit `empty` partial (the sentence was passed as the title, so the kit added its default "No items" line); UiKit 2.61+ draws the illustrated layout.
 
 ### Documentation

@@ -72,7 +72,13 @@ final class PageContractTest extends PageContractTestCase
         // 1.18: one toggle by state - while maintenance is on there is no Enable button or form
         self::assertStringNotContainsString('Enable maintenance', $html);
         self::assertStringNotContainsString('action="/_maintenance/enable"', $html);
-        self::assertStringNotContainsString('nowo-maintenance-enable-form', $html);
+        // the message can still be changed while on: its own form (message route, same CSRF token id), secondary submit
+        self::assertStringContainsString('action="/_maintenance/message"', $html);
+        self::assertStringContainsString('data-testid="maintenance-update-message"', $html);
+        self::assertMatchesRegularExpression('#<button type="submit" class="[^"]*nowo-ui-btn--secondary[^"]*" data-testid="maintenance-update-message-submit">Update message</button>#', $html);
+        self::assertStringContainsString('value="token-nowo_maintenance_enable"', $html);
+        self::assertStringContainsString('Database upgrade in progress', $html);
+        self::assertLessThan(strpos($html, 'data-testid="maintenance-update-message"'), strpos($html, 'data-testid="maintenance-toggle"'), 'Disable first, the message form below');
         self::assertStringContainsString('Save schedule', $html);
         self::assertStringContainsString('Clear schedule', $html);
         self::assertStringContainsString('value="token-nowo_maintenance_disable"', $html);
@@ -135,6 +141,8 @@ final class PageContractTest extends PageContractTestCase
         self::assertStringNotContainsString('action="/_maintenance/disable"', $html);
         self::assertStringNotContainsString('data-testid="maintenance-disable"', $html);
         self::assertStringNotContainsString('maintenance-toggle', $html);
+        self::assertStringNotContainsString('Update message', $html);
+        self::assertStringNotContainsString('/_maintenance/message', $html);
     }
 
     public function testPanelWithoutPasswordGateHasNoLogout(): void
