@@ -126,7 +126,7 @@ Before tagging a release, confirm:
 | **Cryptography** | Password hashing via Symfony hasher / `password_hash`; no custom crypto. |
 | **Permissions / exposure** | Host must firewall `/_maintenance`; `var/maintenance/` not web-accessible. |
 | **Limits / DoS** | Public 503 path is cacheable/static where possible; panel is ops-only. |
-| **AI security audit (REQ-SEC-004)** | Grade **Pass (conditional)** / risk **Medium** (2026-07-29). Recorded in the Nowo monorepo `BUNDLES_SECURITY_ANALYSIS.md`. |
+| **AI security audit (REQ-SEC-004)** | Grade **Pass (good)** / risk **Low**, latest 2026-11-23 (1.18.2, Appendix ZT). See [AI security audit](#ai-security-audit). |
 | **Release notes** | Security-relevant changes reflected in `CHANGELOG.md` / `UPGRADING.md` when needed. |
 
 Recommended commands:
@@ -140,8 +140,8 @@ make release-check
 
 | Field | Value |
 | ----- | ----- |
-| Date | 2026-07-29 |
-| Grade | Pass (conditional) |
-| Risk | Medium |
-| Method | Cursor security-review / campaign static pass (`src/`, Flex recipe, demo, SECURITY docs) |
-| Open residuals | No Critical/High. **Accepted Medium:** panel is ops-sensitive — host MUST firewall `/_maintenance` (and custom prefixes); keep `password_protection` + hash in production or equivalent access_control; never put bypass tokens or panel login links on the public 503 page; treat maintenance message HTML as trusted admin content. |
+| Date | 2026-11-23 (delta audit of 1.18.2); earlier: 2026-11-22 (1.18.0–1.18.1), 2026-09-28 (re-audit), 2026-07-29 (first audit) |
+| Grade | Pass (good) |
+| Risk | Low |
+| Method | Independent static review of each release delta (`src/`, templates, translations, tests), recorded in the Nowo monorepo `BUNDLES_SECURITY_ANALYSIS.md` (Appendices ZT, ZA, MK, KH) |
+| Open residuals | No Critical, High, Medium or Low. Info ZT-I1: the panel message write re-reads the state just before it saves (ZA-L1, fixed in 1.18.2), but there is no lock, so writes stay last-write-wins as for enable / disable / schedule ([USAGE](USAGE.md)). **Host-owned (accepted since 2026-07-29):** panel is ops-sensitive — host MUST firewall `/_maintenance` (and custom prefixes); keep `password_protection` + hash in production or equivalent access_control; never put bypass tokens or panel login links on the public 503 page; treat maintenance message HTML as trusted admin content. |
