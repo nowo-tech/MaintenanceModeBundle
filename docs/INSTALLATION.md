@@ -12,7 +12,7 @@
 
 ## Requirements
 
-- PHP `>=8.2` (<8.6). Symfony **8.0** and **8.1** require **PHP 8.4+**.
+- PHP `>=8.2` (<8.7). Symfony **8.0** and **8.1** require **PHP 8.4+**.
 - Symfony **7.4**, **8.0**, or **8.1** (`^7.4 || ^8.0`).
 - `symfony/form` (`^7.4 || ^8.0`) for panel enable / disable / schedule / login forms (pulled transitively).
 - `nowo-tech/ui-kit-bundle` (`^1.4`) for panel chrome / UiKit macros (pulled transitively).
